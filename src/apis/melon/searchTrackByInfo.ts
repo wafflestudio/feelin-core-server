@@ -1,13 +1,17 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { trackInfo } from '../../types';
+import { TrackInfo } from '../../types';
 
-const TITLE_NODE = 0;
-const ARTIST_NODE = 1;
-const ALBUM_NODE = 2;
+const getTrackInfo = function (
+    $: cheerio.Root,
+    el: cheerio.Element,
+): TrackInfo {
+    const TITLE_NODE = 0;
+    const ARTIST_NODE = 1;
+    const ALBUM_NODE = 2;
 
-const getTrackInfo = function ($: cheerio.CheerioAPI, el: cheerio.Element) {
     let title: string;
+    let id: string;
     let artists: string[] = [];
     let album: string;
     $(el)
@@ -15,7 +19,7 @@ const getTrackInfo = function ($: cheerio.CheerioAPI, el: cheerio.Element) {
         .each((index, el) => {
             switch (index) {
                 case TITLE_NODE: {
-                    const melonID: string = $(el)
+                    id = $(el)
                         .find('a.btn')
                         .attr('href')
                         .match(/\(\'(\w+)\'\)/)[1];
@@ -45,12 +49,12 @@ const getTrackInfo = function ($: cheerio.CheerioAPI, el: cheerio.Element) {
             }
         });
 
-    return new trackInfo('melon', title, artists, album);
+    return new TrackInfo('melon', title, id, artists, album);
 };
 
-let searchTrackByInfo = async function (
-    trackInfo: trackInfo,
-): Promise<trackInfo | void> {
+const searchTrackByInfo = async function (
+    trackInfo: TrackInfo,
+): Promise<TrackInfo | void> {
     const melonURL = 'https://www.melon.com/search/song/index.htm?';
     const response = await axios.get(melonURL, {
         params: {
@@ -63,7 +67,7 @@ let searchTrackByInfo = async function (
         },
     });
     const $ = cheerio.load(response.data);
-    let trackSearchResult: trackInfo;
+    let trackSearchResult: TrackInfo;
     $('table > tbody > tr').each((_, el) => {
         trackSearchResult = getTrackInfo($, el);
         if (trackInfo.isEqual(trackSearchResult)) {
