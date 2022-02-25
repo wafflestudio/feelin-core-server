@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "CommonJS",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -18,6 +17,5 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true
   }
 }
