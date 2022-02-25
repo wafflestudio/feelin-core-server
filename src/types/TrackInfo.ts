@@ -1,28 +1,19 @@
-import { isEqual } from 'lodash-es';
-
-type streamingService =
-    | 'melon'
-    | 'flo'
-    | 'genie'
-    | 'bugs'
-    | 'vibe'
-    | 'ytmusic'
-    | 'spotify'
-    | 'applemusic';
+import { isEqual } from 'lodash';
+import { StreamService } from './StreamService';
 
 class TrackInfo {
-    service: streamingService;
+    service: StreamService;
     title: string;
     id: string;
-    artists: Array<string>;
+    artists: string[];
     album: string;
 
     // constructor
     constructor(
-        service: streamingService,
+        service: StreamService,
         title: string,
         id: string,
-        artists: Array<string>,
+        artists: string[],
         album: string,
     ) {
         this.service = service;
