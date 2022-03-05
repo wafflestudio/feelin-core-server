@@ -2,7 +2,7 @@
     Use puppeteer to access user's account
 */
 
-import puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import { CookieData } from 'src/types';
 
 const melonLoginUrl =
