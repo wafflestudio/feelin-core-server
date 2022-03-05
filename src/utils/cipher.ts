@@ -19,7 +19,7 @@ const asymmEncrypt = async (
     privateKey: string;
 }> => {
     const keyPair = await generateKeyPairAsync('rsa', {
-        modulusLength: 2048,
+        modulusLength: 1024,
         publicKeyEncoding: {
             type: 'spki',
             format: 'pem',
@@ -53,16 +53,16 @@ const symmEncrypt = async (
     data: string;
     key: string;
 }> => {
-    const key = randomBytes(32).toString('hex');
+    const key = randomBytes(32);
     const iv = randomBytes(IV_LENGTH);
-    const cipher = createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+    const cipher = createCipheriv('aes-256-cbc', key, iv);
     const encText = cipher.update(data);
     return {
         data:
             iv.toString('hex') +
             ':' +
             Buffer.concat([encText, cipher.final()]).toString('hex'),
-        key,
+        key: key.toString('hex'),
     };
 };
 
