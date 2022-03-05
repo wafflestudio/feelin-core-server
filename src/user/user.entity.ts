@@ -31,17 +31,17 @@ class StreamAccount extends BaseEntity {
     @Column({ type: 'enum', enum: StreamServiceEnum })
     streamType!: StreamService;
 
-    @Column()
+    @Column({ type: 'char', length: 64 })
     publicKey!: string;
 
-    @Column({ unique: true })
+    @Column({ type: 'varchar', length: 2000 })
     privateKey!: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 2000 })
     cookie!: string;
 
     @ManyToOne(() => User, (user) => user.streamAccounts)
-    user: User;
+    user!: User;
 
     constructor(
         streamType: StreamService,
