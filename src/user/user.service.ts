@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { createHash } from 'crypto';
 import { CookieData } from 'src/types';
 import { asymmEncrypt, symmEncrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
@@ -29,13 +30,13 @@ export class UserService {
         }
 
         const cookieData: CookieData | null = await loginFunc(id, password);
-        if (cookieData === null) {
+        if (cookieData === undefined) {
             console.error('streaming account login failed');
             return;
         }
 
         const user = await this.userRepository.findOne({ id: userId });
-        if (user === null) {
+        if (user === undefined) {
             console.error(`no user with id ${userId} found`);
             return;
         }
@@ -46,19 +47,26 @@ export class UserService {
             publicKey,
             privateKey,
         } = await asymmEncrypt(key);
+        const hashPubKey = createHash('sha256')
+            .update(publicKey)
+            .digest('base64url');
 
         const streamAccount = new StreamAccount(
             streamType,
             cookie,
-            publicKey,
+            hashPubKey,
             privateKey,
         );
-        user.streamAccounts = [...user.streamAccounts, streamAccount];
+
+        if (user.streamAccounts === undefined) {
+            user.streamAccounts = [];
+        }
+        user.streamAccounts.push(streamAccount);
         await user.save();
 
         return {
             symmKey,
-            publicKey,
+            publicKey: hashPubKey,
         };
     }
 }
