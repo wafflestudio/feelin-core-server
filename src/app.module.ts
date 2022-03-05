@@ -24,7 +24,7 @@ import { MeController } from './me/me.controller';
             isGlobal: true,
             envFilePath: [getEnvFile()],
         }),
-        TypeOrmModule.forRootAsync({ useFactory: () => ormConfig }),
+        TypeOrmModule.forRoot(ormConfig),
         TrackModule,
         PlaylistModule,
         UserModule,
