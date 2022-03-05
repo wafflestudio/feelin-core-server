@@ -40,6 +40,10 @@ export class PlaylistService {
         }
 
         const { symmKey, publicKey } = saveDto;
+        if (user.streamAccounts === undefined) {
+            console.error(`no available streaming account exists`);
+            return;
+        }
         const account = user.streamAccounts.find(
             (account) => account.publicKey === publicKey,
         );
@@ -48,8 +52,8 @@ export class PlaylistService {
             return;
         }
 
-        const decSymmKey = await asymmDecrypt(symmKey, account.privateKey);
-        const cookie = await symmDecrypt(account.cookie, decSymmKey);
+        const key = await asymmDecrypt(symmKey, account.privateKey);
+        const cookie = await symmDecrypt(account.cookie, key);
 
         const response = await melonPlaylist.savePlaylist(playlist, cookie);
         return response;
