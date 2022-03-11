@@ -1,22 +1,38 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PlaylistModule } from 'src/playlist/playlist.module';
-import testUtilModule from 'src/utils/testUtilModules';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Playlist } from 'src/playlist/playlist.entity';
+import { PlaylistService } from 'src/playlist/playlist.service';
+import {
+    MockRepository,
+    testRepositoryModule,
+} from 'src/utils/testUtilModules';
 import { loginStreamDto } from './dto/login-stream.dto';
 import { UserController } from './user.controller';
-import { UserModule } from './user.module';
+import { User } from './user.entity';
 import { UserService } from './user.service';
 
 describe('UserService', () => {
     let service: UserService;
+    let playlistRepository: MockRepository<Playlist>;
+    let userRepository: MockRepository<User>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [...testUtilModule(), UserModule, PlaylistModule],
-            providers: [UserService],
+            providers: [
+                UserService,
+                PlaylistService,
+                ...testRepositoryModule([User, Playlist]),
+            ],
             controllers: [UserController],
         }).compile();
 
         service = module.get<UserService>(UserService);
+        playlistRepository = module.get<MockRepository<Playlist>>(
+            getRepositoryToken(Playlist),
+        );
+        userRepository = module.get<MockRepository<User>>(
+            getRepositoryToken(User),
+        );
     });
 
     it('should be defined', () => {

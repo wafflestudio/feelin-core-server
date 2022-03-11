@@ -1,27 +1,22 @@
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import getEnvFile from './getEnvFile';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
+import { Repository } from 'typeorm';
 
-const testUtilModule = () => [
-    ConfigModule.forRoot({
-        isGlobal: true,
-        envFilePath: [getEnvFile()],
-    }),
-    TypeOrmModule.forRoot({
-        type: 'mysql',
-        port: +(process.env.DB_PORT ?? 3306),
-        username: process.env.DB_USER,
-        password: process.env.DB_PWD,
-        database: process.env.DB_NAME,
-        entities: ['src/../**/*.entity{.ts,.js}'],
-        synchronize: true,
-        migrations: ['dist/migration/*.js'],
-        migrationsRun: true,
-        cli: {
-            migrationsDir: 'src/migration',
-        },
-        keepConnectionAlive: true,
-    }),
-];
+const mockRepository = () => ({
+    save: jest.fn(),
+    find: jest.fn(),
+    findOne: jest.fn(),
+    softDelete: jest.fn(),
+});
 
-export default testUtilModule;
+type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
+
+const testRepositoryModule = (entities: EntityClassOrSchema[]) =>
+    entities.map((entity) => {
+        return {
+            provide: getRepositoryToken(entity),
+            useValue: mockRepository(),
+        };
+    });
+
+export { testRepositoryModule, MockRepository };
