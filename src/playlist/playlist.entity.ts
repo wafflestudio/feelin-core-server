@@ -12,17 +12,6 @@ import {
 import { StreamService, StreamServiceEnum } from 'src/types';
 
 @Entity()
-class StreamPlaylist extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
-    @Column({ type: 'enum', enum: StreamServiceEnum })
-    streamType!: StreamService;
-
-    url!: string;
-}
-
-@Entity()
 class Playlist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
@@ -30,8 +19,8 @@ class Playlist extends BaseEntity {
     @Column()
     title!: string;
 
-    @Column()
-    description!: string;
+    @Column({ nullable: false, default: '' })
+    description: string;
 
     @ManyToMany(() => Track, (track) => track.id, {
         cascade: true,
@@ -41,6 +30,18 @@ class Playlist extends BaseEntity {
 
     @OneToMany(() => StreamPlaylist, (playlist) => playlist.id)
     streamPlaylists!: StreamPlaylist[];
+}
+
+@Entity()
+class StreamPlaylist extends BaseEntity {
+    @PrimaryGeneratedColumn()
+    id!: number;
+
+    @Column({ type: 'enum', enum: StreamServiceEnum })
+    streamType!: StreamService;
+
+    @Column({ unique: true })
+    streamId!: string;
 }
 
 export { Playlist, StreamPlaylist };
