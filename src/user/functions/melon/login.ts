@@ -2,26 +2,21 @@
     Use puppeteer to access user's account
 */
 
-import * as puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer';
 import { CookieData } from 'src/types';
 
-const melonLoginUrl =
+const responseUrl =
     'https://member.melon.com/muid/web/login/login_informProcs.htm';
+const loginUrl = 'https://member.melon.com/muid/web/login/login_informM.htm';
 
-async function melonLogin(
-    id: string,
-    password: string,
-): Promise<CookieData | null> {
+async function login(id: string, password: string): Promise<CookieData | null> {
     let loginSuccess = false;
     const browser = await puppeteer.launch({
         headless: true,
     });
 
     const page = await browser.newPage();
-    await page.goto(
-        'https://member.melon.com/muid/web/login/login_informM.htm',
-        { waitUntil: 'networkidle2' },
-    );
+    await page.goto(loginUrl, { waitUntil: 'networkidle2' });
 
     await page.waitForSelector('input[name=id]');
     await page.$eval(
@@ -40,13 +35,15 @@ async function melonLogin(
         password,
     );
     await page.waitForSelector('button#btnLogin');
-    await page.click('button#btnLogin');
+    page.click('button#btnLogin');
 
     await page.waitForResponse((response) => {
-        if (response.headers()['set-cookie']) {
-            loginSuccess = true;
+        if (response.url() === responseUrl) {
+            if (response.headers()['set-cookie']) {
+                loginSuccess = true;
+            }
         }
-        return response.url() === melonLoginUrl;
+        return response.url() === responseUrl;
     });
 
     let cookies = await page.cookies();
@@ -55,8 +52,9 @@ async function melonLogin(
     if (loginSuccess) {
         const cookie = new CookieData(cookies);
         return cookie;
+    } else {
+        return null;
     }
-    return null;
 }
 
-export default melonLogin;
+export default login;

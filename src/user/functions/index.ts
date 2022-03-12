@@ -1,3 +1,7 @@
-import melonLogin from './melonLogin';
+import melon from './melon';
 
-export { melonLogin };
+const userFunction = {
+    melon: melon,
+};
+
+export default userFunction;

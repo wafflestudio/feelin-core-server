@@ -5,7 +5,7 @@ import { CookieData } from 'src/types';
 import { asymmEncrypt, symmEncrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
 import { loginStreamDto } from './dto/login-stream.dto';
-import login from './functions/login';
+import userFunction from './functions';
 import { StreamAccount, User } from './user.entity';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class UserService {
         publicKey: string;
     }> {
         const { streamType, id, password } = loginDto;
-        const loginFunc = login[streamType];
+        const loginFunc = userFunction[streamType]?.login;
 
         if (loginFunc === undefined) {
             console.error(`unsupported streaming service type: ${streamType}`);
