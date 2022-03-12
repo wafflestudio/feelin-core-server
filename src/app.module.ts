@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -17,6 +17,10 @@ import { getEnvFile } from './utils';
 import { MeService } from './me/me.service';
 import { MeModule } from './me/me.module';
 import { MeController } from './me/me.controller';
+import { ArtistService } from './artist/artist.service';
+import { AlbumService } from './album/album.service';
+import { AlbumModule } from './album/album.module';
+import { ArtistModule } from './artist/artist.module';
 
 @Module({
     imports: [
@@ -24,11 +28,13 @@ import { MeController } from './me/me.controller';
             isGlobal: true,
             envFilePath: [getEnvFile()],
         }),
-        TypeOrmModule.forRoot(ormConfig),
+        TypeOrmModule.forRootAsync({ useFactory: () => ormConfig }),
         TrackModule,
         PlaylistModule,
         UserModule,
         MeModule,
+        AlbumModule,
+        ArtistModule,
     ],
     controllers: [
         AppController,
@@ -43,6 +49,8 @@ import { MeController } from './me/me.controller';
         PlaylistService,
         UserService,
         MeService,
+        ArtistService,
+        AlbumService,
     ],
 })
 export class AppModule {}
