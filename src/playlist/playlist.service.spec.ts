@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Album } from 'src/album/album.entity';
+import { Artist } from 'src/artist/artist.entity';
+import { Track } from 'src/track/track.entity';
 import { User } from 'src/user/user.entity';
 import {
     MockRepository,
@@ -37,8 +40,10 @@ describe('PlaylistService', () => {
 
     it('should get playlist info', async () => {
         const data = await floPlaylist.getPlaylist('33817');
-        // console.log(data);
-        console.log(data?.trackList[0]?.album);
-        console.log(data?.trackList[0]?.artistList);
+        expect(data).toBeInstanceOf(Playlist);
+        expect(data.title).toEqual('외출준비 할 때 텐션유지를 위한 노래');
+        expect(data.tracks[0]).toBeInstanceOf(Track);
+        expect(data.tracks[0].album).toBeInstanceOf(Album);
+        expect(data.tracks[0].artists[0]).toBeInstanceOf(Artist);
     });
 });
