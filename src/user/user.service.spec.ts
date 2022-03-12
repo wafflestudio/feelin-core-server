@@ -7,6 +7,7 @@ import {
     testRepositoryModule,
 } from 'src/utils/testUtilModules';
 import { loginStreamDto } from './dto/login-stream.dto';
+import userFunction from './functions';
 import { UserController } from './user.controller';
 import { User } from './user.entity';
 import { UserService } from './user.service';
@@ -39,15 +40,35 @@ describe('UserService', () => {
         expect(service).toBeDefined();
     });
 
-    it('should log in to melon', async () => {
-        const loginDto = new loginStreamDto();
-        loginDto.streamType = 'melon';
-        loginDto.id = process.env.MELON_ID;
-        loginDto.password = process.env.MELON_ID;
-        const { symmKey, publicKey } = await service.loginStreamAccount(
-            1,
-            loginDto,
+    it('should not login to melon', async () => {
+        jest.setTimeout(10000);
+        const cookie = await userFunction['melon'].login(
+            process.env.MELON_ID,
+            process.env.MELON_PWD_FAKE,
         );
-        console.log(symmKey, publicKey);
+        expect(cookie).toBeNull();
+        console.log(cookie);
     });
+
+    it('should login to melon', async () => {
+        jest.setTimeout(10000);
+        const cookie = await userFunction['melon'].login(
+            process.env.MELON_ID,
+            process.env.MELON_PWD,
+        );
+        expect(cookie).not.toBeNull();
+        console.log(cookie);
+    });
+
+    // it('should connect melon account', async () => {
+    //     const loginDto = new loginStreamDto();
+    //     loginDto.streamType = 'melon';
+    //     loginDto.id = process.env.MELON_ID;
+    //     loginDto.password = process.env.MELON_PWD;
+    //     const { symmKey, publicKey } = await service.loginStreamAccount(
+    //         1,
+    //         loginDto,
+    //     );
+    //     console.log(symmKey, publicKey);
+    // });
 });
