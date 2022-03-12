@@ -16,7 +16,10 @@ async function saveMelonPlaylist(playlist: Playlist, cookie: string) {
     };
     let data = new URLSearchParams(params);
     tracks.map((track) => {
-        data.append('songIds[]', track.melonId);
+        let melonId = track.streamTracks.find(
+            (streamTrack) => streamTrack.streamType === 'melon',
+        ).streamId;
+        data.append('songIds[]', melonId);
     });
 
     const response = await axios.post(createPlaylistUrl, data, {
