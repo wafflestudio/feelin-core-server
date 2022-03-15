@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as cheerio from 'cheerio';
+import cheerio from 'cheerio';
 import { TrackInfo } from 'src/types';
 import scrapeTrack from './scrapeTrack';
 

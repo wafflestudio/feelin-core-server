@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import * as cheerio from 'cheerio';
+import cheerio from 'cheerio';
 import { CookieData } from 'src/types';
 import getFirstRecentTracks from './getFirstRecentTracks';
 import scrapeMyMusicTrack from './scrapeMyMusicTrack';
