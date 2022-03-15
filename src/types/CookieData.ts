@@ -1,6 +1,6 @@
 import { Protocol } from 'puppeteer';
 
-class MelonCookieData {
+class CookieData {
     static cookieList = [
         'MAC',
         'MUG',
@@ -17,7 +17,7 @@ class MelonCookieData {
     constructor(data: Protocol.Network.Cookie[] | string) {
         if (Array.isArray(data)) {
             data.filter((cookie) => {
-                return MelonCookieData.cookieList.includes(cookie.name);
+                return CookieData.cookieList.includes(cookie.name);
             }).map((cookie) => {
                 this.data[cookie.name] = cookie.value;
             });
@@ -35,17 +35,17 @@ class MelonCookieData {
     }
 
     static fromCookie(data: Protocol.Network.Cookie[]) {
-        return new MelonCookieData(data);
+        return new CookieData(data);
     }
 
     static fromString(data: string) {
-        return new MelonCookieData(data);
+        return new CookieData(data);
     }
 
     toString(): string {
         let cookies = [];
         for (let key of Object.keys(this.data)) {
-            if (this.data[key] && MelonCookieData.cookieList.includes(key)) {
+            if (this.data[key] && CookieData.cookieList.includes(key)) {
                 cookies.push(`${key}=${this.data[key]}`);
             }
         }
@@ -57,4 +57,4 @@ class MelonCookieData {
     }
 }
 
-export default MelonCookieData;
+export default CookieData;

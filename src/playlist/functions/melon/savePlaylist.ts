@@ -4,7 +4,7 @@ import { Playlist } from 'src/playlist/playlist.entity';
 const createPlaylistUrl =
     'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insertAction.json';
 
-async function saveMelonPlaylist(playlist: Playlist, cookie: string) {
+async function savePlaylist(playlist: Playlist, cookie: string) {
     const { title, description, tracks } = playlist;
 
     const params = {
@@ -25,7 +25,6 @@ async function saveMelonPlaylist(playlist: Playlist, cookie: string) {
     const response = await axios.post(createPlaylistUrl, data, {
         headers: {
             Cookie: cookie,
-            Connection: 'keep-alive',
             Referer:
                 'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insert.htm',
             'X-Requested-With': 'XMLHttpRequest',
@@ -34,4 +33,4 @@ async function saveMelonPlaylist(playlist: Playlist, cookie: string) {
     return response.data.result;
 }
 
-export default saveMelonPlaylist;
+export default savePlaylist;
