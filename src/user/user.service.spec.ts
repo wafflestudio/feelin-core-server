@@ -40,24 +40,32 @@ describe('UserService', () => {
         expect(service).toBeDefined();
     });
 
-    it('should not login to melon', async () => {
-        jest.setTimeout(10000);
-        const cookie = await userFunction['melon'].login(
-            process.env.MELON_ID,
-            process.env.MELON_PWD_FAKE,
-        );
-        expect(cookie).toBeNull();
-        console.log(cookie);
-    });
+    // it('should not login to melon', async () => {
+    //     jest.setTimeout(10000);
+    //     const cookie = await userFunction['melon'].login(
+    //         process.env.MELON_ID,
+    //         process.env.MELON_PWD_FAKE,
+    //     );
+    //     expect(cookie).toBeNull();
+    //     console.log(cookie);
+    // });
 
-    it('should login to melon', async () => {
-        jest.setTimeout(10000);
-        const cookie = await userFunction['melon'].login(
-            process.env.MELON_ID,
-            process.env.MELON_PWD,
+    // it('should login to melon', async () => {
+    //     jest.setTimeout(10000);
+    //     const cookie = await userFunction['melon'].login(
+    //         process.env.MELON_ID,
+    //         process.env.MELON_PWD,
+    //     );
+    //     expect(cookie).not.toBeNull();
+    //     console.log(cookie);
+    // });
+
+    it('should login to flo', async () => {
+        const token = await userFunction['flo'].login(
+            process.env.FLO_ID,
+            process.env.FLO_PWD,
         );
-        expect(cookie).not.toBeNull();
-        console.log(cookie);
+        console.log(token.toCookieString('flo'));
     });
 
     // it('should connect melon account', async () => {

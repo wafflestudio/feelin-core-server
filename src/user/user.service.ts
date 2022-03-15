@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
-import { CookieData } from 'src/types';
+import { CookieData, StreamServiceEnum } from 'src/types';
 import { asymmEncrypt, symmEncrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
 import { loginStreamDto } from './dto/login-stream.dto';
@@ -22,14 +22,15 @@ export class UserService {
         publicKey: string;
     }> {
         const { streamType, id, password } = loginDto;
-        const loginFunc = userFunction[streamType]?.login;
 
-        if (loginFunc === undefined) {
+        if (!StreamServiceEnum.includes(streamType)) {
             console.error(`unsupported streaming service type: ${streamType}`);
             return;
         }
 
-        const cookieData: CookieData | null = await loginFunc(id, password);
+        const cookieData: CookieData | null = await userFunction[
+            streamType
+        ].login(id, password);
         if (cookieData === undefined) {
             console.error('streaming account login failed');
             return;
