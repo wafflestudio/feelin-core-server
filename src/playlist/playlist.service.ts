@@ -5,7 +5,7 @@ import { savePlaylistDto } from 'src/user/dto/save-playlist.dto';
 import { User } from 'src/user/user.entity';
 import { asymmDecrypt, symmDecrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
-import { melonPlaylist } from './functions';
+import playlistFunction from './functions';
 import { Playlist } from './playlist.entity';
 
 @Injectable()
@@ -55,7 +55,9 @@ export class PlaylistService {
         const key = await asymmDecrypt(symmKey, account.privateKey);
         const cookie = await symmDecrypt(account.cookie, key);
 
-        const response = await melonPlaylist.savePlaylist(playlist, cookie);
+        const response = await playlistFunction[
+            account.streamType
+        ].savePlaylist(playlist, cookie);
         return response;
     }
 }
