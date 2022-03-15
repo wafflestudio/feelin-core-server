@@ -1,10 +1,15 @@
 import TrackInfo from './TrackInfo';
-import MelonCookieData from './CookieData';
+import CookieData from './CookieData';
 import { StreamService, StreamServiceEnum } from './StreamService';
+import JwtTokenPair from './JwtTokenPair';
+
+type AuthInfo = CookieData | JwtTokenPair;
 
 export {
     TrackInfo,
-    MelonCookieData as CookieData,
+    CookieData,
+    JwtTokenPair,
+    AuthInfo,
     StreamServiceEnum,
     StreamService,
 };
