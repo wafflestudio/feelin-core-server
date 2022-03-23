@@ -1,7 +1,7 @@
 import { Album } from 'src/album/album.entity';
 import { Artist } from 'src/artist/artist.entity';
 import { Playlist } from 'src/playlist/playlist.entity';
-import { StreamService, StreamServiceEnum } from 'src/types';
+import { StreamService, StreamServiceEnum, TrackInfo } from 'src/types';
 import {
     BaseEntity,
     Column,
@@ -53,6 +53,13 @@ class StreamTrack extends BaseEntity {
 
     @ManyToOne(() => Track, (track) => track.streamTracks)
     track!: Track;
+
+    static fromTrackInfo(trackInfo: TrackInfo) {
+        const streamTrack = new StreamTrack();
+        streamTrack.streamId = trackInfo.id;
+        streamTrack.streamType = trackInfo.service;
+        return streamTrack;
+    }
 }
 
 export { Track, StreamTrack };

@@ -1,26 +1,39 @@
 import { isEqual } from 'lodash';
+import { Track } from 'src/track/track.entity';
 import { StreamService } from './StreamService';
 
 class TrackInfo {
-    service: StreamService;
     title: string;
-    id: string;
     artists: string[];
     album: string;
+    service: StreamService;
+    id: string;
 
     // constructor
     constructor(
-        service: StreamService,
         title: string,
-        id: string,
         artists: string[],
         album: string,
+        service: StreamService,
+        id: string,
     ) {
-        this.service = service;
         this.title = title;
-        this.id = id;
         this.artists = artists;
         this.album = album;
+        this.service = service;
+        this.id = id;
+    }
+
+    static fromEntity(track: Track): TrackInfo {
+        const { title, artists, album, streamTracks } = track;
+        const artistList = artists.map((artist) => artist.name);
+        return new TrackInfo(
+            title,
+            artistList,
+            album.title,
+            streamTracks[0].streamType,
+            streamTracks[0].streamId,
+        );
     }
 
     isEqual(trackInfo: TrackInfo): Boolean {

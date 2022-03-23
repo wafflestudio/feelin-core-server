@@ -1,15 +1,17 @@
+import AuthData from './AuthData';
 import { StreamService } from './StreamService';
 
-class JwtTokenPair {
+class JwtTokenPair extends AuthData {
     accessToken: string;
     refreshToken: string;
 
     constructor(accessToken: string, refreshToken: string) {
+        super();
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
 
-    toCookieString(streamType: StreamService): string {
+    toString(streamType: StreamService): string {
         let cookies = [];
         if (streamType === 'flo') {
             cookies.push(

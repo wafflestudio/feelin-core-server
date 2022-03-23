@@ -1,6 +1,8 @@
 import { Protocol } from 'puppeteer';
+import AuthData from './AuthData';
+import { StreamService } from './StreamService';
 
-class CookieData {
+class CookieData extends AuthData {
     static cookieList = [
         'MAC',
         'MUG',
@@ -15,6 +17,7 @@ class CookieData {
     private data = {};
 
     constructor(data: Protocol.Network.Cookie[] | string) {
+        super();
         if (Array.isArray(data)) {
             data.filter((cookie) => {
                 return CookieData.cookieList.includes(cookie.name);
@@ -42,7 +45,7 @@ class CookieData {
         return new CookieData(data);
     }
 
-    toString(): string {
+    toString(streamType: StreamService): string {
         let cookies = [];
         for (let key of Object.keys(this.data)) {
             if (this.data[key] && CookieData.cookieList.includes(key)) {
