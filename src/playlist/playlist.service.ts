@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TrackService } from 'src/track/track.service';
 import { createPlaylistDto } from 'src/user/dto/create-playlist.dto';
 import { savePlaylistDto } from 'src/user/dto/save-playlist.dto';
 import { User } from 'src/user/user.entity';
@@ -15,7 +16,20 @@ export class PlaylistService {
         private playlistRepository: Repository<Playlist>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        private readonly trackService: TrackService,
     ) {}
+
+    async getMatchedTracks(playlist: Playlist) {
+        playlist.tracks.forEach(async (track) => {
+            const matchingStreamTracks =
+                await this.trackService.getMatchingTracks(track);
+            track.streamTracks = [
+                ...track.streamTracks,
+                ...matchingStreamTracks,
+            ];
+        });
+        return playlist;
+    }
 
     // TODO: Combine with getPlaylist & track matching algorithm
     async createPlaylist(userId: number, createDto: createPlaylistDto) {}
