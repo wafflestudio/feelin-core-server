@@ -15,7 +15,7 @@ async function getFirstRecentTracks(cookie: CookieData): Promise<{
             memberKey: cookie.getCookie('keyCookie'),
         },
         headers: {
-            Cookie: cookie.toString(),
+            Cookie: cookie.toString('melon'),
         },
     });
     const $ = cheerio.load(response.data);

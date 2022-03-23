@@ -22,7 +22,7 @@ async function getMyRecentTracks(cookie: CookieData) {
                     memberKey: cookie.getCookie('keyCookie'),
                 },
                 headers: {
-                    Cookie: cookie.toString(),
+                    Cookie: cookie.toString('melon'),
                     Referer: `${recentTrackUrl}?memberKey=${cookie.getCookie(
                         'keyCookie',
                     )}`,

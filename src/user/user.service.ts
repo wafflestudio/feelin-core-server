@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
-import { CookieData, StreamServiceEnum } from 'src/types';
+import { AuthData, CookieData, StreamServiceEnum } from 'src/types';
 import { asymmEncrypt, symmEncrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
 import { loginStreamDto } from './dto/login-stream.dto';
@@ -28,7 +28,7 @@ export class UserService {
             return;
         }
 
-        const cookieData: CookieData | null = await userFunction[
+        const cookieData: AuthData | null = await userFunction[
             streamType
         ].login(id, password);
         if (cookieData === undefined) {
@@ -42,7 +42,9 @@ export class UserService {
             return;
         }
 
-        const { data: cookie, key } = await symmEncrypt(cookieData.toString());
+        const { data: cookie, key } = await symmEncrypt(
+            cookieData.toString(streamType),
+        );
         const {
             data: symmKey,
             publicKey,

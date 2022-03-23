@@ -44,7 +44,7 @@ function scrapeMyMusicTrack($: cheerio.Root, el: cheerio.Element): TrackInfo {
             }
         });
 
-    return new TrackInfo('melon', title, id, artists, album);
+    return new TrackInfo(title, artists, album, 'melon', id);
 }
 
 export default scrapeMyMusicTrack;
