@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
-import { melonTrack } from 'src/track/functions';
+import { MelonTrackUtils } from 'src/track/functions/melon';
 import getFirstPlaylistTracks from './getFirstPlaylistTracks';
 
 const playlistPagingUrl = {
@@ -9,11 +9,14 @@ const playlistPagingUrl = {
 };
 const pageSize = 50;
 
-async function getPlaylist(type: 'base' | 'dj', playlistId: string) {
-    const { count, playlistTracks } = await getFirstPlaylistTracks(
-        type,
-        playlistId,
-    );
+async function getPlaylist(playlistId: string) {
+    const [type, id] = playlistId.split('::');
+    if (type != 'base' && type != 'dj') {
+        // FIXME: Better error message
+        throw new Error('Not supported playlist type');
+    }
+
+    const { count, playlistTracks } = await getFirstPlaylistTracks(type, id);
 
     let requestArr: Promise<AxiosResponse<any, any>>[] = [];
     for (let i = 1; i < Math.ceil(count / pageSize); i++) {
@@ -24,7 +27,7 @@ async function getPlaylist(type: 'base' | 'dj', playlistId: string) {
                     pageSize: pageSize,
                 },
                 headers: {
-                    Referer: `${playlistPagingUrl}?plylstSeq=${playlistId}`,
+                    Referer: `${playlistPagingUrl}?plylstSeq=${id}`,
                 },
             }),
         );
@@ -34,9 +37,11 @@ async function getPlaylist(type: 'base' | 'dj', playlistId: string) {
             const $ = cheerio.load(response.data);
             $('table > tbody > tr').each((_, el) => {
                 if (type === 'base') {
-                    playlistTracks.push(melonTrack.scrapeMyMusicTrack($, el));
+                    playlistTracks.push(
+                        MelonTrackUtils.scrapeMyMusicTrack($, el),
+                    );
                 } else if (type === 'dj') {
-                    playlistTracks.push(melonTrack.scrapeTrack($, el));
+                    playlistTracks.push(MelonTrackUtils.scrapeTrack($, el));
                 }
             });
         }
