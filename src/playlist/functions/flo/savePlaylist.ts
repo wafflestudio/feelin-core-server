@@ -13,7 +13,7 @@ async function savePlaylist(playlist: Playlist, tokenPair: JwtTokenPair) {
         },
         {
             headers: {
-                Cookie: tokenPair.toCookieString('flo'),
+                Cookie: tokenPair.toString('flo'),
                 'x-gm-access-token': tokenPair.accessToken,
             },
         },
@@ -36,7 +36,7 @@ async function savePlaylist(playlist: Playlist, tokenPair: JwtTokenPair) {
         },
         {
             headers: {
-                Cookie: tokenPair.toCookieString('flo'),
+                Cookie: tokenPair.toString('flo'),
                 'x-gm-access-token': tokenPair.accessToken,
             },
         },
