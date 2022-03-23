@@ -1,22 +1,20 @@
-type StreamService =
-    | 'melon'
-    | 'flo'
-    | 'genie'
-    | 'bugs'
-    | 'vibe'
-    | 'ytmusic'
-    | 'spotify'
-    | 'applemusic';
+type StreamService = 'melon' | 'flo';
+// | 'genie'
+// | 'bugs'
+// | 'vibe'
+// | 'ytmusic'
+// | 'spotify'
+// | 'applemusic';
 
-const StreamServiceEnum = [
+const StreamServiceEnum: StreamService[] = [
     'melon',
     'flo',
-    'genie',
-    'bugs',
-    'vibe',
-    'ytmusic',
-    'spotify',
-    'applemusic',
+    // 'genie',
+    // 'bugs',
+    // 'vibe',
+    // 'ytmusic',
+    // 'spotify',
+    // 'applemusic',
 ];
 
 export { StreamService, StreamServiceEnum };
