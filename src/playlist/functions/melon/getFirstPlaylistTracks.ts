@@ -1,6 +1,6 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
-import { melonTrack } from 'src/track/functions';
+import { MelonTrackUtils } from 'src/track/functions/melon';
 import { TrackInfo } from 'src/types';
 
 const playlistUrl = {
@@ -28,9 +28,9 @@ async function getFirstPlaylistTracks(
     const playlistTracks: TrackInfo[] = [];
     $('table > tbody > tr').each((_, el) => {
         if (type === 'base') {
-            playlistTracks.push(melonTrack.scrapeMyMusicTrack($, el));
+            playlistTracks.push(MelonTrackUtils.scrapeMyMusicTrack($, el));
         } else if (type === 'dj') {
-            playlistTracks.push(melonTrack.scrapeTrack($, el));
+            playlistTracks.push(MelonTrackUtils.scrapeTrack($, el));
         }
     });
 
