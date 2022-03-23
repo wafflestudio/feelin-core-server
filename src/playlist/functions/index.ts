@@ -1,9 +1,11 @@
-import flo from './flo';
-import melon from './melon';
+import { StreamService } from 'src/types';
+import { FloPlaylistManager } from './flo';
+import { MelonPlaylistManager } from './melon';
+import PlaylistManager from './PlaylistManager';
 
-const playlistFunction = {
-    melon,
-    flo,
+const PlaylistManagers: { [key in StreamService]: PlaylistManager } = {
+    flo: new FloPlaylistManager(),
+    melon: new MelonPlaylistManager(),
 };
 
-export default playlistFunction;
+export default PlaylistManagers;
