@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { StreamServiceEnum, TrackInfo } from 'src/types';
-import { matchTrack, trackManagers } from './functions';
+import { matchTracks, trackManagers } from './functions';
 import { StreamTrack, Track } from './track.entity';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class TrackService {
 
         const matchPromise: Promise<StreamTrack>[] = [];
         for (const searchResult of searchResults) {
-            const match = matchTrack(searchResult, reference);
+            const match = matchTracks(searchResult, reference);
             matchPromise.push(match);
         }
         const matches = await Promise.all(matchPromise);

@@ -1,6 +1,6 @@
 import { StreamService } from 'src/types';
 import FloTrackManager from './flo';
-import matchTrack from './matchTrack';
+import matchTracks from './matchTracks';
 import { MelonTrackManager } from './melon';
 import TrackManager from './TrackManager';
 
@@ -9,4 +9,4 @@ const trackManagers: { [key in StreamService]: TrackManager } = {
     flo: new FloTrackManager(),
 };
 
-export { trackManagers, matchTrack };
+export { trackManagers, matchTracks };
