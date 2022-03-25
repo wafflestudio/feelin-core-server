@@ -7,7 +7,7 @@ async function searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
     // Flo search API limits max 250 results at once
     const response = await axios.get(searchUrl, {
         params: {
-            keyword: track.title,
+            keyword: track.titleNoParan,
             searchType: 'TRACK',
             sortType: 'ACCURACY',
             size: 100,

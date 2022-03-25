@@ -2,10 +2,18 @@ import { isEqual } from 'lodash';
 import { Track } from 'src/track/track.entity';
 import { StreamService } from './StreamService';
 
+function preprocess(str: string, removeParans?: boolean): string {
+    if (removeParans) {
+        str = str.replace(/ *\([^)]*\) */g, '');
+    }
+    return str.trim().toLowerCase();
+}
 class TrackInfo {
     title: string;
+    titleNoParan: string;
     artists: string[];
     album: string;
+    albumNoParan: string;
     service: StreamService;
     id: string;
 
@@ -17,9 +25,11 @@ class TrackInfo {
         service: StreamService,
         id: string,
     ) {
-        this.title = title;
+        this.title = preprocess(title);
+        this.titleNoParan = preprocess(title, true);
         this.artists = artists;
-        this.album = album;
+        this.album = preprocess(album);
+        this.albumNoParan = preprocess(album, true);
         this.service = service;
         this.id = id;
     }
