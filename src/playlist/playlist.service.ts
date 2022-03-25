@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TrackService } from 'src/track/track.service';
 import { createPlaylistDto } from 'src/user/dto/create-playlist.dto';
@@ -20,14 +20,16 @@ export class PlaylistService {
     ) {}
 
     async getMatchedTracks(playlist: Playlist) {
-        playlist.tracks.forEach(async (track) => {
-            const matchingStreamTracks =
-                await this.trackService.getMatchingTracks(track);
-            track.streamTracks = [
-                ...track.streamTracks,
-                ...matchingStreamTracks,
-            ];
-        });
+        await Promise.all(
+            playlist.tracks.map(async (track) => {
+                const matchingStreamTracks =
+                    await this.trackService.getMatchingTracks(track);
+                track.streamTracks = [
+                    ...track.streamTracks,
+                    ...matchingStreamTracks,
+                ];
+            }),
+        );
         return playlist;
     }
 
@@ -41,29 +43,31 @@ export class PlaylistService {
     ) {
         const user = await this.userRepository.findOne({ id: userId });
         if (user === undefined) {
-            console.error(`no user with id ${userId} found`);
-            return;
+            throw new NotFoundException('Not Found', 'user not found');
         }
 
         const playlist = await this.playlistRepository.findOne({
             id: playlistId,
         });
         if (playlist === undefined) {
-            console.error(`no playlist with id ${playlistId} found`);
-            return;
+            throw new NotFoundException('Not Found', 'playlist not found');
         }
 
         const { symmKey, publicKey } = saveDto;
         if (user.streamAccounts === undefined) {
-            console.error(`no available streaming account exists`);
-            return;
+            throw new NotFoundException(
+                'Not Found',
+                'available streaming service account not found',
+            );
         }
         const account = user.streamAccounts.find(
             (account) => account.publicKey === publicKey,
         );
         if (account === undefined) {
-            console.error(`streaming account not found`);
-            return;
+            throw new NotFoundException(
+                'Not Found',
+                'streaming service account mathcing the key not found',
+            );
         }
 
         const key = await asymmDecrypt(symmKey, account.privateKey);
