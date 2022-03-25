@@ -6,6 +6,7 @@ import {
     Entity,
     JoinTable,
     ManyToMany,
+    ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -42,6 +43,9 @@ class StreamPlaylist extends BaseEntity {
 
     @Column({ unique: true })
     streamId!: string;
+
+    @ManyToOne(() => Playlist, (playlist) => playlist.streamPlaylists)
+    playlist!: Playlist;
 }
 
 export { Playlist, StreamPlaylist };

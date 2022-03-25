@@ -44,6 +44,7 @@ class StreamAlbum extends BaseEntity {
     @Column({ type: 'enum', enum: StreamServiceEnum })
     streamType!: StreamService;
 
+    @Column({ unique: true })
     streamId!: string;
 
     @ManyToOne(() => Album, (album) => album.streamAlbums)
