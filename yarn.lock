@@ -1033,6 +1033,11 @@
   resolved "https://registry.npmjs.org/@types/qs/-/qs-6.9.7.tgz"
   integrity sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw==
 
+"@types/random-useragent@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@types/random-useragent/-/random-useragent-0.3.1.tgz#1f0e1e08151f04d2c023ab77c8173dfa5b5049d2"
+  integrity sha512-yVz7897JjjwS6V+lmxlu8pktzNnNWgtF9MGxfaRfI8o+hQageO9K+0hfwr8PspdFJIIRE9KkLqp4o5tlQqv/0w==
+
 "@types/range-parser@*":
   version "1.2.4"
   resolved "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.4.tgz"
@@ -3751,6 +3756,11 @@ json-stable-stringify-without-jsonify@^1.0.1:
   resolved "https://registry.npmjs.org/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz"
   integrity sha1-nbe1lJatPzz+8wp1FC0tkwrXJlE=
 
+json-stringify-safe@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz#1296a2d58fd45f19a0f6ce01d65701e2c735b6eb"
+  integrity sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=
+
 json5@2.x, json5@^2.1.2:
   version "2.2.0"
   resolved "https://registry.npmjs.org/json5/-/json5-2.2.0.tgz"
@@ -4058,6 +4068,11 @@ mz@^2.4.0:
     any-promise "^1.0.0"
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
+
+n-gram@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/n-gram/-/n-gram-2.0.1.tgz#055adb9d4e12e16205b95e6213b9b865e611bc81"
+  integrity sha512-ECtaRCOsPvqdTMI7SAFVaPaHv1ofhGqstphMFDWF3yrOaJcFsaCTpTREjYaPYpMC1nzJdewuiqvYXGM9W+Radw==
 
 named-placeholders@^1.1.2:
   version "1.1.2"
@@ -4492,6 +4507,20 @@ queue-microtask@^1.2.2:
   version "1.2.3"
   resolved "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
+
+random-seed@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/random-seed/-/random-seed-0.3.0.tgz#d945f2e1f38f49e8d58913431b8bf6bb937556cd"
+  integrity sha1-2UXy4fOPSejViRNDG4v2u5N1Vs0=
+  dependencies:
+    json-stringify-safe "^5.0.1"
+
+random-useragent@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/random-useragent/-/random-useragent-0.5.0.tgz#83a92dfdfb2366972d0a1f81fc93d5ef85807ae8"
+  integrity sha512-FUMkqVdZeoSff5tErNL3FFGYXElDWZ1bEuedhm5u9MdCFwANriJWbHvDRYrLTOzp/fBsBGu5J1cWtDgifa97aQ==
+  dependencies:
+    random-seed "^0.3.0"
 
 randombytes@^2.1.0:
   version "2.1.0"
