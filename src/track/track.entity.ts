@@ -6,6 +6,7 @@ import {
     BaseEntity,
     Column,
     Entity,
+    Index,
     JoinTable,
     ManyToMany,
     ManyToOne,
@@ -42,6 +43,7 @@ class Track extends BaseEntity {
 }
 
 @Entity()
+@Index(['streamId', 'streamType'])
 class StreamTrack extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;

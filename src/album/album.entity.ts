@@ -5,6 +5,7 @@ import {
     BaseEntity,
     Column,
     Entity,
+    Index,
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
@@ -37,6 +38,7 @@ class Album extends BaseEntity {
 }
 
 @Entity()
+@Index(['streamId', 'streamType'])
 class StreamAlbum extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;

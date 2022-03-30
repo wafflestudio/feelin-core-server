@@ -5,6 +5,7 @@ import {
     BaseEntity,
     Column,
     Entity,
+    Index,
     ManyToMany,
     ManyToOne,
     OneToMany,
@@ -32,6 +33,7 @@ class Artist extends BaseEntity {
 }
 
 @Entity()
+@Index(['streamId', 'streamType'])
 class StreamArtist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
