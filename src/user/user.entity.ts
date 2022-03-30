@@ -34,9 +34,11 @@ class StreamAccount extends BaseEntity {
     @Column({ type: 'char', length: 64 })
     publicKey!: string;
 
+    // TODO: Better data type to save database space
     @Column({ type: 'varchar', length: 2000 })
     privateKey!: string;
 
+    // TODO: Better data type to save database space
     @Column({ type: 'varchar', length: 2000 })
     cookie!: string;
 
