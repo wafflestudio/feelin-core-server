@@ -10,6 +10,7 @@ import {
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
+    Unique,
 } from 'typeorm';
 import { StreamService, StreamServiceEnum } from 'src/types';
 
@@ -35,7 +36,7 @@ class Playlist extends BaseEntity {
 }
 
 @Entity()
-@Index(['streamId', 'streamType'])
+@Unique('STREAM_PLAYLIST_ID', ['streamId', 'streamType'])
 class StreamPlaylist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;

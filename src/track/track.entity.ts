@@ -6,12 +6,12 @@ import {
     BaseEntity,
     Column,
     Entity,
-    Index,
     JoinTable,
     ManyToMany,
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
+    Unique,
 } from 'typeorm';
 
 @Entity()
@@ -43,7 +43,7 @@ class Track extends BaseEntity {
 }
 
 @Entity()
-@Index(['streamId', 'streamType'])
+@Unique('STREAM_TRACK_ID', ['streamId', 'streamType'])
 class StreamTrack extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;

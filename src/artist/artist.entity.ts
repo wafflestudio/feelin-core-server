@@ -5,11 +5,11 @@ import {
     BaseEntity,
     Column,
     Entity,
-    Index,
     ManyToMany,
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
+    Unique,
 } from 'typeorm';
 
 @Entity()
@@ -33,7 +33,7 @@ class Artist extends BaseEntity {
 }
 
 @Entity()
-@Index(['streamId', 'streamType'])
+@Unique('STREAM_ARTIST_ID', ['streamId', 'streamType'])
 class StreamArtist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;

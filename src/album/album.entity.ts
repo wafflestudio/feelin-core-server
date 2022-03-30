@@ -5,10 +5,10 @@ import {
     BaseEntity,
     Column,
     Entity,
-    Index,
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
+    Unique,
 } from 'typeorm';
 
 @Entity()
@@ -38,7 +38,7 @@ class Album extends BaseEntity {
 }
 
 @Entity()
-@Index(['streamId', 'streamType'])
+@Unique('STREAM_ALBUM_ID', ['streamId', 'streamType'])
 class StreamAlbum extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
