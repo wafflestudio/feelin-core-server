@@ -23,12 +23,14 @@ async function savePlaylist(playlist: Playlist, tokenPair: JwtTokenPair) {
     }
 
     const playlistId = createResponse.data?.data?.id;
-    const trackIds = playlist.tracks.map(
-        (track) =>
-            track.streamTracks.find(
-                (streamTrack) => streamTrack.streamType === 'flo',
-            ).streamId,
-    );
+    const trackIds = playlist.tracks
+        .map(
+            (track) =>
+                track.streamTracks.find(
+                    (streamTrack) => streamTrack.streamType === 'flo',
+                ).streamId,
+        )
+        .filter((id) => id !== null); // Filter out un-found tracks
     const addResponse = await axios.post(
         createPlaylistUrl + `/${playlistId}/tracks`,
         {
