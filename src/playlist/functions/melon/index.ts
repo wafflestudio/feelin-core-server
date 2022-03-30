@@ -10,8 +10,7 @@ class MelonPlaylistManager extends PlaylistManager {
     }
 
     async getPlaylist(playlistId: string): Promise<Playlist> {
-        return new Playlist();
-        // return getPlaylist(playlistId);
+        return getPlaylist(playlistId);
     }
 }
 
