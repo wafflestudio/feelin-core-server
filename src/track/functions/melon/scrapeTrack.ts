@@ -1,4 +1,4 @@
-import { TrackInfo } from 'src/types';
+import TrackData from './TrackData';
 
 /**
  *
@@ -8,21 +8,24 @@ import { TrackInfo } from 'src/types';
  *
  * Use when scraping information for searching Tracks, scraping dj playlists
  */
-function scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackInfo {
-    const TITLE_NODE = 0;
-    const ARTIST_NODE = 1;
-    const ALBUM_NODE = 2;
+const TITLE_NODE = 0;
+const ARTIST_NODE = 1;
+const ALBUM_NODE = 2;
 
+function scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackData {
     let title: string;
-    let id: string;
+    let trackId: string;
     let artists: string[] = [];
+    let artistIds: string[] = [];
     let album: string;
+    let albumId: string;
+
     $(el)
         .find('td.t_left > div.wrap > div.ellipsis')
         .each((index, el) => {
             switch (index) {
                 case TITLE_NODE: {
-                    id = $(el)
+                    trackId = $(el)
                         .find('a.btn')
                         .attr('href')
                         .match(/\(\'(\w+)\'\)/)[1];
@@ -32,17 +35,19 @@ function scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackInfo {
                 case ARTIST_NODE: {
                     $(el)
                         .find('span > a')
-                        .each((j, el) => {
-                            const artistID: string = $(el)
+                        .each((_, el) => {
+                            const artistId = $(el)
                                 .attr('href')
                                 .match(/\(\'(\w+)\'\)/)[1];
-                            const artistName: string = $(el).text();
-                            artists.push(artistName);
+                            const artist: string = $(el).text();
+
+                            artists.push(artist);
+                            artistIds.push(artistId);
                         });
                     break;
                 }
                 case ALBUM_NODE: {
-                    const albumID: string = $(el)
+                    albumId = $(el)
                         .find('a')
                         .attr('href')
                         .match(/\(\'(\w+)\'\)/)[1];
@@ -52,7 +57,14 @@ function scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackInfo {
             }
         });
 
-    return new TrackInfo(title, artists, album, 'melon', id);
+    return {
+        title,
+        trackId,
+        artists,
+        artistIds,
+        album,
+        albumId,
+    };
 }
 
 export default scrapeTrack;

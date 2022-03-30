@@ -4,7 +4,6 @@ import randomUseragent from 'random-useragent';
 import { TrackInfo } from 'src/types';
 import scrapeTrack from './scrapeTrack';
 
-//?startIndex=1&pageSize=50&q=Straight%2BTo%2BYou&sort=weight&section=song&sectionId=&genreDir=
 const melonURL = 'https://www.melon.com/search/song/index.htm';
 
 async function searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
@@ -24,8 +23,8 @@ async function searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
     const $ = cheerio.load(response.data);
     let trackList: TrackInfo[] = [];
     $('table > tbody > tr').each((_, el) => {
-        const trackInfo = scrapeTrack($, el);
-        trackList.push(trackInfo);
+        const { title: track, trackId, artists, album } = scrapeTrack($, el);
+        trackList.push(new TrackInfo(track, artists, album, 'melon', trackId));
     });
 
     return trackList;

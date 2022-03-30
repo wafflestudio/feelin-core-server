@@ -1,7 +1,7 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { MelonTrackUtils } from 'src/track/functions/melon';
-import { TrackInfo } from 'src/types';
+import TrackData from 'src/track/functions/melon/TrackData';
 
 const playlistUrl = {
     dj: 'https://www.melon.com/mymusic/dj/mymusicdjplaylistview_inform.htm',
@@ -12,8 +12,9 @@ async function getFirstPlaylistTracks(
     type: 'base' | 'dj',
     playlistId: string,
 ): Promise<{
+    title: string;
     count: number;
-    playlistTracks: TrackInfo[];
+    trackData: TrackData[];
 }> {
     let response = await axios.get(playlistUrl[type], {
         params: {
@@ -25,18 +26,23 @@ async function getFirstPlaylistTracks(
     const count = $(
         '#conts > div.section_contin > div.page_header > h5 > span',
     ).text();
-    const playlistTracks: TrackInfo[] = [];
+    const title = $(
+        '#conts > div.section_info.d_djcol_list > div > div.entry > div.info > div.ellipsis.song_name',
+    ).text();
+    const trackData: TrackData[] = [];
+
     $('table > tbody > tr').each((_, el) => {
         if (type === 'base') {
-            playlistTracks.push(MelonTrackUtils.scrapeMyMusicTrack($, el));
+            trackData.push(MelonTrackUtils.scrapeMyMusicTrack($, el));
         } else if (type === 'dj') {
-            playlistTracks.push(MelonTrackUtils.scrapeTrack($, el));
+            trackData.push(MelonTrackUtils.scrapeTrack($, el));
         }
     });
 
     return {
+        title,
         count: parseInt(count, 10),
-        playlistTracks,
+        trackData,
     };
 }
 

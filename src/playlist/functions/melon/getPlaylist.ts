@@ -1,6 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
+import { Album, StreamAlbum } from 'src/album/album.entity';
+import { Artist, StreamArtist } from 'src/artist/artist.entity';
+import { Playlist, StreamPlaylist } from 'src/playlist/playlist.entity';
 import { MelonTrackUtils } from 'src/track/functions/melon';
+import { StreamTrack, Track } from 'src/track/track.entity';
 import getFirstPlaylistTracks from './getFirstPlaylistTracks';
 
 const playlistPagingUrl = {
@@ -9,14 +13,14 @@ const playlistPagingUrl = {
 };
 const pageSize = 50;
 
-async function getPlaylist(playlistId: string) {
-    const [type, id] = playlistId.split('::');
+async function getPlaylist(playlistId: string): Promise<Playlist> {
+    const [type, id] = playlistId.split(':');
     if (type != 'base' && type != 'dj') {
         // FIXME: Better error message
         throw new Error('Not supported playlist type');
     }
 
-    const { count, playlistTracks } = await getFirstPlaylistTracks(type, id);
+    const { title, count, trackData } = await getFirstPlaylistTracks(type, id);
 
     let requestArr: Promise<AxiosResponse<any, any>>[] = [];
     for (let i = 1; i < Math.ceil(count / pageSize); i++) {
@@ -32,20 +36,69 @@ async function getPlaylist(playlistId: string) {
             }),
         );
     }
+
     await axios.all(requestArr).then((responses) => {
         for (const response of responses) {
             const $ = cheerio.load(response.data);
             $('table > tbody > tr').each((_, el) => {
                 if (type === 'base') {
-                    playlistTracks.push(
-                        MelonTrackUtils.scrapeMyMusicTrack($, el),
-                    );
+                    trackData.push(MelonTrackUtils.scrapeMyMusicTrack($, el));
                 } else if (type === 'dj') {
-                    playlistTracks.push(MelonTrackUtils.scrapeTrack($, el));
+                    trackData.push(MelonTrackUtils.scrapeTrack($, el));
                 }
             });
         }
     });
+
+    const melonPlaylist = new StreamPlaylist();
+    melonPlaylist.streamType = 'melon';
+    melonPlaylist.streamId = playlistId;
+
+    const playlist = new Playlist();
+    playlist.title = title;
+
+    const tracks = trackData.map((data) => {
+        // Track entity
+        let streamTrack = new StreamTrack();
+        streamTrack.streamType = 'melon';
+        streamTrack.streamId = data?.trackId;
+
+        let track = new Track();
+        track.title = data?.title;
+        track.streamTracks = [streamTrack];
+
+        // Album entity
+        let streamAlbum = new StreamAlbum();
+        streamAlbum.streamId = data?.albumId;
+        streamAlbum.streamType = 'melon';
+
+        let album = new Album();
+        album.title = data?.album;
+        // TODO: Get date when parse from melon
+        // album.realeaseDate = new Date();
+        album.streamAlbums = [streamAlbum];
+
+        // Artists entity
+        const artists: Artist[] = [];
+        for (let i = 0; i < data?.artists?.length; i++) {
+            let streamArtist = new StreamArtist();
+            streamArtist.streamId = data?.artistIds[i];
+            streamArtist.streamType = 'melon';
+
+            let artist = new Artist();
+            artist.name = data?.artists[i];
+            artist.albums = [album];
+            artist.streamArtists = [streamArtist];
+            artists.push(artist);
+        }
+
+        track.album = album;
+        track.artists = artists;
+        return track;
+    });
+
+    playlist.tracks = tracks;
+    return playlist;
 }
 
 export default getPlaylist;
