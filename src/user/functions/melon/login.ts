@@ -46,7 +46,7 @@ async function login(id: string, password: string): Promise<CookieData | null> {
         return response.url() === responseUrl;
     });
 
-    let cookies = await page.cookies();
+    const cookies = await page.cookies();
     await browser.close();
 
     if (loginSuccess) {

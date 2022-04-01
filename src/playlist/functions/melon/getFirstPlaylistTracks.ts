@@ -16,7 +16,7 @@ async function getFirstPlaylistTracks(
     count: number;
     trackData: TrackData[];
 }> {
-    let response = await axios.get(playlistUrl[type], {
+    const response = await axios.get(playlistUrl[type], {
         params: {
             plylstSeq: playlistId,
         },

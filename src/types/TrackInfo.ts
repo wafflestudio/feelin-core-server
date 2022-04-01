@@ -46,7 +46,7 @@ class TrackInfo {
         );
     }
 
-    isEqual(trackInfo: TrackInfo): Boolean {
+    isEqual(trackInfo: TrackInfo): boolean {
         return (
             this.title == trackInfo.title &&
             isEqual(this.artists.sort(), trackInfo.artists.sort()) &&

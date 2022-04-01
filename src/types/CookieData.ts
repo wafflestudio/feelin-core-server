@@ -26,7 +26,7 @@ class CookieData extends AuthData {
             });
         } else if (typeof data === 'string') {
             const cookies = data.split('; ');
-            for (let cookie of cookies) {
+            for (const cookie of cookies) {
                 const splitCookie = cookie.split('=');
                 if (splitCookie.length != 2) {
                     console.error('wrong cookie format');
@@ -46,8 +46,8 @@ class CookieData extends AuthData {
     }
 
     toString(streamType: StreamService): string {
-        let cookies = [];
-        for (let key of Object.keys(this.data)) {
+        const cookies = [];
+        for (const key of Object.keys(this.data)) {
             if (this.data[key] && CookieData.cookieList.includes(key)) {
                 cookies.push(`${key}=${this.data[key]}`);
             }

@@ -20,7 +20,7 @@ function shareId2ApiId(id: string): string {
         throw new Error('Invalid ID from shared url');
     }
     let apiId = '';
-    for (let c of id) {
+    for (const c of id) {
         const val = c.charCodeAt(0);
         // a-z -> 0-25
         if (97 <= val && val <= 122) {
@@ -43,7 +43,7 @@ function detailId2ApiId(id: string): string {
         throw new Error('Invalid ID from detail page url');
     }
     let apiId = '';
-    for (let c of id) {
+    for (const c of id) {
         apiId += convTable[c];
     }
     return apiId;

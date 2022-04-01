@@ -27,10 +27,10 @@ const loginUrl =
     'https://member.melon.com/muid/web/login/login_informProcs.htm';
 
 function getCookieString(): string {
-    let cookies: string[] = [];
+    const cookies: string[] = [];
     let PCID = '';
     const length = 10;
-    let n = [];
+    const n = [];
     for (let j = 0; j < length; j++) {
         n[j] = '' + Math.random();
     }
@@ -46,7 +46,7 @@ function getCookieString(): string {
 }
 
 async function getPublicKey(cookie: string): Promise<publicKeyConfig> {
-    let response = await axios.post(
+    const response = await axios.post(
         RSAPublicKeyUrl,
         {},
         {
@@ -57,7 +57,7 @@ async function getPublicKey(cookie: string): Promise<publicKeyConfig> {
             withCredentials: true,
         },
     );
-    let data: publicKeyResponse = response.data;
+    const data: publicKeyResponse = response.data;
     return {
         config: {
             n: Buffer.from(data.publickey, 'hex'),
@@ -68,19 +68,19 @@ async function getPublicKey(cookie: string): Promise<publicKeyConfig> {
 }
 
 async function login(id: string, password: string) {
-    let re = /[\s]+/;
+    const re = /[\s]+/;
     if (re.test(id) || re.test(password)) {
         console.error('There is a spacing');
         return;
     }
 
-    let cookie = getCookieString();
+    const cookie = getCookieString();
     const publicKey = await getPublicKey(cookie);
     const key = new NodeRSA();
     key.importKey(publicKey.config, 'components-public');
 
-    let encryptedId = key.encrypt(id, 'hex');
-    let encryptedPwd = key.encrypt(password, 'hex');
+    const encryptedId = key.encrypt(id, 'hex');
+    const encryptedPwd = key.encrypt(password, 'hex');
     const data = {
         saveID: 'N',
         returnPage: 'https://www.melon.com/',

@@ -15,9 +15,9 @@ async function savePlaylist(playlist: Playlist, cookieData: CookieData) {
         repntImagePath: '',
         repntImagePathDefaultYn: 'N',
     };
-    let data = new URLSearchParams(params);
+    const data = new URLSearchParams(params);
     tracks.map((track) => {
-        let melonId = track.streamTracks.find(
+        const melonId = track.streamTracks.find(
             (streamTrack) => streamTrack?.streamType === 'melon',
         )?.streamId;
         // Filter out un-found tracks

@@ -12,7 +12,7 @@ class JwtTokenPair extends AuthData {
     }
 
     toString(streamType: StreamService): string {
-        let cookies = [];
+        const cookies = [];
         if (streamType === 'flo') {
             cookies.push(
                 `FLO_AUT=${this.accessToken}`,

@@ -22,7 +22,7 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
     const { title, count, trackData } = await getFirstPlaylistTracks(type, id);
 
-    let requestArr: Promise<AxiosResponse<any, any>>[] = [];
+    const requestArr: Promise<AxiosResponse<any, any>>[] = [];
     for (let i = 1; i < Math.ceil(count / pageSize); i++) {
         requestArr.push(
             axios.get(playlistPagingUrl[type], {
@@ -59,20 +59,20 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
     const tracks = trackData.map((data) => {
         // Track entity
-        let streamTrack = new StreamTrack();
+        const streamTrack = new StreamTrack();
         streamTrack.streamType = 'melon';
         streamTrack.streamId = data?.trackId;
 
-        let track = new Track();
+        const track = new Track();
         track.title = data?.title;
         track.streamTracks = [streamTrack];
 
         // Album entity
-        let streamAlbum = new StreamAlbum();
+        const streamAlbum = new StreamAlbum();
         streamAlbum.streamId = data?.albumId;
         streamAlbum.streamType = 'melon';
 
-        let album = new Album();
+        const album = new Album();
         album.title = data?.album;
         // TODO: Get date when parse from melon
         // album.realeaseDate = new Date();
@@ -81,11 +81,11 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
         // Artists entity
         const artists: Artist[] = [];
         for (let i = 0; i < data?.artists?.length; i++) {
-            let streamArtist = new StreamArtist();
+            const streamArtist = new StreamArtist();
             streamArtist.streamId = data?.artistIds[i];
             streamArtist.streamType = 'melon';
 
-            let artist = new Artist();
+            const artist = new Artist();
             artist.name = data?.artists[i];
             artist.albums = [album];
             artist.streamArtists = [streamArtist];

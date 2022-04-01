@@ -11,31 +11,31 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
     const res = await axios.get(playlistUrl + playlistId);
     const playlistData = res.data?.data;
 
-    let floPlaylist = new StreamPlaylist();
+    const floPlaylist = new StreamPlaylist();
     floPlaylist.streamType = 'flo';
     floPlaylist.streamId = playlistData?.id;
 
-    let playlist = new Playlist();
+    const playlist = new Playlist();
     playlist.title = playlistData?.name;
     playlist.streamPlaylists = [floPlaylist];
 
-    let tracks = playlistData?.trackList?.map((trackData) => {
+    const tracks = playlistData?.trackList?.map((trackData) => {
         // Track entity
-        let streamTrack = new StreamTrack();
+        const streamTrack = new StreamTrack();
         streamTrack.streamType = 'flo';
         streamTrack.streamId = trackData?.id;
 
-        let track = new Track();
+        const track = new Track();
         track.title = trackData?.name;
         track.streamTracks = [streamTrack];
 
         // Album entity
         const albumData = trackData?.album;
-        let streamAlbum = new StreamAlbum();
+        const streamAlbum = new StreamAlbum();
         streamAlbum.streamId = albumData?.id;
         streamAlbum.streamType = 'flo';
 
-        let album = new Album();
+        const album = new Album();
         album.title = albumData?.title;
         album.realeaseDate = convDate(albumData?.releaseYmd);
         album.streamAlbums = [streamAlbum];
@@ -43,11 +43,11 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
         // Artists entity
         const artistsData = trackData?.artistList;
         const artists = artistsData?.map((artistData) => {
-            let streamArtist = new StreamArtist();
+            const streamArtist = new StreamArtist();
             streamArtist.streamId = artistData?.id;
             streamArtist.streamType = 'flo';
 
-            let artist = new Artist();
+            const artist = new Artist();
             artist.name = artistData?.name;
             artist.albums = [album];
             artist.streamArtists = [streamArtist];

@@ -21,7 +21,7 @@ async function searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
         },
     });
     const $ = cheerio.load(response.data);
-    let trackList: TrackInfo[] = [];
+    const trackList: TrackInfo[] = [];
     $('table > tbody > tr').each((_, el) => {
         const { title: track, trackId, artists, album } = scrapeTrack($, el);
         trackList.push(new TrackInfo(track, artists, album, 'melon', trackId));
