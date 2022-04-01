@@ -1,7 +1,6 @@
 import { IsString } from 'class-validator';
-import { StreamService } from 'src/types';
 
-export class savePlaylistDto {
+export class SavePlaylistDto {
     @IsString()
     symmKey: string;
 
