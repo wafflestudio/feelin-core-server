@@ -6,7 +6,7 @@ import {
     MockRepository,
     testRepositoryModule,
 } from 'src/utils/testUtilModules';
-import { loginStreamDto } from './dto/login-stream.dto';
+import { LoginStreamDto } from './dto/login-stream.dto';
 import userFunction from './functions';
 import { UserController } from './user.controller';
 import { User } from './user.entity';
@@ -65,7 +65,7 @@ describe('UserService', () => {
             process.env.FLO_ID,
             process.env.FLO_PWD,
         );
-        console.log(token.toCookieString('flo'));
+        console.log(token.toString('flo'));
     });
 
     // it('should connect melon account', async () => {

@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TrackService } from 'src/track/track.service';
-import { createPlaylistDto } from 'src/user/dto/create-playlist.dto';
-import { savePlaylistDto } from 'src/user/dto/save-playlist.dto';
+import { CreatePlaylistDto } from './dto/create-playlist.dto';
+import { SavePlaylistDto } from 'src/user/dto/save-playlist.dto';
 import { User } from 'src/user/user.entity';
 import { asymmDecrypt, symmDecrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
@@ -33,13 +33,12 @@ export class PlaylistService {
         return playlist;
     }
 
-    // TODO: Combine with getPlaylist & track matching algorithm
-    async createPlaylist(userId: number, createDto: createPlaylistDto) {}
+    async createPlaylist(createPlaylistDto: CreatePlaylistDto) {}
 
     async savePlaylist(
         userId: number,
         playlistId: number,
-        saveDto: savePlaylistDto,
+        savePlaylistDto: SavePlaylistDto,
     ) {
         const user = await this.userRepository.findOne({ id: userId });
         if (user === undefined) {
@@ -53,7 +52,7 @@ export class PlaylistService {
             throw new NotFoundException('Not Found', 'playlist not found');
         }
 
-        const { symmKey, publicKey } = saveDto;
+        const { symmKey, publicKey } = savePlaylistDto;
         if (user.streamAccounts === undefined) {
             throw new NotFoundException(
                 'Not Found',

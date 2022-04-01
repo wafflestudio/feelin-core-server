@@ -9,7 +9,7 @@ import { createHash } from 'crypto';
 import { AuthData, CookieData, StreamServiceEnum } from 'src/types';
 import { asymmEncrypt, symmEncrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
-import { loginStreamDto } from './dto/login-stream.dto';
+import { LoginStreamDto } from './dto/login-stream.dto';
 import userFunction from './functions';
 import { StreamAccount, User } from './user.entity';
 
@@ -21,7 +21,7 @@ export class UserService {
 
     async loginStreamAccount(
         userId: number,
-        loginDto: loginStreamDto,
+        loginDto: LoginStreamDto,
     ): Promise<{
         symmKey: string;
         publicKey: string;
