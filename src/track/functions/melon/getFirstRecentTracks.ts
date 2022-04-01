@@ -10,7 +10,7 @@ async function getFirstRecentTracks(cookie: CookieData): Promise<{
     count: number;
     recentTracks: TrackInfo[];
 }> {
-    let response = await axios.get(recentTrackUrl, {
+    const response = await axios.get(recentTrackUrl, {
         params: {
             memberKey: cookie.getCookie('keyCookie'),
         },
@@ -21,9 +21,17 @@ async function getFirstRecentTracks(cookie: CookieData): Promise<{
     const $ = cheerio.load(response.data);
     const count = $('#conts > div.wrab_list_info > div > span > span').text();
 
-    let recentTracks: TrackInfo[] = [];
+    const recentTracks: TrackInfo[] = [];
     $('table > tbody > tr').each((_, el) => {
-        recentTracks.push(scrapeMyMusicTrack($, el));
+        const {
+            title: track,
+            trackId,
+            artists,
+            album,
+        } = scrapeMyMusicTrack($, el);
+        recentTracks.push(
+            new TrackInfo(track, artists, album, 'melon', trackId),
+        );
     });
 
     return {

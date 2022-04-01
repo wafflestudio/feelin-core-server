@@ -15,8 +15,8 @@ const ALBUM_NODE = 2;
 function scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackData {
     let title: string;
     let trackId: string;
-    let artists: string[] = [];
-    let artistIds: string[] = [];
+    const artists: string[] = [];
+    const artistIds: string[] = [];
     let album: string;
     let albumId: string;
 

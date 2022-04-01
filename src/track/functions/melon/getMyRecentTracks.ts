@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
-import { CookieData } from 'src/types';
+import { CookieData, TrackInfo } from 'src/types';
 import getFirstRecentTracks from './getFirstRecentTracks';
 import scrapeMyMusicTrack from './scrapeMyMusicTrack';
 
@@ -12,7 +12,7 @@ async function getMyRecentTracks(cookie: CookieData) {
     const pageSize = 50;
 
     const { count, recentTracks } = await getFirstRecentTracks(cookie);
-    let requestArr: Promise<AxiosResponse<any, any>>[] = [];
+    const requestArr: Promise<AxiosResponse<any, any>>[] = [];
     for (let i = 1; i < Math.ceil(count / pageSize); i++) {
         requestArr.push(
             axios.get(recentTrackListUrl, {
@@ -34,7 +34,15 @@ async function getMyRecentTracks(cookie: CookieData) {
         for (const response of responses) {
             const $ = cheerio.load(response.data);
             $('table > tbody > tr').each((_, el) => {
-                recentTracks.push(scrapeMyMusicTrack($, el));
+                const {
+                    title: track,
+                    trackId,
+                    artists,
+                    album,
+                } = scrapeMyMusicTrack($, el);
+                recentTracks.push(
+                    new TrackInfo(track, artists, album, 'melon', trackId),
+                );
             });
         }
     });
