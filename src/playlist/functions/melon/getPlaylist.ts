@@ -15,7 +15,7 @@ const pageSize = 50;
 
 async function getPlaylist(playlistId: string): Promise<Playlist> {
     const [type, id] = playlistId.split(':');
-    if (type != 'base' && type != 'dj') {
+    if (type != 'my' && type != 'dj') {
         // FIXME: Better error message
         throw new Error('Not supported playlist type');
     }
@@ -41,7 +41,7 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
         for (const response of responses) {
             const $ = cheerio.load(response.data);
             $('table > tbody > tr').each((_, el) => {
-                if (type === 'base') {
+                if (type === 'my') {
                     trackData.push(MelonTrackUtils.scrapeMyMusicTrack($, el));
                 } else if (type === 'dj') {
                     trackData.push(MelonTrackUtils.scrapeTrack($, el));

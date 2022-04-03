@@ -9,7 +9,7 @@ const playlistUrl = {
 };
 
 async function getFirstPlaylistTracks(
-    type: 'base' | 'dj',
+    type: 'my' | 'dj',
     playlistId: string,
 ): Promise<{
     title: string;
@@ -32,7 +32,7 @@ async function getFirstPlaylistTracks(
     const trackData: TrackData[] = [];
 
     $('table > tbody > tr').each((_, el) => {
-        if (type === 'base') {
+        if (type === 'my') {
             trackData.push(MelonTrackUtils.scrapeMyMusicTrack($, el));
         } else if (type === 'dj') {
             trackData.push(MelonTrackUtils.scrapeTrack($, el));
