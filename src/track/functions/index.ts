@@ -4,9 +4,10 @@ import matchTracks from './matchTracks';
 import { MelonTrackManager } from './melon';
 import TrackManager from './TrackManager';
 
-const trackManagers: { [key in StreamService]: TrackManager } = {
+const TrackManagers: { [key in StreamService]: TrackManager } = {
     melon: new MelonTrackManager(),
     flo: new FloTrackManager(),
 };
 
-export { trackManagers, matchTracks };
+export default TrackManagers;
+export { matchTracks };

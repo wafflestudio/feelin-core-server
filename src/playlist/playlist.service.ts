@@ -6,10 +6,8 @@ import { SavePlaylistDto } from 'src/user/dto/save-playlist.dto';
 import { User } from 'src/user/user.entity';
 import { asymmDecrypt, symmDecrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
-import playlistFunction from './functions';
+import PlaylistManagers, { getStreamAndId } from './functions';
 import { Playlist, StreamPlaylist } from './playlist.entity';
-import getStreamAndId from './functions/getStreamAndId';
-import PlaylistManagers from './functions';
 
 @Injectable()
 export class PlaylistService {
@@ -103,7 +101,7 @@ export class PlaylistService {
         const key = await asymmDecrypt(symmKey, account.privateKey);
         const cookie = await symmDecrypt(account.cookie, key);
 
-        const response = await playlistFunction[
+        const response = await PlaylistManagers[
             account.streamType
         ].savePlaylist(playlist, cookie);
         return response;

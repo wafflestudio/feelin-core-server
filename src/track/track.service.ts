@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { StreamServiceEnum, TrackInfo } from 'src/types';
-import { matchTracks, trackManagers } from './functions';
+import TrackManagers, { matchTracks } from './functions';
 import { StreamTrack, Track } from './track.entity';
 
 @Injectable()
 export class TrackService {
+    constructor() {}
+
     async getMatchingTracks(track: Track): Promise<StreamTrack[]> {
         const { streamTracks } = track;
         const reference = TrackInfo.fromEntity(track);
@@ -15,7 +17,7 @@ export class TrackService {
                 continue;
             }
             searchPromise.push(
-                trackManagers[streamType]?.searchTrack(reference),
+                TrackManagers[streamType]?.searchTrack(reference),
             );
         }
         const searchResults = await Promise.all(searchPromise);
