@@ -11,31 +11,32 @@ const convTable = {
     y: '9',
 };
 
-const shareRe = /^[a-zA-Z0-9]/;
-const detailRe = /^[danielzohy]/;
-const apiRe = /^[0-9]/;
+const shareRe = /[^a-zA-Z0-9]/;
+const detailRe = /[^danielzohy]/;
+const apiRe = /[^0-9]/;
 
 function shareId2ApiId(id: string): string {
     if (shareRe.test(id)) {
         throw new Error('Invalid ID from shared url');
     }
-    let apiId = '';
+    let apiId = 0;
     for (const c of id) {
+        apiId *= 62;
         const val = c.charCodeAt(0);
         // a-z -> 0-25
         if (97 <= val && val <= 122) {
-            apiId += (val - 97).toString();
+            apiId += val - 97;
         }
-        // A-Z -> 26-52
+        // A-Z -> 26-51
         else if (65 <= val && val <= 90) {
-            apiId += (val - 39).toString();
+            apiId += val - 39;
         }
-        // 0-9 -> 53-62
+        // 0-9 -> 52-61
         else if (48 <= val && val <= 57) {
-            apiId += (val + 4).toString();
+            apiId += val + 4;
         }
     }
-    return apiId;
+    return apiId.toString();
 }
 
 function detailId2ApiId(id: string): string {
