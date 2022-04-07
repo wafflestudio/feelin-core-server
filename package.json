@@ -100,7 +100,7 @@
       "^src/(.*)$": "<rootDir>/$1"
     },
     "setupFiles": [
-      "<rootDir>/../test/setupEnvVars.ts"
+      "<rootDir>/test/setupEnvVars.ts"
     ],
     "transformIgnorePatterns": [
       "/node_modules/(?!n-gram)"
