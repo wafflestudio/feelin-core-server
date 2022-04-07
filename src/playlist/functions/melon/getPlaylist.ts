@@ -7,9 +7,13 @@ import { MelonTrackUtils } from 'src/track/functions/melon';
 import { StreamTrack, Track } from 'src/track/track.entity';
 import getFirstPlaylistTracks from './getFirstPlaylistTracks';
 
+const playlistUrl = {
+    dj: 'https://www.melon.com/mymusic/dj/mymusicdjplaylistview_inform.htm',
+    norm: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm',
+};
 const playlistPagingUrl = {
     dj: 'https://www.melon.com/dj/playlist/djplaylist_listsong.htm?',
-    norm: '',
+    norm: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_listPagingSong.htm',
 };
 const pageSize = 50;
 
@@ -31,7 +35,7 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
                     pageSize: pageSize,
                 },
                 headers: {
-                    Referer: `${playlistPagingUrl}?plylstSeq=${id}`,
+                    Referer: `${playlistUrl[type]}?plylstSeq=${id}`,
                 },
             }),
         );
