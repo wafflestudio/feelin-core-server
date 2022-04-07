@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
-import { AuthData, CookieData, StreamServiceEnum } from 'src/types';
+import { AuthData, StreamServiceEnum } from 'src/types';
 import { asymmEncrypt, symmEncrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
 import { LoginStreamDto } from './dto/login-stream.dto';
-import userFunction from './functions';
+import UserManagers from './functions';
 import { StreamAccount, User } from './user.entity';
 
 @Injectable()
@@ -35,7 +35,7 @@ export class UserService {
             );
         }
 
-        const cookieData: AuthData | null = await userFunction[
+        const cookieData: AuthData | null = await UserManagers[
             streamType
         ].login(id, password);
         if (cookieData === undefined) {
