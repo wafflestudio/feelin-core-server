@@ -11,7 +11,7 @@ async function getStreamAndId(playlistUrl: string): Promise<{
     let url = new URL(playlistUrl);
     const host = url.host;
     let streamType: StreamService;
-    let playlistId: string;
+    let playlistId = '';
     switch (host) {
         // Melon
         // TODO: Better error message
@@ -51,7 +51,9 @@ async function getStreamAndId(playlistUrl: string): Promise<{
             if (url.searchParams.get('type') === 'djc') {
                 playlistId += 'dj:';
             } else if (url.searchParams.get('type') === 'ply') {
-                playlistId += 'my:';
+                playlistId += 'user:';
+            } else {
+                throw new Error('not playlist link');
             }
 
             if (url.searchParams.get('sId')) {
@@ -60,8 +62,8 @@ async function getStreamAndId(playlistUrl: string): Promise<{
             break;
         }
 
+        // TODO: Mobile web (low priority)
         case 'm2.melon.com': {
-            // TODO: Mobile web (low priority)
         }
 
         case 'www.melon.com': {
@@ -81,7 +83,7 @@ async function getStreamAndId(playlistUrl: string): Promise<{
                 paths[2] === 'playlist' &&
                 paths[3] === 'mymusicplaylistview_inform.htm'
             ) {
-                playlistId += 'my:';
+                playlistId += 'user:';
             } else if (
                 paths[2] === 'dj' &&
                 paths[3] === 'mymusicdjplaylistview_inform.htm'
