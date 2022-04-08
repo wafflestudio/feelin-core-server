@@ -17,9 +17,7 @@ class User extends BaseEntity {
     @Column()
     username!: string;
 
-    @OneToMany(() => StreamAccount, (account) => account.user, {
-        cascade: true,
-    })
+    @OneToMany(() => StreamAccount, (account) => account.user)
     streamAccounts: StreamAccount[];
 }
 

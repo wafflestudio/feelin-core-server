@@ -4,7 +4,6 @@ import {
     BaseEntity,
     Column,
     Entity,
-    Index,
     JoinTable,
     ManyToMany,
     ManyToOne,
@@ -22,12 +21,7 @@ class Playlist extends BaseEntity {
     @Column()
     title!: string;
 
-    @Column({ nullable: false, default: '' })
-    description: string;
-
-    @ManyToMany(() => Track, (track) => track.id, {
-        cascade: true,
-    })
+    @ManyToMany(() => Track, (track) => track.id)
     @JoinTable()
     tracks!: Track[];
 

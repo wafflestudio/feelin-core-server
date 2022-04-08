@@ -19,15 +19,13 @@ class Album extends BaseEntity {
     @Column()
     title!: string;
 
-    @Column()
-    description!: string;
+    // @Column()
+    // description!: string;
 
     @Column({ type: 'datetime' })
     realeaseDate!: Date;
 
-    @OneToMany(() => StreamAlbum, (streamTrack) => streamTrack.album, {
-        cascade: true,
-    })
+    @OneToMany(() => StreamAlbum, (streamTrack) => streamTrack.album)
     streamAlbums!: StreamAlbum[];
 
     @ManyToOne(() => Artist, (artist) => artist.albums)

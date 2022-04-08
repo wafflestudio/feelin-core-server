@@ -25,20 +25,14 @@ class Track extends BaseEntity {
     @ManyToMany(() => Playlist, (playlist) => playlist.id)
     playlists: Playlist[];
 
-    @OneToMany(() => StreamTrack, (streamTrack) => streamTrack.track, {
-        cascade: true,
-    })
+    @OneToMany(() => StreamTrack, (streamTrack) => streamTrack.track)
     streamTracks!: StreamTrack[];
 
-    @ManyToMany(() => Artist, (artist) => artist.id, {
-        cascade: true,
-    })
+    @ManyToMany(() => Artist, (artist) => artist.id)
     @JoinTable()
     artists!: Artist[];
 
-    @ManyToOne(() => Album, (album) => album.tracks, {
-        cascade: true,
-    })
+    @ManyToOne(() => Album, (album) => album.tracks)
     album!: Album;
 }
 

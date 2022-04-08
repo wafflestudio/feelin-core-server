@@ -20,9 +20,7 @@ class Artist extends BaseEntity {
     @Column()
     name!: string;
 
-    @OneToMany(() => StreamArtist, (streamArtist) => streamArtist.artist, {
-        cascade: true,
-    })
+    @OneToMany(() => StreamArtist, (streamArtist) => streamArtist.artist)
     streamArtists!: StreamArtist[];
 
     @OneToMany(() => Album, (album) => album.artist)
