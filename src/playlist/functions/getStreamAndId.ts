@@ -1,4 +1,5 @@
 import { StreamService } from 'src/types';
+import { detailId2ApiId, shareId2ApiId } from 'src/utils/floUtils';
 import { URL } from 'url';
 // TODO: Better import scheme
 const fetch = (...args) =>
@@ -63,8 +64,7 @@ async function getStreamAndId(playlistUrl: string): Promise<{
         }
 
         // TODO: Mobile web (low priority)
-        case 'm2.melon.com': {
-        }
+        case 'm2.melon.com':
 
         case 'www.melon.com': {
             streamType = 'melon';
@@ -102,8 +102,52 @@ async function getStreamAndId(playlistUrl: string): Promise<{
         }
 
         // Flo
-        // http://flomuz.io/s/r.hABnN1Sr4
+        // http://flomuz.io/s/[r,d]{id}
+        case 'flomuz.io': {
+            streamType = 'flo';
+            const paths = url.pathname.split('/');
+            if (
+                !(
+                    paths.length === 3 &&
+                    paths[0] === '' &&
+                    paths[1] === 's' &&
+                    paths[2].split('.').length === 2
+                )
+            ) {
+                throw new Error('Flo url malformed');
+            }
+            const [type, id] = paths[2].split('.');
+            if (type === 'r') {
+                playlistId += 'user:';
+            } else if (type === 'd') {
+                playlistId += 'dj:';
+            } else {
+                throw new Error('Flo url malformed');
+            }
+            playlistId += shareId2ApiId(id);
+            break;
+        }
+
+        // https://www.music-flo.com/detail/channel/{id}
+        case 'www.music-flo.com': {
+            streamType = 'flo';
+            const paths = url.pathname.split('/');
+            if (
+                !(
+                    paths.length === 4 &&
+                    paths[0] === '' &&
+                    paths[1] === 'detail' &&
+                    paths[2] === 'channel'
+                )
+            ) {
+                throw new Error('Flo url malformed');
+            }
+            playlistId += 'dj:';
+            playlistId += detailId2ApiId(paths[3]);
+            break;
+        }
     }
+
     return {
         streamType,
         playlistId,

@@ -1,5 +1,6 @@
-import { AuthData, TrackInfo } from 'src/types';
+import { AuthData, JwtTokenPair, TrackInfo } from 'src/types';
 import TrackManager from '../TrackManager';
+import getMyRecentTracks from './getMyRecentTracks';
 import searchTrack from './searchTrack';
 
 class FloTrackManager extends TrackManager {
@@ -7,7 +8,9 @@ class FloTrackManager extends TrackManager {
         return searchTrack(track);
     }
 
-    async getMyRecentTracks(authToken: AuthData) {}
+    async getMyRecentTracks(authToken: AuthData) {
+        return getMyRecentTracks(authToken as JwtTokenPair);
+    }
 }
 
 export default FloTrackManager;

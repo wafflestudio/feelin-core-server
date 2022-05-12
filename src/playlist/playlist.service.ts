@@ -5,7 +5,7 @@ import { CreatePlaylistDto } from './dto/create-playlist.dto';
 import { SavePlaylistDto } from 'src/user/dto/save-playlist.dto';
 import { User } from 'src/user/user.entity';
 import { asymmDecrypt, symmDecrypt } from 'src/utils/cipher';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import PlaylistManagers, { getStreamAndId } from './functions';
 import { Playlist, StreamPlaylist } from './playlist.entity';
 
@@ -42,7 +42,7 @@ export class PlaylistService {
         const { streamType, playlistId } = await getStreamAndId(playlistUrl);
 
         const streamPlaylist = await this.streamPlaylistRepository.findOne({
-            where: { streamType: streamType, streamId: playlistId },
+            where: { streamId: playlistId, streamType: streamType },
             relations: ['playlist'],
         });
         // If playlist is already saved in database
@@ -55,11 +55,16 @@ export class PlaylistService {
             playlistId,
         );
         // Match tracks with other streaming services
-        await this.getMatchedTracks(playlist);
+        await this.getMatchedTracks(playlist).catch((error) => {
+            console.error(error);
+        });
 
         // Save the playlist
         // TODO: Do some checks when saving playlist
         playlist = await this.playlistRepository.save(playlist);
+        for (const track of playlist.tracks) {
+            getConnection();
+        }
 
         return playlist;
     }

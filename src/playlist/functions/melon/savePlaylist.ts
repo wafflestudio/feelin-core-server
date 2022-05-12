@@ -6,11 +6,12 @@ const createPlaylistUrl =
     'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insertAction.json';
 
 async function savePlaylist(playlist: Playlist, cookieData: CookieData) {
-    const { title, description, tracks } = playlist;
+    const { title, tracks } = playlist;
 
     const params = {
         plylstTitle: title,
-        playlistDesc: description,
+        // FIXME: description should come from post
+        playlistDesc: '',
         openYn: 'Y',
         repntImagePath: '',
         repntImagePathDefaultYn: 'N',

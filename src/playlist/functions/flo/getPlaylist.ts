@@ -38,9 +38,9 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
     let trackList;
     if (type == 'user') {
-        trackList = playlistData?.trackList;
-    } else if (type == 'dj') {
         trackList = playlistData?.track?.list;
+    } else if (type == 'dj') {
+        trackList = playlistData?.trackList;
     }
 
     const tracks = trackList?.map((trackData) => {
