@@ -3,7 +3,7 @@ import cheerio from 'cheerio';
 import { Album, StreamAlbum } from 'src/album/album.entity';
 import { Artist, StreamArtist } from 'src/artist/artist.entity';
 import { Playlist, StreamPlaylist } from 'src/playlist/playlist.entity';
-import { MelonTrackUtils } from 'src/track/functions/melon';
+import { MelonTrackUtils } from 'src/track-scraper/melon';
 import { StreamTrack, Track } from 'src/track/track.entity';
 import getFirstPlaylistTracks from './getFirstPlaylistTracks';
 

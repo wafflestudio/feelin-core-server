@@ -21,6 +21,14 @@ import { ArtistService } from './artist/artist.service';
 import { AlbumService } from './album/album.service';
 import { AlbumModule } from './album/album.module';
 import { ArtistModule } from './artist/artist.module';
+import { TrackScraperService } from './track-scraper/track-scraper.service';
+import { TrackScraperModule } from './track-scraper/track-scraper.module';
+import { PlaylistScraperModule } from './playlist-scraper/playlist-scraper.module';
+import { PlaylistScraperService } from './playlist-scraper/playlist-scraper.service';
+import MelonTrackScraper from './track-scraper/melon';
+import FloTrackScraper from './track-scraper/flo';
+import { MelonPlaylistScraper } from './playlist-scraper/melon';
+import { FloPlaylistScraper } from './playlist-scraper/flo';
 
 @Module({
     imports: [
@@ -35,6 +43,8 @@ import { ArtistModule } from './artist/artist.module';
         MeModule,
         AlbumModule,
         ArtistModule,
+        TrackScraperModule,
+        PlaylistScraperModule,
     ],
     controllers: [
         AppController,
@@ -51,6 +61,12 @@ import { ArtistModule } from './artist/artist.module';
         MeService,
         ArtistService,
         AlbumService,
+        TrackScraperService,
+        MelonTrackScraper,
+        FloTrackScraper,
+        PlaylistScraperService,
+        MelonPlaylistScraper,
+        FloPlaylistScraper,
     ],
 })
 export class AppModule {}

@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import matchTracks from 'src/track-scraper/matchTracks';
+import { TrackScraperService } from 'src/track-scraper/track-scraper.service';
 import { StreamServiceEnum, TrackInfo } from 'src/types';
-import TrackManagers, { matchTracks } from './functions';
 import { StreamTrack, Track } from './track.entity';
 
 @Injectable()
 export class TrackService {
-    constructor() {}
+    constructor(private readonly trackScraperService: TrackScraperService) {}
 
     async getMatchingTracks(track: Track): Promise<StreamTrack[]> {
         const { streamTracks } = track;
@@ -17,7 +18,7 @@ export class TrackService {
                 continue;
             }
             searchPromise.push(
-                TrackManagers[streamType]?.searchTrack(reference),
+                this.trackScraperService.get(streamType).searchTrack(reference),
             );
         }
         const searchResults = await Promise.all(searchPromise);

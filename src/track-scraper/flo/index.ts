@@ -1,9 +1,11 @@
+import { Injectable } from '@nestjs/common';
 import { AuthData, JwtTokenPair, TrackInfo } from 'src/types';
-import TrackManager from '../TrackManager';
+import TrackScraper from '../TrackScraper';
 import getMyRecentTracks from './getMyRecentTracks';
 import searchTrack from './searchTrack';
 
-class FloTrackManager extends TrackManager {
+@Injectable()
+class FloTrackScraper extends TrackScraper {
     async searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
         return searchTrack(track);
     }
@@ -13,4 +15,4 @@ class FloTrackManager extends TrackManager {
     }
 }
 
-export default FloTrackManager;
+export default FloTrackScraper;

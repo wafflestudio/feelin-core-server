@@ -5,9 +5,11 @@ import { UserModule } from 'src/user/user.module';
 import { PlaylistController } from './playlist.controller';
 import { Playlist, StreamPlaylist } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
+import { PlaylistScraperModule } from 'src/playlist-scraper/playlist-scraper.module';
 
 @Module({
     imports: [
+        PlaylistScraperModule,
         forwardRef(() => UserModule),
         forwardRef(() => TrackModule),
         TypeOrmModule.forFeature([Playlist, StreamPlaylist]),

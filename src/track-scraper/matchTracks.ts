@@ -1,5 +1,5 @@
+import { StreamTrack } from 'src/track/track.entity';
 import { TrackInfo } from 'src/types';
-import { StreamTrack } from '../track.entity';
 
 /**
  *

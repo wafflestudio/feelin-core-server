@@ -1,7 +1,7 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
-import { MelonTrackUtils } from 'src/track/functions/melon';
-import TrackData from 'src/track/functions/melon/TrackData';
+import { MelonTrackUtils } from 'src/track-scraper/melon';
+import TrackData from 'src/track-scraper/melon/TrackData';
 
 const playlistUrl = {
     dj: 'https://www.melon.com/mymusic/dj/mymusicdjplaylistview_inform.htm',

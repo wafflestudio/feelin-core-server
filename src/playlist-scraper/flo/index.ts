@@ -1,12 +1,12 @@
 import { Playlist } from 'src/playlist/playlist.entity';
-import { AuthData, CookieData } from 'src/types';
-import PlaylistManager from '../PlaylistManager';
+import { AuthData, JwtTokenPair } from 'src/types';
+import PlaylistScraper from '../PlaylistScraper';
 import getPlaylist from './getPlaylist';
 import savePlaylist from './savePlaylist';
 
-class MelonPlaylistManager extends PlaylistManager {
+class FloPlaylistScraper extends PlaylistScraper {
     async savePlaylist(playlist: Playlist, authData: AuthData) {
-        return savePlaylist(playlist, authData as CookieData);
+        return savePlaylist(playlist, authData as JwtTokenPair);
     }
 
     async getPlaylist(playlistId: string): Promise<Playlist> {
@@ -14,4 +14,4 @@ class MelonPlaylistManager extends PlaylistManager {
     }
 }
 
-export { MelonPlaylistManager };
+export { FloPlaylistScraper };

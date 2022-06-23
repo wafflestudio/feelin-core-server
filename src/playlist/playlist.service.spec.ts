@@ -10,7 +10,6 @@ import {
     MockRepository,
     testRepositoryModule,
 } from 'src/utils/testUtilModules';
-import PlaylistManagers from './functions';
 import { Playlist } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
 

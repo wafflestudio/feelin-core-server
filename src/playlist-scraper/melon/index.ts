@@ -1,12 +1,14 @@
+import { Injectable } from '@nestjs/common';
 import { Playlist } from 'src/playlist/playlist.entity';
-import { AuthData, JwtTokenPair } from 'src/types';
-import PlaylistManager from '../PlaylistManager';
+import { AuthData, CookieData } from 'src/types';
+import PlaylistScraper from '../PlaylistScraper';
 import getPlaylist from './getPlaylist';
 import savePlaylist from './savePlaylist';
 
-class FloPlaylistManager extends PlaylistManager {
+@Injectable()
+class MelonPlaylistScraper extends PlaylistScraper {
     async savePlaylist(playlist: Playlist, authData: AuthData) {
-        return savePlaylist(playlist, authData as JwtTokenPair);
+        return savePlaylist(playlist, authData as CookieData);
     }
 
     async getPlaylist(playlistId: string): Promise<Playlist> {
@@ -14,4 +16,4 @@ class FloPlaylistManager extends PlaylistManager {
     }
 }
 
-export { FloPlaylistManager };
+export { MelonPlaylistScraper };

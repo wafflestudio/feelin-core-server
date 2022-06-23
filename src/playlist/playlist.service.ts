@@ -6,8 +6,8 @@ import { SavePlaylistDto } from 'src/user/dto/save-playlist.dto';
 import { User } from 'src/user/user.entity';
 import { asymmDecrypt, symmDecrypt } from 'src/utils/cipher';
 import { getConnection, Repository } from 'typeorm';
-import PlaylistManagers, { getStreamAndId } from './functions';
 import { Playlist, StreamPlaylist } from './playlist.entity';
+import { PlaylistScraperService } from 'src/playlist-scraper/playlist-scraper.service';
 
 @Injectable()
 export class PlaylistService {
@@ -19,6 +19,7 @@ export class PlaylistService {
         @InjectRepository(User)
         private userRepository: Repository<User>,
         private readonly trackService: TrackService,
+        private readonly playlistScraperService: PlaylistScraperService,
     ) {}
 
     async getMatchedTracks(playlist: Playlist) {
@@ -39,7 +40,8 @@ export class PlaylistService {
         createPlaylistDto: CreatePlaylistDto,
     ): Promise<Playlist> {
         const { playlistUrl } = createPlaylistDto;
-        const { streamType, playlistId } = await getStreamAndId(playlistUrl);
+        const { streamType, playlistId } =
+            await this.playlistScraperService.getStreamAndId(playlistUrl);
 
         const streamPlaylist = await this.streamPlaylistRepository.findOne({
             where: { streamId: playlistId, streamType: streamType },
@@ -51,9 +53,9 @@ export class PlaylistService {
         }
 
         // Get playlist info from streaming service
-        let playlist = await PlaylistManagers[streamType].getPlaylist(
-            playlistId,
-        );
+        let playlist = await this.playlistScraperService
+            .get(streamType)
+            .getPlaylist(playlistId);
         // Match tracks with other streaming services
         await this.getMatchedTracks(playlist).catch((error) => {
             console.error(error);
@@ -106,9 +108,9 @@ export class PlaylistService {
         const key = await asymmDecrypt(symmKey, account.privateKey);
         const cookie = await symmDecrypt(account.cookie, key);
 
-        const response = await PlaylistManagers[
-            account.streamType
-        ].savePlaylist(playlist, cookie);
+        const response = await this.playlistScraperService
+            .get(account.streamType)
+            .savePlaylist(playlist, cookie);
         return response;
     }
 }
