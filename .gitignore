@@ -1,4 +1,4 @@
-test/setupEnvVars.ts
+src/test/setupEnvVars.ts
 *.env
 scribble
 # compiled output
