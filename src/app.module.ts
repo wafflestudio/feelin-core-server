@@ -29,6 +29,10 @@ import MelonTrackScraper from './track-scraper/melon';
 import FloTrackScraper from './track-scraper/flo';
 import { MelonPlaylistScraper } from './playlist-scraper/melon';
 import { FloPlaylistScraper } from './playlist-scraper/flo';
+import { UserScraperModule } from './user-scraper/user-scraper.module';
+import { UserScraperService } from './user-scraper/user-scraper.service';
+import MelonUserScraper from './user-scraper/melon';
+import FloUserScraper from './user-scraper/flo';
 
 @Module({
     imports: [
@@ -45,6 +49,7 @@ import { FloPlaylistScraper } from './playlist-scraper/flo';
         ArtistModule,
         TrackScraperModule,
         PlaylistScraperModule,
+        UserScraperModule,
     ],
     controllers: [
         AppController,
@@ -67,6 +72,9 @@ import { FloPlaylistScraper } from './playlist-scraper/flo';
         PlaylistScraperService,
         MelonPlaylistScraper,
         FloPlaylistScraper,
+        UserScraperService,
+        MelonUserScraper,
+        FloUserScraper,
     ],
 })
 export class AppModule {}

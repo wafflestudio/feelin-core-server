@@ -1,11 +1,13 @@
+import { Injectable } from '@nestjs/common';
 import { AuthData } from 'src/types';
-import UserManager from '../UserManager';
+import UserScraper from '../UserScraper';
 import login from './login';
 
-class FloUserManager extends UserManager {
+@Injectable()
+class FloUserScraper extends UserScraper {
     async login(id: string, password: string): Promise<AuthData | null> {
         return login(id, password);
     }
 }
 
-export default FloUserManager;
+export default FloUserScraper;

@@ -7,15 +7,16 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
 import { AuthData, StreamServiceEnum } from 'src/types';
+import { UserScraperService } from 'src/user-scraper/user-scraper.service';
 import { asymmEncrypt, symmEncrypt } from 'src/utils/cipher';
 import { Repository } from 'typeorm';
 import { LoginStreamDto } from './dto/login-stream.dto';
-import UserManagers from './functions';
 import { StreamAccount, User } from './user.entity';
 
 @Injectable()
 export class UserService {
     constructor(
+        private readonly userScraperService: UserScraperService,
         @InjectRepository(User) private userRepository: Repository<User>,
     ) {}
 
@@ -35,9 +36,9 @@ export class UserService {
             );
         }
 
-        const cookieData: AuthData | null = await UserManagers[
-            streamType
-        ].login(id, password);
+        const cookieData: AuthData | null = await this.userScraperService
+            .get(streamType)
+            .login(id, password);
         if (cookieData === undefined) {
             throw new UnauthorizedException(
                 'Unauthorized',
