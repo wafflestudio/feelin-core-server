@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import { StreamService } from 'src/types';
+import { StreamService } from '@feelin-types/types.js';
 
 export class LoginStreamDto {
     @IsString()

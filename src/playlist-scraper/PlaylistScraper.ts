@@ -1,9 +1,9 @@
-import { AuthData } from 'src/types';
-import { Playlist } from '../playlist/playlist.entity';
+import { Authdata } from '@authdata/types.js';
+import { Playlist } from '../playlist/playlist.entity.js';
 
-abstract class PlaylistScraper {
-    abstract savePlaylist(playlist: Playlist, authData: AuthData); // TODO: define return type
-    abstract getPlaylist(playlistId: string): Promise<Playlist>;
+interface PlaylistScraper {
+    savePlaylist(playlist: Playlist, authdata: Authdata); // TODO: define return type
+    getPlaylist(playlistId: string): Promise<Playlist>;
 }
 
 export default PlaylistScraper;

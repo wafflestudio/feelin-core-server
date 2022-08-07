@@ -1,12 +1,10 @@
-import { Artist } from 'src/artist/artist.entity';
-import { Track } from 'src/track/track.entity';
-import { StreamService, StreamServiceEnum } from 'src/types';
+import { Artist } from '@artist/artist.entity.js';
+import { StreamService, StreamServiceEnum } from '@feelin-types/types.js';
 import {
     BaseEntity,
     Column,
     Entity,
     ManyToOne,
-    OneToMany,
     PrimaryGeneratedColumn,
     Unique,
 } from 'typeorm';
@@ -25,14 +23,8 @@ class Album extends BaseEntity {
     @Column({ type: 'datetime' })
     realeaseDate!: Date;
 
-    @OneToMany(() => StreamAlbum, (streamTrack) => streamTrack.album)
-    streamAlbums!: StreamAlbum[];
-
-    @ManyToOne(() => Artist, (artist) => artist.albums)
+    @ManyToOne(() => Artist)
     artist!: Artist;
-
-    @OneToMany(() => Track, (track) => track.album)
-    tracks!: Track[];
 }
 
 @Entity()
@@ -47,7 +39,7 @@ class StreamAlbum extends BaseEntity {
     @Column({ unique: true })
     streamId!: string;
 
-    @ManyToOne(() => Album, (album) => album.streamAlbums)
+    @ManyToOne(() => Album)
     album!: Album;
 }
 

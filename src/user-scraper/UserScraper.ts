@@ -1,9 +1,5 @@
-import { AuthData } from 'src/types';
+import { Authdata } from '@authdata/types';
 
-abstract class UserScraper {
-    async login(id: string, password: string): Promise<AuthData | null> {
-        return null;
-    }
+export default interface UserScraper {
+    login(id: string, password: string): Promise<Authdata | null>;
 }
-
-export default UserScraper;

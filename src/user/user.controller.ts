@@ -1,9 +1,9 @@
 import { Body, Controller, HttpCode, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { PlaylistService } from 'src/playlist/playlist.service';
-import { LoginStreamDto } from './dto/login-stream.dto';
-import { SavePlaylistDto } from './dto/save-playlist.dto';
-import { UserService } from './user.service';
+import { PlaylistService } from '@playlist/playlist.service.js';
+import { LoginStreamDto } from './dto/login-stream.dto.js';
+import { SavePlaylistDto } from './dto/save-playlist.dto.js';
+import { UserService } from './user.service.js';
 
 @Controller('users')
 @ApiTags('User API')

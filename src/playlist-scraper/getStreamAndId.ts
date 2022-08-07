@@ -1,9 +1,7 @@
-import { StreamService } from 'src/types';
-import { detailId2ApiId, shareId2ApiId } from 'src/utils/floUtils';
+import { StreamService } from '@feelin-types/types.js';
 import { URL } from 'url';
-// TODO: Better import scheme
-const fetch = (...args) =>
-    import('node-fetch').then(({ default: fetch }) => fetch(...args));
+import fetch from 'node-fetch';
+import { detailId2ApiId, shareId2ApiId } from '@utils/floUtils.js';
 
 async function getStreamAndId(playlistUrl: string): Promise<{
     streamType: StreamService;

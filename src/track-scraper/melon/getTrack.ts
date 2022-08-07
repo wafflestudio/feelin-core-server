@@ -1,12 +1,17 @@
+import { Album, StreamAlbum } from '@album/album.entity.js';
+import { Artist, StreamArtist } from '@artist/artist.entity.js';
+import StreamTrack from '@track/streamTrack.entity.js';
+import Track from '@track/track.entity.js';
+import { convDate } from '@utils/floUtils.js';
 import axios from 'axios';
-import { Album, StreamAlbum } from 'src/album/album.entity';
-import { Artist, StreamArtist } from 'src/artist/artist.entity';
-import { StreamTrack, Track } from 'src/track/track.entity';
-import { convDate } from 'src/utils/floUtils';
+import MelonTrackScraper from '.';
 
 const trackInfoUrl = 'https://m2.melon.com/m6/v2/song/info.json';
 
-async function getTrack(trackId: string): Promise<Track> {
+async function getTrack(
+    this: MelonTrackScraper,
+    trackId: string,
+): Promise<Track> {
     const res = await axios
         .get(trackInfoUrl, {
             params: {
@@ -32,7 +37,6 @@ async function getTrack(trackId: string): Promise<Track> {
     // Track
     const track = new Track();
     track.title = trackData?.SONGNAME;
-    track.streamTracks = [streamTrack];
 
     const albumData = res.data?.response?.ALBUMINFO;
     const streamAlbum = new StreamAlbum();
@@ -50,7 +54,6 @@ async function getTrack(trackId: string): Promise<Track> {
 
     const albumArtist = new Artist();
     albumArtist.name = albumData?.ARTISTLIST[0]?.ARTISTNAME;
-    albumArtist.streamArtists = [streamAlbumArtist];
     album.artist = albumArtist;
 
     // Artists
@@ -61,7 +64,6 @@ async function getTrack(trackId: string): Promise<Track> {
 
         const artist = new Artist();
         artist.name = artistData?.ARTISTNAME;
-        artist.streamArtists = [streamArtist];
         return artist;
     });
 

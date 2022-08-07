@@ -1,5 +1,6 @@
-import { StreamTrack } from 'src/track/track.entity';
-import { TrackInfo } from 'src/types';
+import { isSameTrack } from '@feelin-types/helpers.js';
+import { TrackInfo } from '@feelin-types/types.js';
+import { nGram } from 'n-gram';
 
 /**
  *
@@ -15,7 +16,6 @@ async function makeNGramSet(
     min: number,
     max: number,
 ): Promise<Set<string>> {
-    const { nGram } = await import('n-gram');
     let nGrams = [];
     for (let i = min; i <= max; i++) {
         nGrams = [...nGrams, ...nGram(i)(str)];
@@ -42,15 +42,15 @@ const MIN_NGRAM = 1;
 const MAX_NGRAM = 4;
 const THRESHOLD = 0.1;
 
-async function matchTracks(
+export default async function matchTracks(
     candidates: TrackInfo[],
     reference: TrackInfo,
-): Promise<StreamTrack | null> {
+): Promise<TrackInfo | null> {
     if (candidates.length === 0) {
         return null;
     }
     const match = candidates.filter((track) => {
-        return track.isEqual(reference);
+        return isSameTrack(reference, track);
     });
 
     if (match.length === 0) {
@@ -71,23 +71,9 @@ async function matchTracks(
             MAX_NGRAM,
         );
         for (const track of scores) {
-            track.score *= Math.max(
-                jaccardSimilarity(
-                    titleNGrams,
-                    await makeNGramSet(
-                        track.trackInfo.title,
-                        MIN_NGRAM,
-                        MAX_NGRAM,
-                    ),
-                ),
-                jaccardSimilarity(
-                    titleNGrams,
-                    await makeNGramSet(
-                        track.trackInfo.titleNoParan,
-                        MIN_NGRAM,
-                        MAX_NGRAM,
-                    ),
-                ),
+            track.score *= jaccardSimilarity(
+                titleNGrams,
+                await makeNGramSet(track.trackInfo.title, MIN_NGRAM, MAX_NGRAM),
             );
         }
         for (const track of scores) {
@@ -96,23 +82,9 @@ async function matchTracks(
             );
         }
         for (const track of scores) {
-            track.score *= Math.max(
-                jaccardSimilarity(
-                    albumNGrams,
-                    await makeNGramSet(
-                        track.trackInfo.album,
-                        MIN_NGRAM,
-                        MAX_NGRAM,
-                    ),
-                ),
-                jaccardSimilarity(
-                    albumNGrams,
-                    await makeNGramSet(
-                        track.trackInfo.albumNoParan,
-                        MIN_NGRAM,
-                        MAX_NGRAM,
-                    ),
-                ),
+            track.score *= jaccardSimilarity(
+                albumNGrams,
+                await makeNGramSet(track.trackInfo.album, MIN_NGRAM, MAX_NGRAM),
             );
         }
 
@@ -123,10 +95,8 @@ async function matchTracks(
             console.log(reference);
             return null;
         }
-        return StreamTrack.fromTrackInfo(scores[0].trackInfo);
+        return scores[0].trackInfo;
     }
 
-    return StreamTrack.fromTrackInfo(match[0]);
+    return match[0];
 }
-
-export default matchTracks;

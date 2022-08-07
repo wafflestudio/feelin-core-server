@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AlbumController } from './album.controller';
+import { AlbumController } from './album.controller.js';
 
 describe('AlbumController', () => {
     let controller: AlbumController;

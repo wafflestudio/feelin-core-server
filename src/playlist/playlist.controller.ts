@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
-import { CreatePlaylistDto } from './dto/create-playlist.dto';
-import { PlaylistService } from './playlist.service';
+import { CreatePlaylistDto } from './dto/create-playlist.dto.js';
+import { PlaylistService } from './playlist.service.js';
 
 @Controller('playlists')
 export class PlaylistController {

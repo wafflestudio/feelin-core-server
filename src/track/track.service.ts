@@ -1,16 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import matchTracks from 'src/track-scraper/matchTracks';
-import { TrackScraperService } from 'src/track-scraper/track-scraper.service';
-import { StreamServiceEnum, TrackInfo } from 'src/types';
-import { StreamTrack, Track } from './track.entity';
+import { StreamServiceEnum, TrackInfo } from '@feelin-types/types.js';
+import { TrackScraperService } from '@track-scraper/track-scraper.service.js';
+import matchTracks from '@track-scraper/matchTracks.js';
+import { fromTrackEntity, toStreamTrackEntity } from '@feelin-types/helpers.js';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import StreamTrack from './streamTrack.entity.js';
+import Track from './track.entity.js';
 
 @Injectable()
 export class TrackService {
-    constructor(private readonly trackScraperService: TrackScraperService) {}
+    constructor(
+        private readonly trackScraperService: TrackScraperService,
+        @InjectRepository(StreamTrack)
+        private readonly streamTrackRepository: Repository<StreamTrack>,
+    ) {}
 
     async getMatchingTracks(track: Track): Promise<StreamTrack[]> {
-        const { streamTracks } = track;
-        const reference = TrackInfo.fromEntity(track);
+        const streamTracks = await this.findStreamTracks(track);
+        const reference = fromTrackEntity(track);
 
         const searchPromise: Promise<TrackInfo[]>[] = [];
         for (const streamType of StreamServiceEnum) {
@@ -23,12 +31,28 @@ export class TrackService {
         }
         const searchResults = await Promise.all(searchPromise);
 
-        const matchPromise: Promise<StreamTrack>[] = [];
+        const matchPromise: Promise<TrackInfo>[] = [];
         for (const searchResult of searchResults) {
             const match = matchTracks(searchResult, reference);
             matchPromise.push(match);
         }
         const matches = await Promise.all(matchPromise);
-        return matches;
+
+        return matches.map(toStreamTrackEntity);
+    }
+
+    async findStreamTracks(track: Track): Promise<StreamTrack[]> {
+        return this.streamTrackRepository.find({
+            where: { track: track },
+        });
+    }
+
+    async findAllStreamTracks(tracks: Track[]): Promise<StreamTrack[]> {
+        return this.streamTrackRepository.find({
+            relations: ['track'],
+            where: tracks.map((track) => {
+                return { track: track };
+            }),
+        });
     }
 }

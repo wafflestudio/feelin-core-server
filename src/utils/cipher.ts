@@ -11,13 +11,11 @@ import { promisify } from 'util';
 const generateKeyPairAsync = promisify(generateKeyPair);
 const IV_LENGTH = 16;
 
-const asymmEncrypt = async (
-    data: string,
-): Promise<{
+export async function asymmEncrypt(data: string): Promise<{
     data: string;
     publicKey: string;
     privateKey: string;
-}> => {
+}> {
     const keyPair = await generateKeyPairAsync('rsa', {
         modulusLength: 1024,
         publicKeyEncoding: {
@@ -41,18 +39,16 @@ const asymmEncrypt = async (
         data: encText,
         ...keyPair,
     };
-};
+}
 
-const asymmDecrypt = async (data: string, key: string): Promise<string> => {
+export async function asymmDecrypt(data: string, key: string): Promise<string> {
     return privateDecrypt(key, Buffer.from(data)).toString('base64');
-};
+}
 
-const symmEncrypt = async (
-    data: string,
-): Promise<{
+export async function symmEncrypt(data: string): Promise<{
     data: string;
     key: string;
-}> => {
+}> {
     const key = randomBytes(32);
     const iv = randomBytes(IV_LENGTH);
     const cipher = createCipheriv('aes-256-cbc', key, iv);
@@ -64,9 +60,9 @@ const symmEncrypt = async (
             Buffer.concat([encText, cipher.final()]).toString('hex'),
         key: key.toString('hex'),
     };
-};
+}
 
-const symmDecrypt = async (data: string, key: string): Promise<string> => {
+export async function symmDecrypt(data: string, key: string): Promise<string> {
     const textParts = data.split(':');
     const iv = Buffer.from(textParts.shift(), 'hex');
     const encryptedText = Buffer.from(textParts.join(':'), 'hex');
@@ -74,6 +70,4 @@ const symmDecrypt = async (data: string, key: string): Promise<string> => {
     const decrypted = decipher.update(encryptedText);
 
     return Buffer.concat([decrypted, decipher.final()]).toString();
-};
-
-export { asymmEncrypt, asymmDecrypt, symmEncrypt, symmDecrypt };
+}

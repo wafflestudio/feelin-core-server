@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "ESNext",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -18,6 +18,20 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
-    "allowJs": false
-  }
+    "allowJs": false,
+    "moduleResolution": "node",
+    "paths": {
+      "@utils/*": [ "src/utils/*" ],
+      "@feelin-types/*": [ "src/types/*" ],
+      "@album/*": [ "src/album/*" ],
+      "@artist/*": [ "src/artist/*" ],
+      "@playlist/*": [ "src/playlist/*" ],
+      "@playlist-scraper/*": [ "src/playlist-scraper/*" ],
+      "@track/*": [ "src/track/*" ],
+      "@track-scraper/*": [ "src/track-scraper/*" ],
+      "@user/*": [ "src/user/*" ],
+      "@user-scraper/*": [ "src/user-scraper/*" ],
+      "@authdata/*": [ "src/authdata/*" ],
+    }
+  },
 }

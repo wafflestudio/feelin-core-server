@@ -1,11 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
-import { Album, StreamAlbum } from 'src/album/album.entity';
-import { Artist, StreamArtist } from 'src/artist/artist.entity';
-import { Playlist, StreamPlaylist } from 'src/playlist/playlist.entity';
-import { MelonTrackUtils } from 'src/track-scraper/melon';
-import { StreamTrack, Track } from 'src/track/track.entity';
-import getFirstPlaylistTracks from './getFirstPlaylistTracks';
+import { Album, StreamAlbum } from '@album/album.entity.js';
+import { Artist, StreamArtist } from '@artist/artist.entity.js';
+import { Playlist, StreamPlaylist } from '@playlist/playlist.entity.js';
+import MelonPlaylistScraper from '.';
+import StreamTrack from '@track/streamTrack.entity.js';
+import Track from '@track/track.entity.js';
 
 const playlistUrl = {
     dj: 'https://www.melon.com/mymusic/dj/mymusicdjplaylistview_inform.htm',
@@ -17,14 +17,21 @@ const playlistPagingUrl = {
 };
 const pageSize = 50;
 
-async function getPlaylist(playlistId: string): Promise<Playlist> {
+async function getPlaylist(
+    this: MelonPlaylistScraper,
+    playlistId: string,
+): Promise<Playlist> {
     const [type, id] = playlistId.split(':');
     if (type != 'my' && type != 'dj') {
         // FIXME: Better error message
         throw new Error('Not supported playlist type');
     }
 
-    const { title, count, trackData } = await getFirstPlaylistTracks(type, id);
+    const {
+        title,
+        count,
+        trackInfo: trackData,
+    } = await this.getFirstPlaylistTracks(type, id);
 
     const requestArr: Promise<AxiosResponse<any, any>>[] = [];
     for (let i = 1; i < Math.ceil(count / pageSize); i++) {
@@ -46,9 +53,11 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
             const $ = cheerio.load(response.data);
             $('table > tbody > tr').each((_, el) => {
                 if (type === 'my') {
-                    trackData.push(MelonTrackUtils.scrapeMyMusicTrack($, el));
+                    trackData.push(
+                        this.melonTrackScraper.scrapeMyMusicTrack($, el),
+                    );
                 } else if (type === 'dj') {
-                    trackData.push(MelonTrackUtils.scrapeTrack($, el));
+                    trackData.push(this.melonTrackScraper.scrapeTrack($, el));
                 }
             });
         }
@@ -65,11 +74,10 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
         // Track entity
         const streamTrack = new StreamTrack();
         streamTrack.streamType = 'melon';
-        streamTrack.streamId = data?.trackId;
+        streamTrack.streamId = data?.streamId;
 
         const track = new Track();
         track.title = data?.title;
-        track.streamTracks = [streamTrack];
 
         // Album entity
         const streamAlbum = new StreamAlbum();
@@ -80,7 +88,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
         album.title = data?.album;
         // TODO: Get date when parse from melon
         // album.realeaseDate = new Date();
-        album.streamAlbums = [streamAlbum];
 
         // Artists entity
         const artists: Artist[] = [];
@@ -91,8 +98,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
             const artist = new Artist();
             artist.name = data?.artists[i];
-            artist.albums = [album];
-            artist.streamArtists = [streamArtist];
             artists.push(artist);
         }
 

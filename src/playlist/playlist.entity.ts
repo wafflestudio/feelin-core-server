@@ -1,4 +1,5 @@
-import { Track } from 'src/track/track.entity';
+import { StreamService, StreamServiceEnum } from '@feelin-types/types.js';
+import Track from '@track/track.entity.js';
 
 import {
     BaseEntity,
@@ -7,11 +8,9 @@ import {
     JoinTable,
     ManyToMany,
     ManyToOne,
-    OneToMany,
     PrimaryGeneratedColumn,
     Unique,
 } from 'typeorm';
-import { StreamService, StreamServiceEnum } from 'src/types';
 
 @Entity()
 class Playlist extends BaseEntity {
@@ -24,9 +23,6 @@ class Playlist extends BaseEntity {
     @ManyToMany(() => Track, (track) => track.id)
     @JoinTable()
     tracks!: Track[];
-
-    @OneToMany(() => StreamPlaylist, (playlist) => playlist.id)
-    streamPlaylists!: StreamPlaylist[];
 }
 
 @Entity()
@@ -41,7 +37,7 @@ class StreamPlaylist extends BaseEntity {
     @Column({ unique: true })
     streamId!: string;
 
-    @ManyToOne(() => Playlist, (playlist) => playlist.streamPlaylists)
+    @ManyToOne(() => Playlist)
     playlist!: Playlist;
 }
 

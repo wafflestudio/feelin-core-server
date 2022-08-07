@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TrackScraperService } from './track-scraper.service';
+import { TrackScraperService } from './track-scraper.service.js';
 
 describe('TrackScraperService', () => {
     let service: TrackScraperService;

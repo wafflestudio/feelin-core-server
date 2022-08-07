@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import * as path from 'path';
-import { getEnvFile } from 'src/utils';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import getEnvFile from './utils/getEnvFile.js';
 
 const envFile = getEnvFile();
 config({ path: path.resolve(process.cwd(), envFile) });

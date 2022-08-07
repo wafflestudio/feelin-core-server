@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-const setupSwagger = (app: INestApplication): void => {
+export default function setupSwagger(app: INestApplication): void {
     const options = new DocumentBuilder()
         .setTitle('Streaming Service API')
         .setDescription(
@@ -12,6 +12,4 @@ const setupSwagger = (app: INestApplication): void => {
 
     const document = SwaggerModule.createDocument(app, options);
     SwaggerModule.setup('api-docs', app, document);
-};
-
-export default setupSwagger;
+}

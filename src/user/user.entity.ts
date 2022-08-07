@@ -2,12 +2,11 @@ import {
     BaseEntity,
     Column,
     Entity,
-    OneToMany,
     ManyToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { StreamService, StreamServiceEnum } from 'src/types';
+import { StreamService, StreamServiceEnum } from '@feelin-types/types.js';
 
 @Entity()
 class User extends BaseEntity {
@@ -16,9 +15,6 @@ class User extends BaseEntity {
 
     @Column()
     username!: string;
-
-    @OneToMany(() => StreamAccount, (account) => account.user)
-    streamAccounts: StreamAccount[];
 }
 
 @Entity()
@@ -40,7 +36,7 @@ class StreamAccount extends BaseEntity {
     @Column({ type: 'varchar', length: 2000 })
     cookie!: string;
 
-    @ManyToOne(() => User, (user) => user.streamAccounts)
+    @ManyToOne(() => User)
     user!: User;
 
     constructor(

@@ -9,14 +9,15 @@ const mockRepository = () => ({
     softDelete: jest.fn(),
 });
 
-type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
+export type MockRepository<T = any> = Partial<
+    Record<keyof Repository<T>, jest.Mock>
+>;
 
-const testRepositoryModule = (entities: EntityClassOrSchema[]) =>
-    entities.map((entity) => {
+export function testRepositoryModule(entities: EntityClassOrSchema[]) {
+    return entities.map((entity) => {
         return {
             provide: getRepositoryToken(entity),
             useValue: mockRepository(),
         };
     });
-
-export { testRepositoryModule, MockRepository };
+}

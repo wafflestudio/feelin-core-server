@@ -6,17 +6,20 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
-import { AuthData, StreamServiceEnum } from 'src/types';
-import { UserScraperService } from 'src/user-scraper/user-scraper.service';
-import { asymmEncrypt, symmEncrypt } from 'src/utils/cipher';
+import { StreamServiceEnum } from '@feelin-types/types.js';
 import { Repository } from 'typeorm';
-import { LoginStreamDto } from './dto/login-stream.dto';
-import { StreamAccount, User } from './user.entity';
+import { LoginStreamDto } from './dto/login-stream.dto.js';
+import { User } from './user.entity.js';
+import { UserScraperService } from '@user-scraper/user-scraper.service.js';
+import { asymmEncrypt, symmEncrypt } from '@utils/cipher.js';
+import { Authdata } from '@authdata/types.js';
+import { AuthdataService } from '@authdata/authdata.service.js';
 
 @Injectable()
 export class UserService {
     constructor(
         private readonly userScraperService: UserScraperService,
+        private readonly authdataService: AuthdataService,
         @InjectRepository(User) private userRepository: Repository<User>,
     ) {}
 
@@ -36,7 +39,7 @@ export class UserService {
             );
         }
 
-        const cookieData: AuthData | null = await this.userScraperService
+        const cookieData: Authdata | null = await this.userScraperService
             .get(streamType)
             .login(id, password);
         if (cookieData === undefined) {
@@ -52,7 +55,7 @@ export class UserService {
         }
 
         const { data: cookie, key } = await symmEncrypt(
-            cookieData.toString(streamType),
+            this.authdataService.toString(streamType, cookieData),
         );
         const {
             data: symmKey,
@@ -63,17 +66,6 @@ export class UserService {
             .update(publicKey)
             .digest('base64url');
 
-        const streamAccount = new StreamAccount(
-            streamType,
-            cookie,
-            hashPubKey,
-            privateKey,
-        );
-
-        if (user.streamAccounts === undefined) {
-            user.streamAccounts = [];
-        }
-        user.streamAccounts.push(streamAccount);
         await user.save();
 
         return {

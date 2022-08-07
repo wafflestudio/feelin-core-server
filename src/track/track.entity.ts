@@ -1,7 +1,6 @@
-import { Album } from 'src/album/album.entity';
-import { Artist } from 'src/artist/artist.entity';
-import { Playlist } from 'src/playlist/playlist.entity';
-import { StreamService, StreamServiceEnum, TrackInfo } from 'src/types';
+import { Album } from '@album/album.entity.js';
+import { Artist } from '@artist/artist.entity.js';
+import { Playlist } from '@playlist/playlist.entity.js';
 import {
     BaseEntity,
     Column,
@@ -9,13 +8,12 @@ import {
     JoinTable,
     ManyToMany,
     ManyToOne,
-    OneToMany,
     PrimaryGeneratedColumn,
-    Unique,
+    Relation,
 } from 'typeorm';
 
 @Entity()
-class Track extends BaseEntity {
+export default class Track extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -25,38 +23,10 @@ class Track extends BaseEntity {
     @ManyToMany(() => Playlist, (playlist) => playlist.id)
     playlists: Playlist[];
 
-    @OneToMany(() => StreamTrack, (streamTrack) => streamTrack.track)
-    streamTracks!: StreamTrack[];
-
     @ManyToMany(() => Artist, (artist) => artist.id)
     @JoinTable()
     artists!: Artist[];
 
-    @ManyToOne(() => Album, (album) => album.tracks)
-    album!: Album;
+    @ManyToOne(() => Album)
+    album!: Relation<Album>;
 }
-
-@Entity()
-@Unique('STREAM_TRACK_ID', ['streamId', 'streamType'])
-class StreamTrack extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
-    @Column({ type: 'enum', enum: StreamServiceEnum })
-    streamType!: StreamService;
-
-    @Column({ unique: true })
-    streamId!: string;
-
-    @ManyToOne(() => Track, (track) => track.streamTracks)
-    track!: Track;
-
-    static fromTrackInfo(trackInfo: TrackInfo) {
-        const streamTrack = new StreamTrack();
-        streamTrack.streamId = trackInfo.id;
-        streamTrack.streamType = trackInfo.service;
-        return streamTrack;
-    }
-}
-
-export { Track, StreamTrack };

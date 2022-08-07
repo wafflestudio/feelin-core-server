@@ -1,11 +1,16 @@
+import { Playlist } from '@playlist/playlist.entity.js';
 import axios from 'axios';
-import { Playlist } from 'src/playlist/playlist.entity';
-import { CookieData } from 'src/types';
+import { MelonAuthdata } from '@authdata/types';
+import MelonPlaylistScraper from '.';
 
 const createPlaylistUrl =
     'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insertAction.json';
 
-async function savePlaylist(playlist: Playlist, cookieData: CookieData) {
+async function savePlaylist(
+    this: MelonPlaylistScraper,
+    playlist: Playlist,
+    melonAuthData: MelonAuthdata,
+) {
     const { title, tracks } = playlist;
 
     const params = {
@@ -17,11 +22,15 @@ async function savePlaylist(playlist: Playlist, cookieData: CookieData) {
         repntImagePathDefaultYn: 'N',
     };
     const data = new URLSearchParams(params);
+    const streamTracks = await this.trackService.findAllStreamTracks(
+        playlist.tracks,
+    );
     tracks.map((track) => {
-        const melonId = track.streamTracks.find(
-            (streamTrack) => streamTrack?.streamType === 'melon',
+        const melonId = streamTracks.find(
+            (streamTrack) =>
+                streamTrack.track === track &&
+                streamTrack?.streamType === 'melon',
         )?.streamId;
-        // Filter out un-found tracks
         if (melonId) {
             data.append('songIds[]', melonId);
         }
@@ -29,7 +38,7 @@ async function savePlaylist(playlist: Playlist, cookieData: CookieData) {
 
     const response = await axios.post(createPlaylistUrl, data, {
         headers: {
-            Cookie: cookieData.toString('melon'),
+            Cookie: melonAuthData.toString(),
             Referer:
                 'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insert.htm',
             'X-Requested-With': 'XMLHttpRequest',

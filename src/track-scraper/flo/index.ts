@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { AuthData, JwtTokenPair, TrackInfo } from 'src/types';
-import TrackScraper from '../TrackScraper';
-import getMyRecentTracks from './getMyRecentTracks';
-import searchTrack from './searchTrack';
+import TrackScraper from '../TrackScraper.js';
+import getMyRecentTracks from './getMyRecentTracks.js';
+import searchTrack from './searchTrack.js';
+import { Authdata, FloAuthdata } from '@authdata/types.js';
+import { AuthdataService } from '@authdata/authdata.service.js';
 
 @Injectable()
-class FloTrackScraper extends TrackScraper {
-    async searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
-        return searchTrack(track);
-    }
+class FloTrackScraper implements TrackScraper {
+    constructor(protected readonly authdataService: AuthdataService) {}
 
-    async getMyRecentTracks(authToken: AuthData) {
-        return getMyRecentTracks(authToken as JwtTokenPair);
+    public searchTrack = searchTrack;
+
+    public async getMyRecentTracks(authToken: Authdata) {
+        return getMyRecentTracks.call(authToken as FloAuthdata);
     }
 }
 

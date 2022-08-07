@@ -1,14 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Playlist } from 'src/playlist/playlist.entity';
-import { PlaylistService } from 'src/playlist/playlist.service';
-import {
-    MockRepository,
-    testRepositoryModule,
-} from 'src/utils/testUtilModules';
-import { UserController } from './user.controller';
-import { User } from './user.entity';
-import { UserService } from './user.service';
+import { Playlist } from '@playlist/playlist.entity.js';
+import { PlaylistService } from '@playlist/playlist.service.js';
+import { MockRepository, testRepositoryModule } from '@utils/testUtils.js';
+import { UserController } from './user.controller.js';
+import { User } from './user.entity.js';
+import { UserService } from './user.service.js';
 
 describe('UserService', () => {
     let service: UserService;

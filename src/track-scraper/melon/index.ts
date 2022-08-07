@@ -1,33 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { Track } from 'src/track/track.entity';
-import { AuthData, CookieData, TrackInfo } from 'src/types';
-import TrackScraper from '../TrackScraper';
-import getMyRecentTracks from './getMyRecentTracks';
-import getTrack from './getTrack';
-import scrapeMyMusicTrack from './scrapeMyMusicTrack';
-import scrapeTrack from './scrapeTrack';
-import searchTrack from './searchTrack';
+import TrackScraper from '../TrackScraper.js';
+import getMyRecentTracks from './getMyRecentTracks.js';
+import getTrack from './getTrack.js';
+import scrapeTrack from './scrapeTrack.js';
+import searchTrack from './searchTrack.js';
+import { Authdata, MelonAuthdata } from '@authdata/types.js';
+import { AuthdataService } from '@authdata/authdata.service.js';
+import getFirstRecentTracks from './getFirstRecentTracks.js';
+import scrapeMyMusicTrack from './scrapeMyMusicTrack.js';
 
 @Injectable()
-class MelonTrackScraper extends TrackScraper {
-    async searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
-        return searchTrack(track);
+export default class MelonTrackScraper implements TrackScraper {
+    constructor(protected readonly authdataService: AuthdataService) {}
+
+    public searchTrack = searchTrack;
+
+    public getTrack = getTrack;
+
+    public scrapeMyMusicTrack = scrapeMyMusicTrack;
+
+    public scrapeTrack = scrapeTrack;
+
+    public async getMyRecentTracks(authdata: Authdata) {
+        return getMyRecentTracks.call(authdata as MelonAuthdata);
     }
 
-    async getMyRecentTracks(authToken: AuthData) {
-        return getMyRecentTracks(authToken as CookieData);
-    }
-
-    async getTrack(trackId: string): Promise<Track> {
-        return getTrack(trackId);
-    }
+    protected getFirstRecentTracks = getFirstRecentTracks;
 }
-
-// Functions specific to the melon service
-const MelonTrackUtils = {
-    scrapeMyMusicTrack,
-    scrapeTrack,
-};
-
-export default MelonTrackScraper;
-export { MelonTrackUtils };

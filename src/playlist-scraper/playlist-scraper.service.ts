@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { StreamService } from 'src/types';
-import { FloPlaylistScraper } from './flo';
-import getStreamAndId from './getStreamAndId';
-import { MelonPlaylistScraper } from './melon';
-import PlaylistScraper from './PlaylistScraper';
+import { StreamService } from '@feelin-types/types.js';
+import { FloPlaylistScraper } from './flo/index.js';
+import getStreamAndId from './getStreamAndId.js';
+import MelonPlaylistScraper from './melon/index.js';
+import PlaylistScraper from './PlaylistScraper.js';
 
 @Injectable()
 export class PlaylistScraperService {

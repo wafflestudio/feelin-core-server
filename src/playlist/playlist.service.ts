@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TrackService } from 'src/track/track.service';
-import { CreatePlaylistDto } from './dto/create-playlist.dto';
-import { SavePlaylistDto } from 'src/user/dto/save-playlist.dto';
-import { User } from 'src/user/user.entity';
-import { asymmDecrypt, symmDecrypt } from 'src/utils/cipher';
+import { CreatePlaylistDto } from './dto/create-playlist.dto.js';
 import { getConnection, Repository } from 'typeorm';
-import { Playlist, StreamPlaylist } from './playlist.entity';
-import { PlaylistScraperService } from 'src/playlist-scraper/playlist-scraper.service';
+import { Playlist, StreamPlaylist } from './playlist.entity.js';
+import { StreamAccount, User } from '@user/user.entity.js';
+import { TrackService } from '@track/track.service.js';
+import { PlaylistScraperService } from '@playlist-scraper/playlist-scraper.service.js';
+import { SavePlaylistDto } from '@user/dto/save-playlist.dto.js';
+import { asymmDecrypt, symmDecrypt } from '@utils/cipher.js';
+import { AuthdataService } from '@authdata/authdata.service.js';
 
 @Injectable()
 export class PlaylistService {
@@ -18,8 +19,11 @@ export class PlaylistService {
         private streamPlaylistRepository: Repository<StreamPlaylist>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        @InjectRepository(StreamAccount)
+        private streamAccountRepository: Repository<StreamAccount>,
         private readonly trackService: TrackService,
         private readonly playlistScraperService: PlaylistScraperService,
+        private readonly authdataService: AuthdataService,
     ) {}
 
     async getMatchedTracks(playlist: Playlist) {
@@ -27,10 +31,9 @@ export class PlaylistService {
             playlist.tracks.map(async (track) => {
                 const matchingStreamTracks =
                     await this.trackService.getMatchingTracks(track);
-                track.streamTracks = [
-                    ...track.streamTracks,
-                    ...matchingStreamTracks,
-                ];
+                matchingStreamTracks.map((streamTrack) => {
+                    streamTrack.track = track;
+                });
             }),
         );
         return;
@@ -89,19 +92,17 @@ export class PlaylistService {
         }
 
         const { symmKey, publicKey } = savePlaylistDto;
-        if (user.streamAccounts === undefined) {
-            throw new NotFoundException(
-                'Not Found',
-                'available streaming service account not found',
-            );
-        }
-        const account = user.streamAccounts.find(
-            (account) => account.publicKey === publicKey,
-        );
+        const account = await this.streamAccountRepository.findOne({
+            where: {
+                user: user,
+                publicKey: publicKey,
+            },
+        });
+
         if (account === undefined) {
             throw new NotFoundException(
                 'Not Found',
-                'streaming service account mathcing the key not found',
+                'available streaming service account not found',
             );
         }
 
@@ -110,7 +111,10 @@ export class PlaylistService {
 
         const response = await this.playlistScraperService
             .get(account.streamType)
-            .savePlaylist(playlist, cookie);
+            .savePlaylist(
+                playlist,
+                this.authdataService.fromString(account.streamType, cookie),
+            );
         return response;
     }
 }

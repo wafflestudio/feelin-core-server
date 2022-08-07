@@ -3,13 +3,16 @@
 */
 
 import puppeteer from 'puppeteer';
-import { CookieData } from 'src/types';
+import { MelonAuthdata } from '@authdata/types';
 
 const responseUrl =
     'https://member.melon.com/muid/web/login/login_informProcs.htm';
 const loginUrl = 'https://member.melon.com/muid/web/login/login_informM.htm';
 
-async function login(id: string, password: string): Promise<CookieData | null> {
+async function login(
+    id: string,
+    password: string,
+): Promise<MelonAuthdata | null> {
     let loginSuccess = false;
     const browser = await puppeteer.launch({
         headless: true,
@@ -50,7 +53,7 @@ async function login(id: string, password: string): Promise<CookieData | null> {
     await browser.close();
 
     if (loginSuccess) {
-        const cookie = new CookieData(cookies);
+        const cookie = {} as MelonAuthdata;
         return cookie;
     } else {
         return null;

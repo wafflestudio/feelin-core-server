@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { StreamService } from 'src/types';
-import FloTrackScraper from './flo';
-import MelonTrackScraper from './melon';
-import TrackScraper from './TrackScraper';
+import { StreamService } from '@feelin-types/types.js';
+import FloTrackScraper from './flo/index.js';
+import MelonTrackScraper from './melon/index.js';
+import TrackScraper from './TrackScraper.js';
 
 @Injectable()
 export class TrackScraperService {

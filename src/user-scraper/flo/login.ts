@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { JwtTokenPair } from 'src/types';
+import { FloAuthdata } from '@authdata/types';
 
 const loginUrl = 'https://www.music-flo.com/api/auth/v3/sign/in';
 
 async function login(
     id: string,
     password: string,
-): Promise<JwtTokenPair | null> {
+): Promise<FloAuthdata | null> {
     const res = await axios.post(
         loginUrl,
         {
@@ -31,7 +31,7 @@ async function login(
         return null;
     }
 
-    return new JwtTokenPair(accessToken, refreshToken);
+    return { accessToken, refreshToken };
 }
 
 export default login;

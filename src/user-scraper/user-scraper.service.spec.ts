@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserScraperService } from './user-scraper.service';
+import { UserScraperService } from './user-scraper.service.js';
 
 describe('UserScraperService', () => {
-  let service: UserScraperService;
+    let service: UserScraperService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [UserScraperService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [UserScraperService],
+        }).compile();
 
-    service = module.get<UserScraperService>(UserScraperService);
-  });
+        service = module.get<UserScraperService>(UserScraperService);
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(service).toBeDefined();
+    });
 });

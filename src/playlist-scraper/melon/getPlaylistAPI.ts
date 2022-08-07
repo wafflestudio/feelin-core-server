@@ -1,9 +1,10 @@
 import axios from 'axios';
-import { Album, StreamAlbum } from 'src/album/album.entity';
-import { Artist, StreamArtist } from 'src/artist/artist.entity';
-import { Playlist, StreamPlaylist } from 'src/playlist/playlist.entity';
-import { StreamTrack, Track } from 'src/track/track.entity';
-import { convDate } from 'src/utils/floUtils';
+import { Album, StreamAlbum } from '@album/album.entity.js';
+import { Artist, StreamArtist } from '@artist/artist.entity.js';
+import { Playlist, StreamPlaylist } from '@playlist/playlist.entity.js';
+import { convDate } from '@utils/floUtils.js';
+import StreamTrack from '@track/streamTrack.entity.js';
+import Track from '@track/track.entity.js';
 
 const playlistInforUrl = {
     user: 'https://m2.melon.com/m6/v1/mymusic/playlist/inform.json',
@@ -39,7 +40,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
     } else if (type == 'user') {
         playlist.title = infoRes.data?.response?.PLYLSTTITLE;
     }
-    playlist.streamPlaylists = [streamPlaylist];
 
     const trackRes = await axios
         .get(playlistTracksUrl[type], {
@@ -70,7 +70,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
         const track = new Track();
         track.title = trackData?.SONGNAME;
-        track.streamTracks = [streamTrack];
 
         // Album entity
         const streamAlbum = new StreamAlbum();
@@ -80,7 +79,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
         const album = new Album();
         album.title = trackData?.ALBUMNAME;
         album.realeaseDate = convDate(trackData?.ISSUEDATE);
-        album.streamAlbums = [streamAlbum];
 
         // Artists entity
         const artistsData = trackData?.ARTISTLIST;
@@ -91,8 +89,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
             const artist = new Artist();
             artist.name = artistData?.ARTISTNAME;
-            artist.albums = [album];
-            artist.streamArtists = [streamArtist];
             return artist;
         });
 

@@ -1,4 +1,5 @@
-import TrackData from './TrackData';
+import { TrackInfo } from '@feelin-types/types.js';
+import MelonTrackScraper from '.';
 
 /**
  *
@@ -12,7 +13,11 @@ const TITLE_NODE = 0;
 const ARTIST_NODE = 1;
 const ALBUM_NODE = 2;
 
-function scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackData {
+export default function scrapeTrack(
+    this: MelonTrackScraper,
+    $: cheerio.Root,
+    el: cheerio.Element,
+): TrackInfo {
     let title: string;
     let trackId: string;
     const artists: string[] = [];
@@ -58,13 +63,12 @@ function scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackData {
         });
 
     return {
+        streamType: 'melon',
         title,
-        trackId,
+        streamId: trackId,
         artists,
         artistIds,
         album,
         albumId,
     };
 }
-
-export default scrapeTrack;

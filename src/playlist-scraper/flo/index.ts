@@ -1,16 +1,23 @@
-import { Playlist } from 'src/playlist/playlist.entity';
-import { AuthData, JwtTokenPair } from 'src/types';
-import PlaylistScraper from '../PlaylistScraper';
-import getPlaylist from './getPlaylist';
-import savePlaylist from './savePlaylist';
+import PlaylistScraper from '../PlaylistScraper.js';
+import getPlaylist from './getPlaylist.js';
+import savePlaylist from './savePlaylist.js';
+import { Playlist } from '@playlist/playlist.entity.js';
+import { Authdata, FloAuthdata } from '@authdata/types.js';
+import { AuthdataService } from '@authdata/authdata.service.js';
+import { Injectable } from '@nestjs/common';
+import { TrackService } from '@track/track.service.js';
 
-class FloPlaylistScraper extends PlaylistScraper {
-    async savePlaylist(playlist: Playlist, authData: AuthData) {
-        return savePlaylist(playlist, authData as JwtTokenPair);
-    }
+@Injectable()
+class FloPlaylistScraper implements PlaylistScraper {
+    constructor(
+        protected readonly authdataService: AuthdataService,
+        protected readonly trackService: TrackService,
+    ) {}
 
-    async getPlaylist(playlistId: string): Promise<Playlist> {
-        return getPlaylist(playlistId);
+    public getPlaylist = getPlaylist;
+
+    public async savePlaylist(playlist: Playlist, authData: Authdata) {
+        return savePlaylist.call(playlist, authData as FloAuthdata);
     }
 }
 

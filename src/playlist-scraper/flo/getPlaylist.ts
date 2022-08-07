@@ -1,16 +1,21 @@
+import { Album, StreamAlbum } from '@album/album.entity.js';
+import { Artist, StreamArtist } from '@artist/artist.entity.js';
+import { Playlist, StreamPlaylist } from '@playlist/playlist.entity.js';
+import StreamTrack from '@track/streamTrack.entity.js';
+import Track from '@track/track.entity.js';
+import { convDate } from '@utils/floUtils.js';
 import axios from 'axios';
-import { Album, StreamAlbum } from 'src/album/album.entity';
-import { Artist, StreamArtist } from 'src/artist/artist.entity';
-import { Playlist, StreamPlaylist } from 'src/playlist/playlist.entity';
-import { StreamTrack, Track } from 'src/track/track.entity';
-import { convDate } from 'src/utils/floUtils';
+import { FloPlaylistScraper } from '.';
 
 const playlistUrl = {
     user: 'https://api.music-flo.com/personal/v1/playlist/',
     dj: 'https://api.music-flo.com/meta/v1/channel/',
 };
 
-async function getPlaylist(playlistId: string): Promise<Playlist> {
+async function getPlaylist(
+    this: FloPlaylistScraper,
+    playlistId: string,
+): Promise<Playlist> {
     const [type, id] = playlistId.split(':');
     if (type != 'user' && type != 'dj') {
         // FIXME: Better error message
@@ -34,7 +39,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
     const playlist = new Playlist();
     playlist.title = playlistData?.name;
-    playlist.streamPlaylists = [floPlaylist];
 
     let trackList;
     if (type == 'user') {
@@ -51,7 +55,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
         const track = new Track();
         track.title = trackData?.name;
-        track.streamTracks = [streamTrack];
 
         // Album entity
         const albumData = trackData?.album;
@@ -62,7 +65,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
         const album = new Album();
         album.title = albumData?.title;
         album.realeaseDate = convDate(albumData?.releaseYmd);
-        album.streamAlbums = [streamAlbum];
 
         // Artists entity
         const artistsData = trackData?.artistList;
@@ -73,8 +75,6 @@ async function getPlaylist(playlistId: string): Promise<Playlist> {
 
             const artist = new Artist();
             artist.name = artistData?.name;
-            artist.albums = [album];
-            artist.streamArtists = [streamArtist];
             return artist;
         });
 

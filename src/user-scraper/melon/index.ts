@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { AuthData } from 'src/types';
-import UserScraper from '../UserScraper';
-import login from './login';
+import { Authdata } from '@authdata/types.js';
+import UserScraper from '../UserScraper.js';
+import login from './login.js';
 
 @Injectable()
-class MelonUserScraper extends UserScraper {
-    async login(id: string, password: string): Promise<AuthData | null> {
+class MelonUserScraper implements UserScraper {
+    async login(id: string, password: string): Promise<Authdata | null> {
         return login(id, password);
     }
 }

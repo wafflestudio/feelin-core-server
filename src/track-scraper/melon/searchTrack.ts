@@ -1,18 +1,21 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import randomUseragent from 'random-useragent';
-import { TrackInfo } from 'src/types';
-import scrapeTrack from './scrapeTrack';
+import { TrackInfo } from '@feelin-types/types.js';
+import MelonTrackScraper from './index.js';
 
 const melonURL = 'https://www.melon.com/search/song/index.htm';
 
-async function searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
+async function searchTrack(
+    this: MelonTrackScraper,
+    track: TrackInfo,
+): Promise<TrackInfo[]> {
     // Melon search API limits max 50 results at once
     const response = await axios.get(melonURL, {
         params: {
             startIndex: 1,
             pageSize: 50,
-            q: track.titleNoParan,
+            q: track.title,
             sort: 'weight',
             section: 'song',
         },
@@ -23,8 +26,7 @@ async function searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
     const $ = cheerio.load(response.data);
     const trackList: TrackInfo[] = [];
     $('table > tbody > tr').each((_, el) => {
-        const { title: track, trackId, artists, album } = scrapeTrack($, el);
-        trackList.push(new TrackInfo(track, artists, album, 'melon', trackId));
+        trackList.push(this.scrapeTrack($, el));
     });
 
     return trackList;

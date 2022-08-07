@@ -1,10 +1,9 @@
-import { AuthData, TrackInfo } from 'src/types';
+import { TrackInfo } from '@feelin-types/types.js';
+import { Authdata } from '@authdata/types';
 
-abstract class TrackScraper {
+export default interface TrackScraper {
     // Not the best way to pass entity around
-    abstract searchTrack(track: TrackInfo): Promise<TrackInfo[]>;
+    searchTrack(track: TrackInfo): Promise<TrackInfo[]>;
 
-    abstract getMyRecentTracks(authToken: AuthData);
+    getMyRecentTracks(authToken: Authdata);
 }
-
-export default TrackScraper;
