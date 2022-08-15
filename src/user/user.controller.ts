@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { PlaylistService } from '@playlist/playlist.service.js';
+import { PlaylistService } from '@/playlist/playlist.service.js';
 import { LoginStreamDto } from './dto/login-stream.dto.js';
 import { SavePlaylistDto } from './dto/save-playlist.dto.js';
 import { UserService } from './user.service.js';

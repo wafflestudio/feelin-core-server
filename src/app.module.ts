@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AlbumModule } from './album/album.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import ormConfig from './ormConfig.js';
-import { TrackModule } from './track/track.module.js';
-import { PlaylistModule } from './playlist/playlist.module.js';
-import { UserModule } from './user/user.module.js';
-import { MeModule } from './me/me.module.js';
-import { AlbumModule } from './album/album.module.js';
 import { ArtistModule } from './artist/artist.module.js';
-import { TrackScraperModule } from './track-scraper/track-scraper.module.js';
+import AuthdataService from './authdata/authdata.service.js';
+import { MeModule } from './me/me.module.js';
 import { PlaylistScraperModule } from './playlist-scraper/playlist-scraper.module.js';
+import { PlaylistModule } from './playlist/playlist.module.js';
+import { TrackScraperModule } from './track-scraper/track-scraper.module.js';
+import { TrackModule } from './track/track.module.js';
 import { UserScraperModule } from './user-scraper/user-scraper.module.js';
+import { UserModule } from './user/user.module.js';
 import getEnvFile from './utils/getEnvFile.js';
 
 @Module({
@@ -21,18 +21,37 @@ import getEnvFile from './utils/getEnvFile.js';
             isGlobal: true,
             envFilePath: [getEnvFile()],
         }),
-        TypeOrmModule.forRootAsync({ useFactory: () => ormConfig }),
-        TrackModule,
-        PlaylistModule,
-        UserModule,
-        MeModule,
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => ({
+                type: 'mysql',
+                host: configService.get('DB_HOST'),
+                port: +configService.get('DB_PORT') || 3306,
+                username: configService.get('DB_USER'),
+                password: configService.get('DB_PWD'),
+                database: configService.get('DB_NAME'),
+                entities: ['dist/**/*.entity{.ts,.js}'],
+                synchronize: true,
+                migrations: ['dist/migration/*.js'],
+                migrationsRun: true,
+                cli: {
+                    migrationsDir: 'src/migration',
+                },
+                logging: true,
+            }),
+            inject: [ConfigService],
+        }),
         AlbumModule,
         ArtistModule,
-        TrackScraperModule,
+        MeModule,
+        PlaylistModule,
         PlaylistScraperModule,
+        TrackModule,
+        TrackScraperModule,
+        UserModule,
         UserScraperModule,
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [AppService, AuthdataService],
 })
 export class AppModule {}

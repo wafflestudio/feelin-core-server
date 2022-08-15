@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { Authdata, MelonAuthdataKeys, FloAuthdataKeys } from './types.js';
 
 @Injectable()
-export class AuthdataService {
+export default class AuthdataService {
     private authdataKeys: Record<StreamService, string[]>;
 
     constructor() {

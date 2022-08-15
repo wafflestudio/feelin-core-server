@@ -22,10 +22,10 @@ class StreamAccount extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ type: 'enum', enum: StreamServiceEnum })
+    @Column()
     streamType!: StreamService;
 
-    @Column({ type: 'char', length: 64 })
+    @Column({ type: 'varchar', length: 64 })
     publicKey!: string;
 
     // TODO: Better data type to save database space

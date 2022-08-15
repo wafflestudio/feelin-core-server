@@ -1,16 +1,14 @@
-import { Artist } from '@artist/artist.entity.js';
-import { StreamService, StreamServiceEnum } from '@feelin-types/types.js';
+import Artist from '@/artist/artist.entity.js';
 import {
     BaseEntity,
     Column,
     Entity,
     ManyToOne,
     PrimaryGeneratedColumn,
-    Unique,
 } from 'typeorm';
 
 @Entity()
-class Album extends BaseEntity {
+export default class Album extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -26,21 +24,3 @@ class Album extends BaseEntity {
     @ManyToOne(() => Artist)
     artist!: Artist;
 }
-
-@Entity()
-@Unique('STREAM_ALBUM_ID', ['streamId', 'streamType'])
-class StreamAlbum extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
-    @Column({ type: 'enum', enum: StreamServiceEnum })
-    streamType!: StreamService;
-
-    @Column({ unique: true })
-    streamId!: string;
-
-    @ManyToOne(() => Album)
-    album!: Album;
-}
-
-export { Album, StreamAlbum };

@@ -10,10 +10,10 @@ import { StreamServiceEnum } from '@feelin-types/types.js';
 import { Repository } from 'typeorm';
 import { LoginStreamDto } from './dto/login-stream.dto.js';
 import { User } from './user.entity.js';
-import { UserScraperService } from '@user-scraper/user-scraper.service.js';
+import { UserScraperService } from '@/user-scraper/user-scraper.service.js';
 import { asymmEncrypt, symmEncrypt } from '@utils/cipher.js';
-import { Authdata } from '@authdata/types.js';
-import { AuthdataService } from '@authdata/authdata.service.js';
+import { Authdata } from '@/authdata/types.js';
+import AuthdataService from '@/authdata/authdata.service.js';
 
 @Injectable()
 export class UserService {

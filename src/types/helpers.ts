@@ -1,5 +1,5 @@
-import StreamTrack from '@track/streamTrack.entity.js';
-import Track from '@track/track.entity.js';
+import { StreamTrack } from '@/track/streamTrack.entity.js';
+import Track from '@/track/track.entity.js';
 import { isEqual } from 'lodash-es';
 import { TrackInfo } from './types.js';
 

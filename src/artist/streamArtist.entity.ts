@@ -7,11 +7,11 @@ import {
     PrimaryGeneratedColumn,
     Unique,
 } from 'typeorm';
-import Track from './track.entity.js';
+import Artist from './artist.entity.js';
 
 @Entity()
-@Unique('STREAM_TRACK_ID', ['streamId', 'streamType'])
-export class StreamTrack extends BaseEntity {
+@Unique('STREAM_ARTIST_ID', ['streamId', 'streamType'])
+export default class StreamArtist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -21,6 +21,6 @@ export class StreamTrack extends BaseEntity {
     @Column({ unique: true })
     streamId!: string;
 
-    @ManyToOne(() => Track)
-    track!: Track;
+    @ManyToOne(() => Artist)
+    artist!: Artist;
 }

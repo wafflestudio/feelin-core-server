@@ -1,5 +1,5 @@
 import { TrackInfo } from '@feelin-types/types.js';
-import { Authdata } from '@authdata/types';
+import { Authdata } from '@/authdata/types';
 
 export default interface TrackScraper {
     // Not the best way to pass entity around

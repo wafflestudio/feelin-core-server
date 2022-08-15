@@ -2,13 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePlaylistDto } from './dto/create-playlist.dto.js';
 import { getConnection, Repository } from 'typeorm';
-import { Playlist, StreamPlaylist } from './playlist.entity.js';
-import { StreamAccount, User } from '@user/user.entity.js';
-import { TrackService } from '@track/track.service.js';
-import { PlaylistScraperService } from '@playlist-scraper/playlist-scraper.service.js';
-import { SavePlaylistDto } from '@user/dto/save-playlist.dto.js';
+import { StreamAccount, User } from '@/user/user.entity.js';
+import { TrackService } from '@/track/track.service.js';
+import PlaylistScraperService from '@/playlist-scraper/playlist-scraper.service.js';
+import { SavePlaylistDto } from '@/user/dto/save-playlist.dto.js';
 import { asymmDecrypt, symmDecrypt } from '@utils/cipher.js';
-import { AuthdataService } from '@authdata/authdata.service.js';
+import AuthdataService from '@/authdata/authdata.service.js';
+import Playlist from './playlist.entity.js';
+import StreamPlaylist from './streamPlaylist.entity.js';
 
 @Injectable()
 export class PlaylistService {
@@ -68,6 +69,7 @@ export class PlaylistService {
         // TODO: Do some checks when saving playlist
         playlist = await this.playlistRepository.save(playlist);
         for (const track of playlist.tracks) {
+            console.log(track);
             getConnection();
         }
 

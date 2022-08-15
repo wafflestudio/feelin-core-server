@@ -14,7 +14,6 @@ const convTable = {
 
 const shareRe = /[^a-zA-Z0-9]/;
 const detailRe = /[^danielzohy]/;
-const apiRe = /[^0-9]/;
 
 function shareId2ApiId(id: string): string {
     if (shareRe.test(id)) {

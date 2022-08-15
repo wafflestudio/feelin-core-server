@@ -1,32 +1,34 @@
+import AuthdataService from '@/authdata/authdata.service.js';
+import { TrackModule } from '@/track/track.module.js';
+import { StreamAccount, User } from '@/user/user.entity.js';
+import { UserModule } from '@/user/user.module.js';
+import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { TrackService } from '@track/track.service.js';
-import { User } from '@user/user.entity.js';
-import { MockRepository, testRepositoryModule } from '@utils/testUtils.js';
-import { Playlist } from './playlist.entity.js';
+import Playlist from './playlist.entity.js';
+import { PlaylistModule } from './playlist.module.js';
 import { PlaylistService } from './playlist.service.js';
+import StreamPlaylist from './streamPlaylist.entity.js';
 
 describe('PlaylistService', () => {
     let service: PlaylistService;
-    let playlistRepository: MockRepository<Playlist>;
-    let userRepository: MockRepository<User>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                PlaylistService,
-                TrackService,
-                ...testRepositoryModule([Playlist, User]),
+            imports: [
+                PlaylistModule,
+                TrackModule,
+                UserModule,
+                ...TypeOrmSQLITETestingModule([
+                    Playlist,
+                    StreamPlaylist,
+                    StreamAccount,
+                    User,
+                ]),
             ],
+            providers: [AuthdataService],
         }).compile();
 
         service = module.get<PlaylistService>(PlaylistService);
-        playlistRepository = module.get<MockRepository<Playlist>>(
-            getRepositoryToken(Playlist),
-        );
-        userRepository = module.get<MockRepository<User>>(
-            getRepositoryToken(User),
-        );
     });
 
     it('should be defined', () => {

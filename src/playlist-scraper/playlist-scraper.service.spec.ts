@@ -1,12 +1,14 @@
+import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PlaylistScraperService } from './playlist-scraper.service.js';
+import { PlaylistScraperModule } from './playlist-scraper.module.js';
+import PlaylistScraperService from './playlist-scraper.service.js';
 
 describe('PlaylistScraperService', () => {
     let service: PlaylistScraperService;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [PlaylistScraperService],
+            imports: [PlaylistScraperModule, ...TypeOrmSQLITETestingModule([])],
         }).compile();
 
         service = module.get<PlaylistScraperService>(PlaylistScraperService);

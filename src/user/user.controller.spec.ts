@@ -1,34 +1,35 @@
+import AuthdataService from '@/authdata/authdata.service.js';
+import Playlist from '@/playlist/playlist.entity.js';
+import { PlaylistModule } from '@/playlist/playlist.module.js';
+import StreamPlaylist from '@/playlist/streamPlaylist.entity.js';
+import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
+import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Playlist } from '@playlist/playlist.entity.js';
-import { PlaylistService } from '@playlist/playlist.service.js';
-import { MockRepository, testRepositoryModule } from '@utils/testUtils.js';
 import { UserController } from './user.controller.js';
-import { User } from './user.entity.js';
-import { UserService } from './user.service.js';
+import { StreamAccount, User } from './user.entity.js';
+import { UserModule } from './user.module.js';
 
 describe('UserController', () => {
     let controller: UserController;
-    let playlistRepository: MockRepository<Playlist>;
-    let userRepository: MockRepository<User>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                UserService,
-                PlaylistService,
-                ...testRepositoryModule([User, Playlist]),
+            imports: [
+                UserModule,
+                PlaylistModule,
+                UserScraperModule,
+                ...TypeOrmSQLITETestingModule([
+                    Playlist,
+                    StreamPlaylist,
+                    StreamAccount,
+                    User,
+                ]),
             ],
+            providers: [AuthdataService],
             controllers: [UserController],
         }).compile();
 
         controller = module.get<UserController>(UserController);
-        playlistRepository = module.get<MockRepository<Playlist>>(
-            getRepositoryToken(Playlist),
-        );
-        userRepository = module.get<MockRepository<User>>(
-            getRepositoryToken(User),
-        );
     });
 
     it('should be defined', () => {

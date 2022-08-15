@@ -1,5 +1,4 @@
-import { StreamService, StreamServiceEnum } from '@feelin-types/types.js';
-import Track from '@track/track.entity.js';
+import Track from '@/track/track.entity.js';
 
 import {
     BaseEntity,
@@ -7,13 +6,11 @@ import {
     Entity,
     JoinTable,
     ManyToMany,
-    ManyToOne,
     PrimaryGeneratedColumn,
-    Unique,
 } from 'typeorm';
 
 @Entity()
-class Playlist extends BaseEntity {
+export default class Playlist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -24,21 +21,3 @@ class Playlist extends BaseEntity {
     @JoinTable()
     tracks!: Track[];
 }
-
-@Entity()
-@Unique('STREAM_PLAYLIST_ID', ['streamId', 'streamType'])
-class StreamPlaylist extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
-    @Column({ type: 'enum', enum: StreamServiceEnum })
-    streamType!: StreamService;
-
-    @Column({ unique: true })
-    streamId!: string;
-
-    @ManyToOne(() => Playlist)
-    playlist!: Playlist;
-}
-
-export { Playlist, StreamPlaylist };

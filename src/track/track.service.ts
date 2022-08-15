@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { StreamServiceEnum, TrackInfo } from '@feelin-types/types.js';
-import { TrackScraperService } from '@track-scraper/track-scraper.service.js';
-import matchTracks from '@track-scraper/matchTracks.js';
+import TrackScraperService from '@/track-scraper/track-scraper.service.js';
 import { fromTrackEntity, toStreamTrackEntity } from '@feelin-types/helpers.js';
+import { StreamServiceEnum, TrackInfo } from '@feelin-types/types.js';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import StreamTrack from './streamTrack.entity.js';
+import { StreamTrack } from './streamTrack.entity.js';
 import Track from './track.entity.js';
 
 @Injectable()
@@ -33,7 +32,10 @@ export class TrackService {
 
         const matchPromise: Promise<TrackInfo>[] = [];
         for (const searchResult of searchResults) {
-            const match = matchTracks(searchResult, reference);
+            const match = this.trackScraperService.matchTracks(
+                searchResult,
+                reference,
+            );
             matchPromise.push(match);
         }
         const matches = await Promise.all(matchPromise);

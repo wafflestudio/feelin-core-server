@@ -1,4 +1,5 @@
 import { StreamService, StreamServiceEnum } from '@feelin-types/types.js';
+
 import {
     BaseEntity,
     Column,
@@ -7,11 +8,11 @@ import {
     PrimaryGeneratedColumn,
     Unique,
 } from 'typeorm';
-import Track from './track.entity.js';
+import Playlist from './playlist.entity.js';
 
 @Entity()
-@Unique('STREAM_TRACK_ID', ['streamId', 'streamType'])
-export class StreamTrack extends BaseEntity {
+@Unique('STREAM_PLAYLIST_ID', ['streamId', 'streamType'])
+export default class StreamPlaylist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -21,6 +22,6 @@ export class StreamTrack extends BaseEntity {
     @Column({ unique: true })
     streamId!: string;
 
-    @ManyToOne(() => Track)
-    track!: Track;
+    @ManyToOne(() => Playlist)
+    playlist!: Playlist;
 }
