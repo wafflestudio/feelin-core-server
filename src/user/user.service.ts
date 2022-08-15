@@ -13,7 +13,7 @@ import { User } from './user.entity.js';
 import { UserScraperService } from '@/user-scraper/user-scraper.service.js';
 import { asymmEncrypt, symmEncrypt } from '@utils/cipher.js';
 import { Authdata } from '@/authdata/types.js';
-import AuthdataService from '@/authdata/authdata.service.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
 
 @Injectable()
 export class UserService {

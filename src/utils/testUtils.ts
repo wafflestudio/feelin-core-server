@@ -1,11 +1,11 @@
-import Album from '@/album/album.entity.js';
-import StreamAlbum from '@/album/streamAlbum.entity.js';
-import Artist from '@/artist/artist.entity.js';
-import StreamArtist from '@/artist/streamArtist.entity.js';
-import Playlist from '@/playlist/playlist.entity.js';
-import StreamPlaylist from '@/playlist/streamPlaylist.entity.js';
+import { Album } from '@/album/album.entity.js';
+import { StreamAlbum } from '@/album/streamAlbum.entity.js';
+import { Artist } from '@/artist/artist.entity.js';
+import { StreamArtist } from '@/artist/streamArtist.entity.js';
+import { Playlist } from '@/playlist/playlist.entity.js';
+import { StreamPlaylist } from '@/playlist/streamPlaylist.entity.js';
 import { StreamTrack } from '@/track/streamTrack.entity.js';
-import Track from '@/track/track.entity.js';
+import { Track } from '@/track/track.entity.js';
 import { User } from '@/user/user.entity.js';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';

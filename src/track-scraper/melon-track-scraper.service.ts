@@ -1,18 +1,18 @@
-import Album from '@/album/album.entity.js';
-import StreamAlbum from '@/album/streamAlbum.entity.js';
-import Artist from '@/artist/artist.entity.js';
-import StreamArtist from '@/artist/streamArtist.entity.js';
-import AuthdataService from '@/authdata/authdata.service.js';
+import { Album } from '@/album/album.entity.js';
+import { StreamAlbum } from '@/album/streamAlbum.entity.js';
+import { Artist } from '@/artist/artist.entity.js';
+import { StreamArtist } from '@/artist/streamArtist.entity.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
 import { Authdata, MelonAuthdata } from '@/authdata/types.js';
 import { StreamTrack } from '@/track/streamTrack.entity.js';
-import Track from '@/track/track.entity.js';
+import { Track } from '@/track/track.entity.js';
 import { convDate } from '@/utils/floUtils.js';
 import { TrackInfo } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
 import randomUseragent from 'random-useragent';
-import TrackScraper from './TrackScraper.js';
+import { TrackScraper } from './TrackScraper.js';
 
 @Injectable()
 export class MelonTrackScraper implements TrackScraper {

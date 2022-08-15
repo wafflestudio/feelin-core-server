@@ -4,12 +4,12 @@ import { CreatePlaylistDto } from './dto/create-playlist.dto.js';
 import { getConnection, Repository } from 'typeorm';
 import { StreamAccount, User } from '@/user/user.entity.js';
 import { TrackService } from '@/track/track.service.js';
-import PlaylistScraperService from '@/playlist-scraper/playlist-scraper.service.js';
+import { PlaylistScraperService } from '@/playlist-scraper/playlist-scraper.service.js';
 import { SavePlaylistDto } from '@/user/dto/save-playlist.dto.js';
 import { asymmDecrypt, symmDecrypt } from '@utils/cipher.js';
-import AuthdataService from '@/authdata/authdata.service.js';
-import Playlist from './playlist.entity.js';
-import StreamPlaylist from './streamPlaylist.entity.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
+import { Playlist } from './playlist.entity.js';
+import { StreamPlaylist } from './streamPlaylist.entity.js';
 
 @Injectable()
 export class PlaylistService {

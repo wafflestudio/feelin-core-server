@@ -1,12 +1,12 @@
-import AuthdataService from '@/authdata/authdata.service.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
 import { FloAuthdata } from '@/authdata/types.js';
 import { TrackInfo } from '@/types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import TrackScraper from './TrackScraper.js';
+import { TrackScraper } from './TrackScraper.js';
 
 @Injectable()
-class FloTrackScraper implements TrackScraper {
+export class FloTrackScraper implements TrackScraper {
     private readonly searchUrl =
         'https://www.music-flo.com/api/search/v2/search';
     private readonly recentTrackUrl =
@@ -52,5 +52,3 @@ class FloTrackScraper implements TrackScraper {
         console.log(res);
     }
 }
-
-export default FloTrackScraper;

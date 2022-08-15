@@ -1,5 +1,5 @@
 import { Authdata } from '@/authdata/types';
 
-export default interface UserScraper {
+export interface UserScraper {
     login(id: string, password: string): Promise<Authdata | null>;
 }

@@ -1,21 +1,21 @@
-import Album from '@/album/album.entity.js';
-import StreamAlbum from '@/album/streamAlbum.entity.js';
-import Artist from '@/artist/artist.entity.js';
-import StreamArtist from '@/artist/streamArtist.entity.js';
-import AuthdataService from '@/authdata/authdata.service.js';
+import { Album } from '@/album/album.entity.js';
+import { StreamAlbum } from '@/album/streamAlbum.entity.js';
+import { Artist } from '@/artist/artist.entity.js';
+import { StreamArtist } from '@/artist/streamArtist.entity.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
 import { Authdata, FloAuthdata } from '@/authdata/types.js';
-import Playlist from '@/playlist/playlist.entity.js';
-import StreamPlaylist from '@/playlist/streamPlaylist.entity.js';
+import { Playlist } from '@/playlist/playlist.entity.js';
+import { StreamPlaylist } from '@/playlist/streamPlaylist.entity.js';
 import { StreamTrack } from '@/track/streamTrack.entity.js';
-import Track from '@/track/track.entity.js';
+import { Track } from '@/track/track.entity.js';
 import { TrackService } from '@/track/track.service.js';
 import { Injectable } from '@nestjs/common';
 import { convDate } from '@utils/floUtils.js';
 import axios from 'axios';
-import PlaylistScraper from './PlaylistScraper.js';
+import { PlaylistScraper } from './PlaylistScraper.js';
 
 @Injectable()
-export default class FloPlaylistScraper implements PlaylistScraper {
+export class FloPlaylistScraper implements PlaylistScraper {
     private readonly playlistUrl = {
         user: 'https://api.music-flo.com/personal/v1/playlist/',
         dj: 'https://api.music-flo.com/meta/v1/channel/',

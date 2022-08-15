@@ -2,12 +2,12 @@ import { isSameTrack } from '@/types/helpers.js';
 import { StreamService, TrackInfo } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { nGram } from 'n-gram';
-import FloTrackScraper from './flo-track-scraper.service.js';
+import { FloTrackScraper } from './flo-track-scraper.service.js';
 import { MelonTrackScraper } from './melon-track-scraper.service.js';
-import TrackScraper from './TrackScraper.js';
+import { TrackScraper } from './TrackScraper.js';
 
 @Injectable()
-export default class TrackScraperService {
+export class TrackScraperService {
     trackScrapers: { [key in StreamService]: TrackScraper };
 
     constructor(

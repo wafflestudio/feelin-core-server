@@ -7,11 +7,11 @@ import {
     PrimaryGeneratedColumn,
     Unique,
 } from 'typeorm';
-import Artist from './artist.entity.js';
+import { Artist } from './artist.entity.js';
 
 @Entity()
 @Unique('STREAM_ARTIST_ID', ['streamId', 'streamType'])
-export default class StreamArtist extends BaseEntity {
+export class StreamArtist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 

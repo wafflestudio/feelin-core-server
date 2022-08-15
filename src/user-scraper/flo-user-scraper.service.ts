@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { FloAuthdata } from '@/authdata/types.js';
-import UserScraper from './UserScraper.js';
+import { UserScraper } from './UserScraper.js';
 import axios from 'axios';
 
 @Injectable()
-class FloUserScraper implements UserScraper {
+export class FloUserScraper implements UserScraper {
     private readonly loginUrl = 'https://www.music-flo.com/api/auth/v3/sign/in';
 
     async login(id: string, password: string): Promise<FloAuthdata | null> {
@@ -35,5 +35,3 @@ class FloUserScraper implements UserScraper {
         return { accessToken, refreshToken };
     }
 }
-
-export default FloUserScraper;

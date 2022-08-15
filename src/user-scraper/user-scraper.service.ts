@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { StreamService } from '@feelin-types/types.js';
-import FloUserScraper from './flo-user-scraper.service.js';
-import MelonUserScraper from './melon-user-scraper.service.js';
-import UserScraper from './UserScraper.js';
+import { FloUserScraper } from './flo-user-scraper.service.js';
+import { MelonUserScraper } from './melon-user-scraper.service.js';
+import { UserScraper } from './UserScraper.js';
 
 @Injectable()
 export class UserScraperService {

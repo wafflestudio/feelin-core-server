@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { StreamService } from '@feelin-types/types.js';
-import MelonPlaylistScraper from './melon-playlist-scraper.service.js';
-import PlaylistScraper from './PlaylistScraper.js';
+import { MelonPlaylistScraper } from './melon-playlist-scraper.service.js';
+import { PlaylistScraper } from './PlaylistScraper.js';
 import { URL } from 'url';
 import { detailId2ApiId, shareId2ApiId } from '@utils/floUtils.js';
-import FloPlaylistScraper from './flo-playlist-scraper.service.js';
+import { FloPlaylistScraper } from './flo-playlist-scraper.service.js';
 
 @Injectable()
-export default class PlaylistScraperService {
+export class PlaylistScraperService {
     playlistScrapers: { [key in StreamService]: PlaylistScraper };
 
     constructor(

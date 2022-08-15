@@ -1,4 +1,4 @@
-import Track from '@/track/track.entity.js';
+import { Track } from '@/track/track.entity.js';
 
 import {
     BaseEntity,
@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export default class Playlist extends BaseEntity {
+export class Playlist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 

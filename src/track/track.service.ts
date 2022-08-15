@@ -1,11 +1,11 @@
-import TrackScraperService from '@/track-scraper/track-scraper.service.js';
+import { TrackScraperService } from '@/track-scraper/track-scraper.service.js';
 import { fromTrackEntity, toStreamTrackEntity } from '@feelin-types/helpers.js';
 import { StreamServiceEnum, TrackInfo } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StreamTrack } from './streamTrack.entity.js';
-import Track from './track.entity.js';
+import { Track } from './track.entity.js';
 
 @Injectable()
 export class TrackService {

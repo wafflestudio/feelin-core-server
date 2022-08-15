@@ -1,13 +1,13 @@
-import AuthdataService from '@/authdata/authdata.service.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
 import { TrackModule } from '@/track/track.module.js';
 import { StreamAccount, User } from '@/user/user.entity.js';
 import { UserModule } from '@/user/user.module.js';
 import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
-import Playlist from './playlist.entity.js';
+import { Playlist } from './playlist.entity.js';
 import { PlaylistModule } from './playlist.module.js';
 import { PlaylistService } from './playlist.service.js';
-import StreamPlaylist from './streamPlaylist.entity.js';
+import { StreamPlaylist } from './streamPlaylist.entity.js';
 
 describe('PlaylistService', () => {
     let service: PlaylistService;

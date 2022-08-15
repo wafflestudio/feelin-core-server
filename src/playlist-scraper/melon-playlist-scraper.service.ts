@@ -1,23 +1,23 @@
-import Album from '@/album/album.entity.js';
-import StreamAlbum from '@/album/streamAlbum.entity.js';
-import Artist from '@/artist/artist.entity.js';
-import StreamArtist from '@/artist/streamArtist.entity.js';
-import AuthdataService from '@/authdata/authdata.service.js';
+import { Album } from '@/album/album.entity.js';
+import { StreamAlbum } from '@/album/streamAlbum.entity.js';
+import { Artist } from '@/artist/artist.entity.js';
+import { StreamArtist } from '@/artist/streamArtist.entity.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
 import { Authdata } from '@/authdata/types.js';
-import Playlist from '@/playlist/playlist.entity.js';
-import StreamPlaylist from '@/playlist/streamPlaylist.entity.js';
+import { Playlist } from '@/playlist/playlist.entity.js';
+import { StreamPlaylist } from '@/playlist/streamPlaylist.entity.js';
 import { MelonTrackScraper } from '@/track-scraper/melon-track-scraper.service.js';
 import { StreamTrack } from '@/track/streamTrack.entity.js';
-import Track from '@/track/track.entity.js';
+import { Track } from '@/track/track.entity.js';
 import { TrackService } from '@/track/track.service.js';
 import { TrackInfo } from '@/types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
-import PlaylistScraper from './PlaylistScraper.js';
+import { PlaylistScraper } from './PlaylistScraper.js';
 
 @Injectable()
-export default class MelonPlaylistScraper implements PlaylistScraper {
+export class MelonPlaylistScraper implements PlaylistScraper {
     private readonly playlistUrl = {
         dj: 'https://www.melon.com/mymusic/dj/mymusicdjplaylistview_inform.htm',
         norm: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_inform.htm',

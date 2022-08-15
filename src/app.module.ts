@@ -5,7 +5,7 @@ import { AlbumModule } from './album/album.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ArtistModule } from './artist/artist.module.js';
-import AuthdataService from './authdata/authdata.service.js';
+import { AuthdataService } from './authdata/authdata.service.js';
 import { MeModule } from './me/me.module.js';
 import { PlaylistScraperModule } from './playlist-scraper/playlist-scraper.module.js';
 import { PlaylistModule } from './playlist/playlist.module.js';
@@ -13,7 +13,7 @@ import { TrackScraperModule } from './track-scraper/track-scraper.module.js';
 import { TrackModule } from './track/track.module.js';
 import { UserScraperModule } from './user-scraper/user-scraper.module.js';
 import { UserModule } from './user/user.module.js';
-import getEnvFile from './utils/getEnvFile.js';
+import { getEnvFile } from './utils/getEnvFile.js';
 
 @Module({
     imports: [

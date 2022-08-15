@@ -1,7 +1,7 @@
 import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlaylistScraperModule } from './playlist-scraper.module.js';
-import PlaylistScraperService from './playlist-scraper.service.js';
+import { PlaylistScraperService } from './playlist-scraper.service.js';
 
 describe('PlaylistScraperService', () => {
     let service: PlaylistScraperService;

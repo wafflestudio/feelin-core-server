@@ -1,4 +1,4 @@
-import Artist from '@/artist/artist.entity.js';
+import { Artist } from '@/artist/artist.entity.js';
 import {
     BaseEntity,
     Column,
@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export default class Album extends BaseEntity {
+export class Album extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 

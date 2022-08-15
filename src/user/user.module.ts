@@ -1,4 +1,4 @@
-import AuthdataService from '@/authdata/authdata.service.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PlaylistModule } from '@/playlist/playlist.module.js';

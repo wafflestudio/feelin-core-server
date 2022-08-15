@@ -1,6 +1,6 @@
-import Album from '@/album/album.entity.js';
-import Artist from '@/artist/artist.entity.js';
-import Playlist from '@/playlist/playlist.entity.js';
+import { Album } from '@/album/album.entity.js';
+import { Artist } from '@/artist/artist.entity.js';
+import { Playlist } from '@/playlist/playlist.entity.js';
 import {
     BaseEntity,
     Column,
@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export default class Track extends BaseEntity {
+export class Track extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 

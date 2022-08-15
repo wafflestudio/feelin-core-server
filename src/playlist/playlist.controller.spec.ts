@@ -2,9 +2,9 @@ import { StreamAccount, User } from '@/user/user.entity.js';
 import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlaylistController } from './playlist.controller.js';
-import Playlist from './playlist.entity.js';
+import { Playlist } from './playlist.entity.js';
 import { PlaylistModule } from './playlist.module.js';
-import StreamPlaylist from './streamPlaylist.entity.js';
+import { StreamPlaylist } from './streamPlaylist.entity.js';
 
 describe('PlaylistController', () => {
     let controller: PlaylistController;

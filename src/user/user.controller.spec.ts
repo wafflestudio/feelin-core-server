@@ -1,7 +1,7 @@
-import AuthdataService from '@/authdata/authdata.service.js';
-import Playlist from '@/playlist/playlist.entity.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
+import { Playlist } from '@/playlist/playlist.entity.js';
 import { PlaylistModule } from '@/playlist/playlist.module.js';
-import StreamPlaylist from '@/playlist/streamPlaylist.entity.js';
+import { StreamPlaylist } from '@/playlist/streamPlaylist.entity.js';
 import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
 import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';

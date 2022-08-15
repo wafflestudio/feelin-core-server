@@ -8,11 +8,11 @@ import {
     PrimaryGeneratedColumn,
     Unique,
 } from 'typeorm';
-import Playlist from './playlist.entity.js';
+import { Playlist } from './playlist.entity.js';
 
 @Entity()
 @Unique('STREAM_PLAYLIST_ID', ['streamId', 'streamType'])
-export default class StreamPlaylist extends BaseEntity {
+export class StreamPlaylist extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 

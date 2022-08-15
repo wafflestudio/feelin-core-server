@@ -7,7 +7,7 @@ import {
     PrimaryGeneratedColumn,
     Unique,
 } from 'typeorm';
-import Track from './track.entity.js';
+import { Track } from './track.entity.js';
 
 @Entity()
 @Unique('STREAM_TRACK_ID', ['streamId', 'streamType'])

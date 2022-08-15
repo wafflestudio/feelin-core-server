@@ -1,4 +1,4 @@
-import AuthdataService from '@/authdata/authdata.service.js';
+import { AuthdataService } from '@/authdata/authdata.service.js';
 import { TrackModule } from '@/track/track.module.js';
 import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
 import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';

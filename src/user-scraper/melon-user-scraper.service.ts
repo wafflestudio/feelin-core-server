@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import UserScraper from './UserScraper.js';
+import { UserScraper } from './UserScraper.js';
 import puppeteer from 'puppeteer';
 import { MelonAuthdata } from '@/authdata/types';
 
 @Injectable()
-class MelonUserScraper implements UserScraper {
+export class MelonUserScraper implements UserScraper {
     private readonly responseUrl =
         'https://member.melon.com/muid/web/login/login_informProcs.htm';
     private readonly loginUrl =
@@ -59,5 +59,3 @@ class MelonUserScraper implements UserScraper {
         }
     }
 }
-
-export default MelonUserScraper;
