@@ -7,10 +7,8 @@ import { TrackScraper } from './TrackScraper.js';
 
 @Injectable()
 export class FloTrackScraper implements TrackScraper {
-    private readonly searchUrl =
-        'https://www.music-flo.com/api/search/v2/search';
-    private readonly recentTrackUrl =
-        'https://www.music-flo.com/api/personal/v1/tracks/recentlistened';
+    private readonly searchUrl = 'https://www.music-flo.com/api/search/v2/search';
+    private readonly recentTrackUrl = 'https://www.music-flo.com/api/personal/v1/tracks/recentlistened';
 
     constructor(protected readonly authdataService: AuthdataService) {}
 
@@ -26,19 +24,17 @@ export class FloTrackScraper implements TrackScraper {
             },
         });
 
-        const trackList: TrackInfo[] = response.data?.data?.list[0]?.list?.map(
-            (track) => {
-                const { id, name, artistList, album } = track;
-                const artists = artistList.map((artist) => artist.name);
-                return {
-                    streamType: 'flo',
-                    title: name,
-                    streamId: id,
-                    artists: artists,
-                    album: album.title,
-                };
-            },
-        );
+        const trackList: TrackInfo[] = response.data?.data?.list[0]?.list?.map((track) => {
+            const { id, name, artistList, album } = track;
+            const artists = artistList.map((artist) => artist.name);
+            return {
+                streamType: 'flo',
+                title: name,
+                streamId: id,
+                artists: artists,
+                album: album.title,
+            };
+        });
         return trackList;
     }
 

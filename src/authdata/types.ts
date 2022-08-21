@@ -9,16 +9,7 @@ export interface MelonAuthdata {
     keyCookie: string;
 }
 
-export const MelonAuthdataKeys = [
-    'MAC',
-    'MUG',
-    'MHC',
-    'MUAC',
-    'MUNIK',
-    'MLCP',
-    'MUS',
-    'keyCookie',
-];
+export const MelonAuthdataKeys = ['MAC', 'MUG', 'MHC', 'MUAC', 'MUNIK', 'MLCP', 'MUS', 'keyCookie'];
 
 export interface FloAuthdata {
     accessToken: string;

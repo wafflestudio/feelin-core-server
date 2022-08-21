@@ -18,12 +18,7 @@ describe('PlaylistService', () => {
                 PlaylistModule,
                 TrackModule,
                 UserModule,
-                ...TypeOrmSQLITETestingModule([
-                    Playlist,
-                    StreamPlaylist,
-                    StreamAccount,
-                    User,
-                ]),
+                ...TypeOrmSQLITETestingModule([Playlist, StreamPlaylist, StreamAccount, User]),
             ],
             providers: [AuthdataService],
         }).compile();

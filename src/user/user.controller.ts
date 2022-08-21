@@ -8,10 +8,7 @@ import { UserService } from './user.service.js';
 @Controller('users')
 @ApiTags('User API')
 export class UserController {
-    constructor(
-        private readonly userService: UserService,
-        private readonly playlistService: PlaylistService,
-    ) {}
+    constructor(private readonly userService: UserService, private readonly playlistService: PlaylistService) {}
 
     @Post(':userId/playlists/:playlistId')
     @HttpCode(201)
@@ -24,23 +21,13 @@ export class UserController {
         @Param('playlistId') playlistId: number,
         @Body() savePlaylistDto: SavePlaylistDto,
     ) {
-        await this.playlistService.savePlaylist(
-            userId,
-            playlistId,
-            savePlaylistDto,
-        );
+        await this.playlistService.savePlaylist(userId, playlistId, savePlaylistDto);
     }
 
     @Post(':userId/stream/login')
     @HttpCode(200)
-    async loginStreamAccont(
-        @Param('userId') userId: number,
-        @Body() loginStreamDto: LoginStreamDto,
-    ) {
-        const key = await this.userService.loginStreamAccount(
-            userId,
-            loginStreamDto,
-        );
+    async loginStreamAccont(@Param('userId') userId: number, @Body() loginStreamDto: LoginStreamDto) {
+        const key = await this.userService.loginStreamAccount(userId, loginStreamDto);
         return key;
     }
 }

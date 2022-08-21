@@ -6,12 +6,7 @@ import { TrackScraperService } from './track-scraper.service.js';
 
 @Module({
     controllers: [],
-    providers: [
-        MelonTrackScraper,
-        FloTrackScraper,
-        TrackScraperService,
-        AuthdataService,
-    ],
+    providers: [MelonTrackScraper, FloTrackScraper, TrackScraperService, AuthdataService],
     exports: [TrackScraperService, MelonTrackScraper, FloTrackScraper],
 })
 export class TrackScraperModule {}

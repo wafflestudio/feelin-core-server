@@ -21,10 +21,8 @@ interface publicKeyConfig {
     publicKey: string;
 }
 
-const RSAPublicKeyUrl =
-    'https://member.melon.com/muid/web/authentication/authentication_getRSAPublic.json';
-const loginUrl =
-    'https://member.melon.com/muid/web/login/login_informProcs.htm';
+const RSAPublicKeyUrl = 'https://member.melon.com/muid/web/authentication/authentication_getRSAPublic.json';
+const loginUrl = 'https://member.melon.com/muid/web/login/login_informProcs.htm';
 
 function getCookieString(): string {
     const cookies: string[] = [];
@@ -92,27 +90,22 @@ async function login(id: string, password: string) {
         reToken: '',
     };
     try {
-        const response = await axios.post(
-            loginUrl,
-            new URLSearchParams(data).toString(),
-            {
-                headers: {
-                    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    Cookie: cookie,
-                    Connection: 'keep-alive',
-                    Host: 'member.melon.com',
-                    Origin: 'https://member.melon.com',
-                    Referer:
-                        'https://member.melon.com/muid/web/login/login_informM.htm',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'User-Agent':
-                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15',
-                },
-                withCredentials: true,
+        const response = await axios.post(loginUrl, new URLSearchParams(data).toString(), {
+            headers: {
+                Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                Cookie: cookie,
+                Connection: 'keep-alive',
+                Host: 'member.melon.com',
+                Origin: 'https://member.melon.com',
+                Referer: 'https://member.melon.com/muid/web/login/login_informM.htm',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent':
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15',
             },
-        );
+            withCredentials: true,
+        });
         console.log(response.config);
     } catch (error) {
         console.error(error);

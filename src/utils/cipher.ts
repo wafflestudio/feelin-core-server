@@ -1,11 +1,4 @@
-import {
-    createCipheriv,
-    createDecipheriv,
-    generateKeyPair,
-    privateDecrypt,
-    publicEncrypt,
-    randomBytes,
-} from 'crypto';
+import { createCipheriv, createDecipheriv, generateKeyPair, privateDecrypt, publicEncrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 
 const generateKeyPairAsync = promisify(generateKeyPair);
@@ -30,10 +23,7 @@ export async function asymmEncrypt(data: string): Promise<{
         },
     });
 
-    const encText = publicEncrypt(
-        keyPair.publicKey,
-        Buffer.from(data),
-    ).toString('base64');
+    const encText = publicEncrypt(keyPair.publicKey, Buffer.from(data)).toString('base64');
 
     return {
         data: encText,
@@ -54,10 +44,7 @@ export async function symmEncrypt(data: string): Promise<{
     const cipher = createCipheriv('aes-256-cbc', key, iv);
     const encText = cipher.update(data);
     return {
-        data:
-            iv.toString('hex') +
-            ':' +
-            Buffer.concat([encText, cipher.final()]).toString('hex'),
+        data: iv.toString('hex') + ':' + Buffer.concat([encText, cipher.final()]).toString('hex'),
         key: key.toString('hex'),
     };
 }

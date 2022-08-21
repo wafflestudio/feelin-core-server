@@ -20,13 +20,9 @@ export class FloPlaylistScraper implements PlaylistScraper {
         user: 'https://api.music-flo.com/personal/v1/playlist/',
         dj: 'https://api.music-flo.com/meta/v1/channel/',
     };
-    private readonly createPlaylistUrl =
-        'https://www.music-flo.com/api/personal/v1/myplaylist';
+    private readonly createPlaylistUrl = 'https://www.music-flo.com/api/personal/v1/myplaylist';
 
-    constructor(
-        protected readonly authdataService: AuthdataService,
-        protected readonly trackService: TrackService,
-    ) {}
+    constructor(protected readonly authdataService: AuthdataService, protected readonly trackService: TrackService) {}
 
     async getPlaylist(playlistId: string): Promise<Playlist> {
         const [type, id] = playlistId.split(':');
@@ -34,18 +30,16 @@ export class FloPlaylistScraper implements PlaylistScraper {
             // FIXME: Better error message
             throw new Error('Not supported playlist type');
         }
-        const res = await axios
-            .get(this.playlistUrl[type] + id)
-            .catch((error) => {
-                // FIXME: Better error message
-                if (error.response) {
-                    throw new Error('error while making request');
-                } else if (error.request) {
-                    throw new Error('error while making request');
-                } else {
-                    throw new Error('error while making request');
-                }
-            });
+        const res = await axios.get(this.playlistUrl[type] + id).catch((error) => {
+            // FIXME: Better error message
+            if (error.response) {
+                throw new Error('error while making request');
+            } else if (error.request) {
+                throw new Error('error while making request');
+            } else {
+                throw new Error('error while making request');
+            }
+        });
 
         const playlistData = res.data?.data;
         const floPlaylist = new StreamPlaylist();
@@ -121,17 +115,12 @@ export class FloPlaylistScraper implements PlaylistScraper {
         }
 
         const playlistId = createResponse.data?.data?.id;
-        const streamTracks = await this.trackService.findAllStreamTracks(
-            playlist.tracks,
-        );
+        const streamTracks = await this.trackService.findAllStreamTracks(playlist.tracks);
         const trackIds = playlist.tracks
             .map(
                 (track) =>
-                    streamTracks.find(
-                        (streamTrack) =>
-                            streamTrack.track === track &&
-                            streamTrack.streamType === 'flo',
-                    )?.streamId,
+                    streamTracks.find((streamTrack) => streamTrack.track === track && streamTrack.streamType === 'flo')
+                        ?.streamId,
             )
             .filter((id) => id !== null); // Filter out un-found tracks
 

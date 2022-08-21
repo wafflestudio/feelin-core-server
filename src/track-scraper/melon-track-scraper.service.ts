@@ -16,10 +16,8 @@ import { TrackScraper } from './TrackScraper.js';
 
 @Injectable()
 export class MelonTrackScraper implements TrackScraper {
-    private readonly recentTrackUrl =
-        'https://www.melon.com/mymusic/recent/mymusicrecentsong_list.htm';
-    private readonly recentTrackListUrl =
-        'https://www.melon.com/mymusic/recent/mymusicrecentsong_listPaging.htm';
+    private readonly recentTrackUrl = 'https://www.melon.com/mymusic/recent/mymusicrecentsong_list.htm';
+    private readonly recentTrackListUrl = 'https://www.melon.com/mymusic/recent/mymusicrecentsong_listPaging.htm';
     private readonly trackInfoUrl = 'https://m2.melon.com/m6/v2/song/info.json';
     private readonly melonURL = 'https://www.melon.com/search/song/index.htm';
     private readonly pageSize = 50;
@@ -222,9 +220,7 @@ export class MelonTrackScraper implements TrackScraper {
     async getMyRecentTracks(authdata: Authdata) {
         const melonAuthdata = authdata as MelonAuthdata;
 
-        const { count, recentTracks } = await this.getFirstRecentTracks(
-            melonAuthdata,
-        );
+        const { count, recentTracks } = await this.getFirstRecentTracks(melonAuthdata);
         const requestArr: Promise<AxiosResponse<any, any>>[] = [];
         for (let i = 1; i < Math.ceil(count / this.pageSize); i++) {
             requestArr.push(
@@ -235,10 +231,7 @@ export class MelonTrackScraper implements TrackScraper {
                         memberKey: melonAuthdata['keyCookie'],
                     },
                     headers: {
-                        Cookie: this.authdataService.toString(
-                            'melon',
-                            melonAuthdata,
-                        ),
+                        Cookie: this.authdataService.toString('melon', melonAuthdata),
                         Referer: `${this.recentTrackUrl}?memberKey=${melonAuthdata['keyCookie']}`,
                     },
                 }),
@@ -269,9 +262,7 @@ export class MelonTrackScraper implements TrackScraper {
             },
         });
         const $ = cheerio.load(response.data);
-        const count = $(
-            '#conts > div.wrab_list_info > div > span > span',
-        ).text();
+        const count = $('#conts > div.wrab_list_info > div > span > span').text();
 
         const recentTracks: TrackInfo[] = [];
         $('table > tbody > tr').each((_, el) => {

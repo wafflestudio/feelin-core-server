@@ -24,10 +24,7 @@ export class TrackScraperService {
         return this.trackScrapers[streamType];
     }
 
-    async matchTracks(
-        candidates: TrackInfo[],
-        reference: TrackInfo,
-    ): Promise<TrackInfo | null> {
+    async matchTracks(candidates: TrackInfo[], reference: TrackInfo): Promise<TrackInfo | null> {
         const MIN_NGRAM = 1;
         const MAX_NGRAM = 4;
         const THRESHOLD = 0.1;
@@ -46,39 +43,21 @@ export class TrackScraperService {
                     score: 1.0,
                 };
             });
-            const titleNGrams = await this.makeNGramSet(
-                reference.title,
-                MIN_NGRAM,
-                MAX_NGRAM,
-            );
-            const albumNGrams = await this.makeNGramSet(
-                reference.album,
-                MIN_NGRAM,
-                MAX_NGRAM,
-            );
+            const titleNGrams = await this.makeNGramSet(reference.title, MIN_NGRAM, MAX_NGRAM);
+            const albumNGrams = await this.makeNGramSet(reference.album, MIN_NGRAM, MAX_NGRAM);
             for (const track of scores) {
                 track.score *= this.jaccardSimilarity(
                     titleNGrams,
-                    await this.makeNGramSet(
-                        track.trackInfo.title,
-                        MIN_NGRAM,
-                        MAX_NGRAM,
-                    ),
+                    await this.makeNGramSet(track.trackInfo.title, MIN_NGRAM, MAX_NGRAM),
                 );
             }
             for (const track of scores) {
-                track.score *= +(
-                    track.trackInfo.artists.length === reference.artists.length
-                );
+                track.score *= +(track.trackInfo.artists.length === reference.artists.length);
             }
             for (const track of scores) {
                 track.score *= this.jaccardSimilarity(
                     albumNGrams,
-                    await this.makeNGramSet(
-                        track.trackInfo.album,
-                        MIN_NGRAM,
-                        MAX_NGRAM,
-                    ),
+                    await this.makeNGramSet(track.trackInfo.album, MIN_NGRAM, MAX_NGRAM),
                 );
             }
 
@@ -95,11 +74,7 @@ export class TrackScraperService {
         return match[0];
     }
 
-    async makeNGramSet(
-        str: string,
-        min: number,
-        max: number,
-    ): Promise<Set<string>> {
+    async makeNGramSet(str: string, min: number, max: number): Promise<Set<string>> {
         let nGrams = [];
         for (let i = min; i <= max; i++) {
             nGrams = [...nGrams, ...nGram(i)(str)];

@@ -15,12 +15,7 @@ import { Playlist } from './playlist.entity.js';
         PlaylistScraperModule,
         forwardRef(() => UserModule),
         forwardRef(() => TrackModule),
-        TypeOrmModule.forFeature([
-            Playlist,
-            StreamPlaylist,
-            StreamAccount,
-            User,
-        ]),
+        TypeOrmModule.forFeature([Playlist, StreamPlaylist, StreamAccount, User]),
     ],
     controllers: [PlaylistController],
     providers: [PlaylistService, AuthdataService],

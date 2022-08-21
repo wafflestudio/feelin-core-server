@@ -5,10 +5,8 @@ import { MelonAuthdata } from '@/authdata/types';
 
 @Injectable()
 export class MelonUserScraper implements UserScraper {
-    private readonly responseUrl =
-        'https://member.melon.com/muid/web/login/login_informProcs.htm';
-    private readonly loginUrl =
-        'https://member.melon.com/muid/web/login/login_informM.htm';
+    private readonly responseUrl = 'https://member.melon.com/muid/web/login/login_informProcs.htm';
+    private readonly loginUrl = 'https://member.melon.com/muid/web/login/login_informM.htm';
 
     async login(id: string, password: string): Promise<MelonAuthdata | null> {
         let loginSuccess = false;

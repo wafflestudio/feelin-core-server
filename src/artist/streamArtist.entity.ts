@@ -1,12 +1,5 @@
 import { StreamService, StreamServiceEnum } from '@feelin-types/types.js';
-import {
-    BaseEntity,
-    Column,
-    Entity,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    Unique,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Artist } from './artist.entity.js';
 
 @Entity()

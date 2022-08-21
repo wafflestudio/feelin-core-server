@@ -43,11 +43,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
             throw new Error('Not supported playlist type');
         }
 
-        const {
-            title,
-            count,
-            trackInfo: trackData,
-        } = await this.getFirstPlaylistTracks(type, id);
+        const { title, count, trackInfo: trackData } = await this.getFirstPlaylistTracks(type, id);
 
         const requestArr: Promise<AxiosResponse<any, any>>[] = [];
         for (let i = 1; i < Math.ceil(count / this.pageSize); i++) {
@@ -69,13 +65,9 @@ export class MelonPlaylistScraper implements PlaylistScraper {
                 const $ = cheerio.load(response.data);
                 $('table > tbody > tr').each((_, el) => {
                     if (type === 'my') {
-                        trackData.push(
-                            this.melonTrackScraper.scrapeMyMusicTrack($, el),
-                        );
+                        trackData.push(this.melonTrackScraper.scrapeMyMusicTrack($, el));
                     } else if (type === 'dj') {
-                        trackData.push(
-                            this.melonTrackScraper.scrapeTrack($, el),
-                        );
+                        trackData.push(this.melonTrackScraper.scrapeTrack($, el));
                     }
                 });
             }
@@ -140,14 +132,10 @@ export class MelonPlaylistScraper implements PlaylistScraper {
             repntImagePathDefaultYn: 'N',
         };
         const data = new URLSearchParams(params);
-        const streamTracks = await this.trackService.findAllStreamTracks(
-            playlist.tracks,
-        );
+        const streamTracks = await this.trackService.findAllStreamTracks(playlist.tracks);
         tracks.map((track) => {
             const melonId = streamTracks.find(
-                (streamTrack) =>
-                    streamTrack.track === track &&
-                    streamTrack?.streamType === 'melon',
+                (streamTrack) => streamTrack.track === track && streamTrack?.streamType === 'melon',
             )?.streamId;
             if (melonId) {
                 data.append('songIds[]', melonId);
@@ -157,8 +145,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
         const response = await axios.post(this.createPlaylistUrl, data, {
             headers: {
                 Cookie: this.authdataService.toString('melon', melonAuthData),
-                Referer:
-                    'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insert.htm',
+                Referer: 'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insert.htm',
                 'X-Requested-With': 'XMLHttpRequest',
             },
         });
@@ -180,9 +167,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
         });
 
         const $ = cheerio.load(response.data);
-        const count = $(
-            '#conts > div.section_contin > div.page_header > h5 > span',
-        ).text();
+        const count = $('#conts > div.section_contin > div.page_header > h5 > span').text();
         const title = $(
             '#conts > div.section_info.d_djcol_list > div > div.entry > div.info > div.ellipsis.song_name',
         ).text();
@@ -190,9 +175,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
 
         $('table > tbody > tr').each((_, el) => {
             if (type === 'my') {
-                trackData.push(
-                    this.melonTrackScraper.scrapeMyMusicTrack($, el),
-                );
+                trackData.push(this.melonTrackScraper.scrapeMyMusicTrack($, el));
             } else if (type === 'dj') {
                 trackData.push(this.melonTrackScraper.scrapeTrack($, el));
             }

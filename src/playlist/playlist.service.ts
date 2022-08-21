@@ -30,8 +30,7 @@ export class PlaylistService {
     async getMatchedTracks(playlist: Playlist) {
         await Promise.all(
             playlist.tracks.map(async (track) => {
-                const matchingStreamTracks =
-                    await this.trackService.getMatchingTracks(track);
+                const matchingStreamTracks = await this.trackService.getMatchingTracks(track);
                 matchingStreamTracks.map((streamTrack) => {
                     streamTrack.track = track;
                 });
@@ -40,12 +39,9 @@ export class PlaylistService {
         return;
     }
 
-    async createPlaylist(
-        createPlaylistDto: CreatePlaylistDto,
-    ): Promise<Playlist> {
+    async createPlaylist(createPlaylistDto: CreatePlaylistDto): Promise<Playlist> {
         const { playlistUrl } = createPlaylistDto;
-        const { streamType, playlistId } =
-            await this.playlistScraperService.getStreamAndId(playlistUrl);
+        const { streamType, playlistId } = await this.playlistScraperService.getStreamAndId(playlistUrl);
 
         const streamPlaylist = await this.streamPlaylistRepository.findOne({
             where: { streamId: playlistId, streamType: streamType },
@@ -57,9 +53,7 @@ export class PlaylistService {
         }
 
         // Get playlist info from streaming service
-        let playlist = await this.playlistScraperService
-            .get(streamType)
-            .getPlaylist(playlistId);
+        let playlist = await this.playlistScraperService.get(streamType).getPlaylist(playlistId);
         // Match tracks with other streaming services
         await this.getMatchedTracks(playlist).catch((error) => {
             console.error(error);
@@ -76,11 +70,7 @@ export class PlaylistService {
         return playlist;
     }
 
-    async savePlaylist(
-        userId: number,
-        playlistId: number,
-        savePlaylistDto: SavePlaylistDto,
-    ) {
+    async savePlaylist(userId: number, playlistId: number, savePlaylistDto: SavePlaylistDto) {
         const user = await this.userRepository.findOne({ id: userId });
         if (user === undefined) {
             throw new NotFoundException('Not Found', 'user not found');
@@ -102,10 +92,7 @@ export class PlaylistService {
         });
 
         if (account === undefined) {
-            throw new NotFoundException(
-                'Not Found',
-                'available streaming service account not found',
-            );
+            throw new NotFoundException('Not Found', 'available streaming service account not found');
         }
 
         const key = await asymmDecrypt(symmKey, account.privateKey);
@@ -113,10 +100,7 @@ export class PlaylistService {
 
         const response = await this.playlistScraperService
             .get(account.streamType)
-            .savePlaylist(
-                playlist,
-                this.authdataService.fromString(account.streamType, cookie),
-            );
+            .savePlaylist(playlist, this.authdataService.fromString(account.streamType, cookie));
         return response;
     }
 }

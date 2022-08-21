@@ -8,10 +8,7 @@ import { UserScraper } from './UserScraper.js';
 export class UserScraperService {
     userScrapers: Record<StreamService, UserScraper>;
 
-    constructor(
-        private readonly melonUserScraper: MelonUserScraper,
-        private readonly floUserScraper: FloUserScraper,
-    ) {
+    constructor(private readonly melonUserScraper: MelonUserScraper, private readonly floUserScraper: FloUserScraper) {
         this.userScrapers = {
             melon: melonUserScraper,
             flo: floUserScraper,

@@ -13,6 +13,7 @@ async function bootstrap() {
             transform: true,
         }),
     );
+
     setupSwagger(app);
     await app.listen(3000);
 }

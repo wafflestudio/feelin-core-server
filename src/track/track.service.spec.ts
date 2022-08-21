@@ -9,10 +9,7 @@ describe('TrackService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                TrackScraperModule,
-                ...TypeOrmSQLITETestingModule([StreamTrack]),
-            ],
+            imports: [TrackScraperModule, ...TypeOrmSQLITETestingModule([StreamTrack])],
             providers: [TrackService],
         }).compile();
 

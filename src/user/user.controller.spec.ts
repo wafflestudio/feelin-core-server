@@ -18,12 +18,7 @@ describe('UserController', () => {
                 UserModule,
                 PlaylistModule,
                 UserScraperModule,
-                ...TypeOrmSQLITETestingModule([
-                    Playlist,
-                    StreamPlaylist,
-                    StreamAccount,
-                    User,
-                ]),
+                ...TypeOrmSQLITETestingModule([Playlist, StreamPlaylist, StreamAccount, User]),
             ],
             providers: [AuthdataService],
             controllers: [UserController],

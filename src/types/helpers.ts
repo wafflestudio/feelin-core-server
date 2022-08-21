@@ -5,11 +5,7 @@ import { TrackInfo } from './types.js';
 
 // TrackInfo interface
 export function isSameTrack(a: TrackInfo, b: TrackInfo): boolean {
-    return (
-        a.title == b.title &&
-        isEqual(a.artists.sort(), b.artists.sort()) &&
-        a.album == b.album
-    );
+    return a.title == b.title && isEqual(a.artists.sort(), b.artists.sort()) && a.album == b.album;
 }
 
 export function toStreamTrackEntity(trackInfo: TrackInfo): StreamTrack {

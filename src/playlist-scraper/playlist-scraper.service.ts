@@ -88,25 +88,13 @@ export class PlaylistScraperService {
             case 'www.melon.com': {
                 streamType = 'melon';
                 const paths = url.pathname.split('/');
-                if (
-                    !(
-                        paths.length === 4 &&
-                        paths[0] === '' &&
-                        paths[1] === 'mymusic'
-                    )
-                ) {
+                if (!(paths.length === 4 && paths[0] === '' && paths[1] === 'mymusic')) {
                     throw new Error('Melon url malformed');
                 }
 
-                if (
-                    paths[2] === 'playlist' &&
-                    paths[3] === 'mymusicplaylistview_inform.htm'
-                ) {
+                if (paths[2] === 'playlist' && paths[3] === 'mymusicplaylistview_inform.htm') {
                     playlistId += 'user:';
-                } else if (
-                    paths[2] === 'dj' &&
-                    paths[3] === 'mymusicdjplaylistview_inform.htm'
-                ) {
+                } else if (paths[2] === 'dj' && paths[3] === 'mymusicdjplaylistview_inform.htm') {
                     playlistId += 'dj:';
                 } else {
                     throw new Error('Melon url malformed');
@@ -125,14 +113,7 @@ export class PlaylistScraperService {
             case 'flomuz.io': {
                 streamType = 'flo';
                 const paths = url.pathname.split('/');
-                if (
-                    !(
-                        paths.length === 3 &&
-                        paths[0] === '' &&
-                        paths[1] === 's' &&
-                        paths[2].split('.').length === 2
-                    )
-                ) {
+                if (!(paths.length === 3 && paths[0] === '' && paths[1] === 's' && paths[2].split('.').length === 2)) {
                     throw new Error('Flo url malformed');
                 }
                 const [type, id] = paths[2].split('.');
@@ -151,14 +132,7 @@ export class PlaylistScraperService {
             case 'www.music-flo.com': {
                 streamType = 'flo';
                 const paths = url.pathname.split('/');
-                if (
-                    !(
-                        paths.length === 4 &&
-                        paths[0] === '' &&
-                        paths[1] === 'detail' &&
-                        paths[2] === 'channel'
-                    )
-                ) {
+                if (!(paths.length === 4 && paths[0] === '' && paths[1] === 'detail' && paths[2] === 'channel')) {
                     throw new Error('Flo url malformed');
                 }
                 playlistId += 'dj:';

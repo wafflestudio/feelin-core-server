@@ -1,9 +1,4 @@
-import {
-    Injectable,
-    NotFoundException,
-    NotImplementedException,
-    UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, NotImplementedException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
 import { StreamServiceEnum } from '@feelin-types/types.js';
@@ -33,20 +28,12 @@ export class UserService {
         const { streamType, id, password } = loginDto;
 
         if (!StreamServiceEnum.includes(streamType)) {
-            throw new NotImplementedException(
-                'Not Implemented',
-                'unsupported streaming service type',
-            );
+            throw new NotImplementedException('Not Implemented', 'unsupported streaming service type');
         }
 
-        const cookieData: Authdata | null = await this.userScraperService
-            .get(streamType)
-            .login(id, password);
+        const cookieData: Authdata | null = await this.userScraperService.get(streamType).login(id, password);
         if (cookieData === undefined) {
-            throw new UnauthorizedException(
-                'Unauthorized',
-                'login to streaming service failed',
-            );
+            throw new UnauthorizedException('Unauthorized', 'login to streaming service failed');
         }
 
         const user = await this.userRepository.findOne({ id: userId });
@@ -54,17 +41,9 @@ export class UserService {
             throw new NotFoundException('Not Found', 'user not found');
         }
 
-        const { data: cookie, key } = await symmEncrypt(
-            this.authdataService.toString(streamType, cookieData),
-        );
-        const {
-            data: symmKey,
-            publicKey,
-            privateKey,
-        } = await asymmEncrypt(key);
-        const hashPubKey = createHash('sha256')
-            .update(publicKey)
-            .digest('base64url');
+        const { data: cookie, key } = await symmEncrypt(this.authdataService.toString(streamType, cookieData));
+        const { data: symmKey, publicKey, privateKey } = await asymmEncrypt(key);
+        const hashPubKey = createHash('sha256').update(publicKey).digest('base64url');
 
         await user.save();
 

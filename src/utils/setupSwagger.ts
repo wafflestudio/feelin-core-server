@@ -4,9 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 export function setupSwagger(app: INestApplication): void {
     const options = new DocumentBuilder()
         .setTitle('Streaming Service API')
-        .setDescription(
-            'API for interacting with third-party music streaming services',
-        )
+        .setDescription('API for interacting with third-party music streaming services')
         .setVersion('0.1.0')
         .build();
 

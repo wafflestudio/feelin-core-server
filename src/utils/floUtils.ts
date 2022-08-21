@@ -51,13 +51,7 @@ function detailId2ApiId(id: string): string {
 }
 
 function convDate(dateString: string): Date {
-    return new Date(
-        dateString.slice(0, 4) +
-            '-' +
-            dateString.slice(4, 6) +
-            '-' +
-            dateString.slice(6, 8),
-    );
+    return new Date(dateString.slice(0, 4) + '-' + dateString.slice(4, 6) + '-' + dateString.slice(6, 8));
 }
 
 export { shareId2ApiId, detailId2ApiId, convDate };

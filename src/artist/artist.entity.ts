@@ -1,11 +1,5 @@
 import { Track } from '@/track/track.entity.js';
-import {
-    BaseEntity,
-    Column,
-    Entity,
-    ManyToMany,
-    PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Artist extends BaseEntity {

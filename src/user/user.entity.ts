@@ -1,10 +1,4 @@
-import {
-    BaseEntity,
-    Column,
-    Entity,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { StreamService, StreamServiceEnum } from '@feelin-types/types.js';
 
@@ -39,12 +33,7 @@ class StreamAccount extends BaseEntity {
     @ManyToOne(() => User)
     user!: User;
 
-    constructor(
-        streamType: StreamService,
-        cookie: string,
-        publicKey: string,
-        privateKey: string,
-    ) {
+    constructor(streamType: StreamService, cookie: string, publicKey: string, privateKey: string) {
         super();
         this.streamType = streamType;
         this.cookie = cookie;

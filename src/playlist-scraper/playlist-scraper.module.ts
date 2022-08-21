@@ -9,12 +9,7 @@ import { PlaylistScraperService } from './playlist-scraper.service.js';
 @Module({
     imports: [TrackModule, TrackScraperModule],
     controllers: [],
-    providers: [
-        MelonPlaylistScraper,
-        FloPlaylistScraper,
-        PlaylistScraperService,
-        AuthdataService,
-    ],
+    providers: [MelonPlaylistScraper, FloPlaylistScraper, PlaylistScraperService, AuthdataService],
     exports: [PlaylistScraperService, MelonPlaylistScraper, FloPlaylistScraper],
 })
 export class PlaylistScraperModule {}

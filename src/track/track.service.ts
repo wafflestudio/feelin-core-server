@@ -24,18 +24,13 @@ export class TrackService {
             if (streamType === streamTracks[0].streamType) {
                 continue;
             }
-            searchPromise.push(
-                this.trackScraperService.get(streamType).searchTrack(reference),
-            );
+            searchPromise.push(this.trackScraperService.get(streamType).searchTrack(reference));
         }
         const searchResults = await Promise.all(searchPromise);
 
         const matchPromise: Promise<TrackInfo>[] = [];
         for (const searchResult of searchResults) {
-            const match = this.trackScraperService.matchTracks(
-                searchResult,
-                reference,
-            );
+            const match = this.trackScraperService.matchTracks(searchResult, reference);
             matchPromise.push(match);
         }
         const matches = await Promise.all(matchPromise);

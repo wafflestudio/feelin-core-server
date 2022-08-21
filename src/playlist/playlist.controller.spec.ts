@@ -11,15 +11,7 @@ describe('PlaylistController', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                PlaylistModule,
-                ...TypeOrmSQLITETestingModule([
-                    Playlist,
-                    StreamPlaylist,
-                    StreamAccount,
-                    User,
-                ]),
-            ],
+            imports: [PlaylistModule, ...TypeOrmSQLITETestingModule([Playlist, StreamPlaylist, StreamAccount, User])],
             controllers: [PlaylistController],
         }).compile();
 

@@ -8,11 +8,7 @@ import { User } from './user.entity.js';
 import { UserService } from './user.service.js';
 
 @Module({
-    imports: [
-        forwardRef(() => PlaylistModule),
-        UserScraperModule,
-        TypeOrmModule.forFeature([User]),
-    ],
+    imports: [forwardRef(() => PlaylistModule), UserScraperModule, TypeOrmModule.forFeature([User])],
     controllers: [UserController],
     providers: [UserService, AuthdataService],
     exports: [UserService],

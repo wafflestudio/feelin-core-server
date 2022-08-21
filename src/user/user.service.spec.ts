@@ -11,11 +11,7 @@ describe('UserService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                UserScraperModule,
-                TrackModule,
-                ...TypeOrmSQLITETestingModule([User]),
-            ],
+            imports: [UserScraperModule, TrackModule, ...TypeOrmSQLITETestingModule([User])],
             providers: [AuthdataService, UserService],
         }).compile();
 

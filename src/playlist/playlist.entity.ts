@@ -1,13 +1,6 @@
 import { Track } from '@/track/track.entity.js';
 
-import {
-    BaseEntity,
-    Column,
-    Entity,
-    JoinTable,
-    ManyToMany,
-    PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Playlist extends BaseEntity {

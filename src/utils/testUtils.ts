@@ -18,9 +18,7 @@ export const mockRepository = () => ({
     softDelete: jest.fn(),
 });
 
-export type MockRepository<T = any> = Partial<
-    Record<keyof Repository<T>, jest.Mock>
->;
+export type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 export function MockRepositoryModule(entities: EntityClassOrSchema[]) {
     return entities.map((entity) => {
@@ -37,17 +35,7 @@ export const TypeOrmSQLITETestingModule = (entities: EntityClassOrSchema[]) => [
             type: 'sqlite',
             database: ':memory:',
             dropSchema: true,
-            entities: [
-                Album,
-                StreamAlbum,
-                Artist,
-                StreamArtist,
-                Playlist,
-                StreamPlaylist,
-                Track,
-                StreamTrack,
-                User,
-            ],
+            entities: [Album, StreamAlbum, Artist, StreamArtist, Playlist, StreamPlaylist, Track, StreamTrack, User],
             synchronize: true,
             autoLoadEntities: true,
         }),
