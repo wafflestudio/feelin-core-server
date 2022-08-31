@@ -1,13 +1,14 @@
 import { AuthdataService } from '@/authdata/authdata.service.js';
 import { TrackModule } from '@/track/track.module.js';
-import { StreamAccount, User } from '@/user/user.entity.js';
+import { User } from '@/user/entity/user.entity.js';
 import { UserModule } from '@/user/user.module.js';
 import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Playlist } from './playlist.entity.js';
 import { PlaylistModule } from './playlist.module.js';
 import { PlaylistService } from './playlist.service.js';
-import { StreamPlaylist } from './streamPlaylist.entity.js';
+import { VendorUser } from '@/user/entity/vendorUser.entity.js';
+import { Playlist } from './entity/playlist.entity.js';
+import { VendorPlaylist } from './entity/vendorPlaylist.entity.js';
 
 describe('PlaylistService', () => {
     let service: PlaylistService;
@@ -18,7 +19,7 @@ describe('PlaylistService', () => {
                 PlaylistModule,
                 TrackModule,
                 UserModule,
-                ...TypeOrmSQLITETestingModule([Playlist, StreamPlaylist, StreamAccount, User]),
+                ...TypeOrmSQLITETestingModule([Playlist, VendorPlaylist, User, VendorUser]),
             ],
             providers: [AuthdataService],
         }).compile();

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserScraper } from './UserScraper.js';
 import puppeteer from 'puppeteer';
-import { MelonAuthdata } from '@/authdata/types';
+import { MelonAuthdata } from '@/authdata/types.js';
 
 @Injectable()
 export class MelonUserScraper implements UserScraper {

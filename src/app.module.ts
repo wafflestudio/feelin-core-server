@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { AlbumModule } from './album/album.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -54,4 +55,6 @@ import { getEnvFile } from './utils/getEnvFile.js';
     controllers: [AppController],
     providers: [AppService, AuthdataService],
 })
-export class AppModule {}
+export class AppModule {
+    constructor(private dataSource: DataSource) {}
+}

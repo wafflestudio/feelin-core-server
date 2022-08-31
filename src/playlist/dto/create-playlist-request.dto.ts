@@ -1,6 +1,6 @@
 import { IsUrl } from 'class-validator';
 
-export class CreatePlaylistDto {
+export class CreatePlaylistRequestDto {
     @IsUrl()
     playlistUrl!: string;
 }

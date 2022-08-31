@@ -1,16 +1,11 @@
-import { Album } from '@/album/album.entity.js';
-import { StreamAlbum } from '@/album/streamAlbum.entity.js';
-import { Artist } from '@/artist/artist.entity.js';
-import { StreamArtist } from '@/artist/streamArtist.entity.js';
 import { AuthdataService } from '@/authdata/authdata.service.js';
 import { Authdata, FloAuthdata } from '@/authdata/types.js';
-import { Playlist } from '@/playlist/playlist.entity.js';
-import { StreamPlaylist } from '@/playlist/streamPlaylist.entity.js';
-import { StreamTrack } from '@/track/streamTrack.entity.js';
-import { Track } from '@/track/track.entity.js';
+import { Playlist } from '@/playlist/entity/playlist.entity.js';
+import { IPlaylist } from '@/playlist/types/types.js';
+import { Track } from '@/track/entity/track.entity.js';
 import { TrackService } from '@/track/track.service.js';
+import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
-import { convDate } from '@utils/floUtils.js';
 import axios from 'axios';
 import { PlaylistScraper } from './PlaylistScraper.js';
 
@@ -24,30 +19,14 @@ export class FloPlaylistScraper implements PlaylistScraper {
 
     constructor(protected readonly authdataService: AuthdataService, protected readonly trackService: TrackService) {}
 
-    async getPlaylist(playlistId: string): Promise<Playlist> {
+    async getPlaylist(playlistId: string): Promise<IPlaylist> {
         const [type, id] = playlistId.split(':');
         if (type != 'user' && type != 'dj') {
             // FIXME: Better error message
             throw new Error('Not supported playlist type');
         }
-        const res = await axios.get(this.playlistUrl[type] + id).catch((error) => {
-            // FIXME: Better error message
-            if (error.response) {
-                throw new Error('error while making request');
-            } else if (error.request) {
-                throw new Error('error while making request');
-            } else {
-                throw new Error('error while making request');
-            }
-        });
-
+        const res = await axios.get(this.playlistUrl[type] + id);
         const playlistData = res.data?.data;
-        const floPlaylist = new StreamPlaylist();
-        floPlaylist.streamType = 'flo';
-        floPlaylist.streamId = playlistId;
-
-        const playlist = new Playlist();
-        playlist.title = playlistData?.name;
 
         let trackList;
         if (type == 'user') {
@@ -56,47 +35,30 @@ export class FloPlaylistScraper implements PlaylistScraper {
             trackList = playlistData?.trackList;
         }
 
-        const tracks = trackList?.map((trackData) => {
-            // Track entity
-            const streamTrack = new StreamTrack();
-            streamTrack.streamType = 'flo';
-            streamTrack.streamId = trackData?.id;
-
-            const track = new Track();
-            track.title = trackData?.name;
-
-            // Album entity
-            const albumData = trackData?.album;
-            const streamAlbum = new StreamAlbum();
-            streamAlbum.streamId = albumData?.id;
-            streamAlbum.streamType = 'flo';
-
-            const album = new Album();
-            album.title = albumData?.title;
-            album.realeaseDate = convDate(albumData?.releaseYmd);
-
-            // Artists entity
-            const artistsData = trackData?.artistList;
-            const artists = artistsData?.map((artistData) => {
-                const streamArtist = new StreamArtist();
-                streamArtist.streamId = artistData?.id;
-                streamArtist.streamType = 'flo';
-
-                const artist = new Artist();
-                artist.name = artistData?.name;
-                return artist;
-            });
-
-            track.album = album;
-            track.artists = artists;
-            return track;
+        const tracks: ITrack[] = trackList?.map((trackData) => {
+            const { name, id, album, artistList } = trackData;
+            return {
+                vendor: 'flo',
+                name,
+                id,
+                artists: artistList?.map(({ id, name }) => ({ vendor: 'flo', id, name })),
+                album: {
+                    vendor: 'flo',
+                    name: album?.title,
+                    id: album?.id,
+                },
+            };
         });
 
-        playlist.tracks = tracks;
-        return playlist;
+        return {
+            vendor: 'flo',
+            title: playlistData?.title,
+            id,
+            tracks,
+        };
     }
 
-    public async savePlaylist(playlist: Playlist, authData: Authdata) {
+    public async savePlaylist(playlist: Playlist, tracks: Track[], authData: Authdata) {
         const floAuthData = authData as FloAuthdata;
         const createResponse = await axios.post(
             this.createPlaylistUrl,
@@ -115,12 +77,12 @@ export class FloPlaylistScraper implements PlaylistScraper {
         }
 
         const playlistId = createResponse.data?.data?.id;
-        const streamTracks = await this.trackService.findAllStreamTracks(playlist.tracks);
-        const trackIds = playlist.tracks
+        const streamTracks = await this.trackService.findAllStreamTracks(tracks);
+        const trackIds = tracks
             .map(
                 (track) =>
-                    streamTracks.find((streamTrack) => streamTrack.track === track && streamTrack.streamType === 'flo')
-                        ?.streamId,
+                    streamTracks.find((streamTrack) => streamTrack.track === track && streamTrack.vendor === 'flo')
+                        ?.vendorId,
             )
             .filter((id) => id !== null); // Filter out un-found tracks
 

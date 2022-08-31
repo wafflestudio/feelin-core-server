@@ -1,21 +1,30 @@
 import { AuthdataService } from '@/authdata/authdata.service.js';
-import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { PlaylistTrack } from '@/playlist/entity/playlist-track.entity.js';
+import { User } from '@/user/entity/user.entity.js';
+import { VendorUser } from '@/user/entity/vendorUser.entity.js';
 import { PlaylistScraperModule } from '@/playlist-scraper/playlist-scraper.module.js';
 import { TrackModule } from '@/track/track.module.js';
-import { StreamAccount, User } from '@/user/user.entity.js';
 import { UserModule } from '@/user/user.module.js';
+import { forwardRef, Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { PlaylistController } from './playlist.controller.js';
 import { PlaylistService } from './playlist.service.js';
-import { StreamPlaylist } from './streamPlaylist.entity.js';
-import { Playlist } from './playlist.entity.js';
+import { Playlist } from './entity/playlist.entity.js';
+import { VendorPlaylist } from './entity/vendorPlaylist.entity.js';
+import { CustomTypeOrmModule } from '@/dao/custom-typeorm.module.js';
+import { VendorTrackRepository } from '@/track/vendorTrack.repository.js';
+import { VendorArtistRepository } from '@/artist/vendorArtist.repository.js';
+import { VendorAlbumRepository } from '@/album/vendorAlbum.repository.js';
 
 @Module({
     imports: [
         PlaylistScraperModule,
         forwardRef(() => UserModule),
         forwardRef(() => TrackModule),
-        TypeOrmModule.forFeature([Playlist, StreamPlaylist, StreamAccount, User]),
+        TypeOrmModule.forFeature([Playlist, VendorPlaylist, User, VendorUser, PlaylistTrack]),
+        CustomTypeOrmModule.forCustomRepository(VendorTrackRepository),
+        CustomTypeOrmModule.forCustomRepository(VendorArtistRepository),
+        CustomTypeOrmModule.forCustomRepository(VendorAlbumRepository),
     ],
     controllers: [PlaylistController],
     providers: [PlaylistService, AuthdataService],

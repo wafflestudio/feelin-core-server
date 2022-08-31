@@ -17,16 +17,16 @@ export class UserController {
         description: `Saves a playlist to user's streaming service account`,
     })
     async savePlaylist(
-        @Param('userId') userId: number,
-        @Param('playlistId') playlistId: number,
+        @Param('userId') userId: string,
+        @Param('playlistId') playlistId: string,
         @Body() savePlaylistDto: SavePlaylistDto,
     ) {
-        await this.playlistService.savePlaylist(userId, playlistId, savePlaylistDto);
+        await this.playlistService.savePlaylistToAccount(userId, playlistId, savePlaylistDto);
     }
 
     @Post(':userId/stream/login')
     @HttpCode(200)
-    async loginStreamAccont(@Param('userId') userId: number, @Body() loginStreamDto: LoginStreamDto) {
+    async loginStreamAccont(@Param('userId') userId: string, @Body() loginStreamDto: LoginStreamDto) {
         const key = await this.userService.loginStreamAccount(userId, loginStreamDto);
         return key;
     }

@@ -1,4 +1,4 @@
-export const StreamServiceEnum: StreamService[] = [
+export const VendorEnum = [
     'melon',
     'flo',
     // 'genie',
@@ -7,22 +7,26 @@ export const StreamServiceEnum: StreamService[] = [
     // 'ytmusic',
     // 'spotify',
     // 'applemusic',
-];
+] as const;
 
-export type StreamService = 'melon' | 'flo';
-// | 'genie'
-// | 'bugs'
-// | 'vibe'
-// | 'ytmusic'
-// | 'spotify'
-// | 'applemusic';
+export type Vendors = typeof VendorEnum[number];
 
-export interface TrackInfo {
-    streamType: StreamService;
+export interface IAlbum {
+    vendor: Vendors;
     title: string;
-    streamId: string;
-    artists: string[];
-    artistIds: string[];
-    album: string;
-    albumId: string;
+    id: string;
+}
+
+export interface IArtist {
+    vendor: Vendors;
+    name: string;
+    id: string;
+}
+
+export interface ITrack {
+    vendor: Vendors;
+    title: string;
+    id: string;
+    artists: IArtist[];
+    album: IAlbum;
 }

@@ -1,10 +1,10 @@
-import { StreamService } from '@feelin-types/types';
+import { Vendors } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { Authdata, MelonAuthdataKeys, FloAuthdataKeys } from './types.js';
 
 @Injectable()
 export class AuthdataService {
-    private authdataKeys: Record<StreamService, string[]>;
+    private authdataKeys: Record<Vendors, string[]>;
 
     constructor() {
         this.authdataKeys = {
@@ -13,7 +13,7 @@ export class AuthdataService {
         };
     }
 
-    fromString(streamType: StreamService, cookieString: string): Authdata {
+    fromString(streamType: Vendors, cookieString: string): Authdata {
         const authdataKeys = this.authdataKeys[streamType];
 
         const cookies = cookieString.split('; ').reduce((cookieData, cookie) => {
@@ -37,7 +37,7 @@ export class AuthdataService {
         return authdata as Authdata;
     }
 
-    toString(streamType: StreamService, authdata: Authdata): string {
+    toString(streamType: Vendors, authdata: Authdata): string {
         const cookies: string[] = [];
         for (const key of this.authdataKeys[streamType]) {
             if (authdata[key] === undefined) {

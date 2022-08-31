@@ -1,6 +1,6 @@
 import { AuthdataService } from '@/authdata/authdata.service.js';
 import { FloAuthdata } from '@/authdata/types.js';
-import { TrackInfo } from '@/types/types.js';
+import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { TrackScraper } from './TrackScraper.js';
@@ -12,7 +12,7 @@ export class FloTrackScraper implements TrackScraper {
 
     constructor(protected readonly authdataService: AuthdataService) {}
 
-    async searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
+    async searchTrack(track: ITrack): Promise<ITrack[]> {
         // Flo search API limits max 250 results at once
         const response = await axios.get(this.searchUrl, {
             params: {
@@ -24,13 +24,13 @@ export class FloTrackScraper implements TrackScraper {
             },
         });
 
-        const trackList: TrackInfo[] = response.data?.data?.list[0]?.list?.map((track) => {
+        const trackList: ITrack[] = response.data?.data?.list[0]?.list?.map((track) => {
             const { id, name, artistList, album } = track;
             const artists = artistList.map((artist) => artist.name);
             return {
-                streamType: 'flo',
+                vendor: 'flo',
                 title: name,
-                streamId: id,
+                vendorId: id,
                 artists: artists,
                 album: album.title,
             };

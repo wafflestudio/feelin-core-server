@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PlaylistModule } from '@/playlist/playlist.module.js';
 import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
 import { UserController } from './user.controller.js';
-import { User } from './user.entity.js';
+import { User } from './entity/user.entity.js';
 import { UserService } from './user.service.js';
 
 @Module({

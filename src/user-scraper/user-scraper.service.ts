@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { StreamService } from '@feelin-types/types.js';
+import { Vendors } from '@feelin-types/types.js';
 import { FloUserScraper } from './flo-user-scraper.service.js';
 import { MelonUserScraper } from './melon-user-scraper.service.js';
 import { UserScraper } from './UserScraper.js';
 
 @Injectable()
 export class UserScraperService {
-    userScrapers: Record<StreamService, UserScraper>;
+    userScrapers: Record<Vendors, UserScraper>;
 
     constructor(private readonly melonUserScraper: MelonUserScraper, private readonly floUserScraper: FloUserScraper) {
         this.userScrapers = {
@@ -15,7 +15,7 @@ export class UserScraperService {
         };
     }
 
-    get(streamType: StreamService): UserScraper {
-        return this.userScrapers[streamType];
+    get(vendor: Vendors): UserScraper {
+        return this.userScrapers[vendor];
     }
 }

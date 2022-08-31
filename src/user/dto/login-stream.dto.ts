@@ -1,9 +1,9 @@
 import { IsString } from 'class-validator';
-import { StreamService } from '@feelin-types/types.js';
+import { Vendors } from '@feelin-types/types.js';
 
 export class LoginStreamDto {
     @IsString()
-    streamType!: StreamService;
+    vendor!: Vendors;
 
     @IsString()
     id!: string;

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { StreamService } from '@feelin-types/types.js';
+import { Vendors } from '@feelin-types/types.js';
 import { MelonPlaylistScraper } from './melon-playlist-scraper.service.js';
 import { PlaylistScraper } from './PlaylistScraper.js';
 import { URL } from 'url';
@@ -8,7 +8,7 @@ import { FloPlaylistScraper } from './flo-playlist-scraper.service.js';
 
 @Injectable()
 export class PlaylistScraperService {
-    playlistScrapers: { [key in StreamService]: PlaylistScraper };
+    playlistScrapers: { [key in Vendors]: PlaylistScraper };
 
     constructor(
         private readonly melonPlaylistScraper: MelonPlaylistScraper,
@@ -20,23 +20,23 @@ export class PlaylistScraperService {
         };
     }
 
-    get(streamType: StreamService): PlaylistScraper {
-        return this.playlistScrapers[streamType];
+    get(vendor: Vendors): PlaylistScraper {
+        return this.playlistScrapers[vendor];
     }
 
     async getStreamAndId(playlistUrl: string): Promise<{
-        streamType: StreamService;
+        vendor: Vendors;
         playlistId: string;
     }> {
         let url = new URL(playlistUrl);
         const host = url.host;
-        let streamType: StreamService;
+        let vendor: Vendors;
         let playlistId = '';
         switch (host) {
             // Melon
             // TODO: Better error message
             case 'kko.to': {
-                streamType = 'melon';
+                vendor = 'melon';
                 let paths = url.pathname.split('/');
                 if (!(paths.length === 2 && paths[0] === '')) {
                     throw new Error('Melon url malformed');
@@ -86,7 +86,7 @@ export class PlaylistScraperService {
             case 'm2.melon.com':
 
             case 'www.melon.com': {
-                streamType = 'melon';
+                vendor = 'melon';
                 const paths = url.pathname.split('/');
                 if (!(paths.length === 4 && paths[0] === '' && paths[1] === 'mymusic')) {
                     throw new Error('Melon url malformed');
@@ -100,8 +100,8 @@ export class PlaylistScraperService {
                     throw new Error('Melon url malformed');
                 }
 
-                if (url.searchParams.get('plystSeq')) {
-                    playlistId += url.searchParams.get('plystSeq');
+                if (url.searchParams.get('plylstSeq')) {
+                    playlistId += url.searchParams.get('plylstSeq');
                 } else {
                     throw new Error('Melon url malformed');
                 }
@@ -111,7 +111,7 @@ export class PlaylistScraperService {
             // Flo
             // http://flomuz.io/s/[r,d]{id}
             case 'flomuz.io': {
-                streamType = 'flo';
+                vendor = 'flo';
                 const paths = url.pathname.split('/');
                 if (!(paths.length === 3 && paths[0] === '' && paths[1] === 's' && paths[2].split('.').length === 2)) {
                     throw new Error('Flo url malformed');
@@ -130,7 +130,7 @@ export class PlaylistScraperService {
 
             // https://www.music-flo.com/detail/channel/{id}
             case 'www.music-flo.com': {
-                streamType = 'flo';
+                vendor = 'flo';
                 const paths = url.pathname.split('/');
                 if (!(paths.length === 4 && paths[0] === '' && paths[1] === 'detail' && paths[2] === 'channel')) {
                     throw new Error('Flo url malformed');
@@ -142,7 +142,7 @@ export class PlaylistScraperService {
         }
 
         return {
-            streamType,
+            vendor,
             playlistId,
         };
     }

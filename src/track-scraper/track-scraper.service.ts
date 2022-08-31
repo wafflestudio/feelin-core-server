@@ -1,5 +1,5 @@
-import { isSameTrack } from '@/types/helpers.js';
-import { StreamService, TrackInfo } from '@feelin-types/types.js';
+import { isSameTrack } from '@feelin-types/helpers.js';
+import { ITrack, Vendors } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { nGram } from 'n-gram';
 import { FloTrackScraper } from './flo-track-scraper.service.js';
@@ -8,7 +8,7 @@ import { TrackScraper } from './TrackScraper.js';
 
 @Injectable()
 export class TrackScraperService {
-    trackScrapers: { [key in StreamService]: TrackScraper };
+    trackScrapers: { [key in Vendors]: TrackScraper };
 
     constructor(
         private readonly melonTrackScraper: MelonTrackScraper,
@@ -20,11 +20,11 @@ export class TrackScraperService {
         };
     }
 
-    get(streamType: StreamService): TrackScraper {
-        return this.trackScrapers[streamType];
+    get(vendor: Vendors): TrackScraper {
+        return this.trackScrapers[vendor];
     }
 
-    async matchTracks(candidates: TrackInfo[], reference: TrackInfo): Promise<TrackInfo | null> {
+    async matchTracks(candidates: ITrack[], reference: ITrack): Promise<ITrack | null> {
         const MIN_NGRAM = 1;
         const MAX_NGRAM = 4;
         const THRESHOLD = 0.1;
@@ -44,7 +44,7 @@ export class TrackScraperService {
                 };
             });
             const titleNGrams = await this.makeNGramSet(reference.title, MIN_NGRAM, MAX_NGRAM);
-            const albumNGrams = await this.makeNGramSet(reference.album, MIN_NGRAM, MAX_NGRAM);
+            const albumNGrams = await this.makeNGramSet(reference.album.title, MIN_NGRAM, MAX_NGRAM);
             for (const track of scores) {
                 track.score *= this.jaccardSimilarity(
                     titleNGrams,
@@ -57,7 +57,7 @@ export class TrackScraperService {
             for (const track of scores) {
                 track.score *= this.jaccardSimilarity(
                     albumNGrams,
-                    await this.makeNGramSet(track.trackInfo.album, MIN_NGRAM, MAX_NGRAM),
+                    await this.makeNGramSet(track.trackInfo.album.title, MIN_NGRAM, MAX_NGRAM),
                 );
             }
 
