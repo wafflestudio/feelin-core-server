@@ -9,12 +9,11 @@
     "scripts": {
         "prebuild": "rimraf dist",
         "build": "nest build",
-        "postbuild": "tsc-alias",
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-        "start": "nest start -e \"node -r tsconfig-paths/register\"",
-        "start:dev": "nest start --watch -e \"node -r tsconfig-paths/register\"",
-        "start:debug": "nest start --debug --watch -e \"node -r tsconfig-paths/register\"",
-        "start:prod": "node dist/main",
+        "start": "nest start -e \"node --loader esm-module-alias/loader\"",
+        "start:dev": "nest start --watch -e \"node --loader esm-module-alias/loader\"",
+        "start:debug": "nest start --debug --watch -e \"node --loader esm-module-alias/loader\"",
+        "start:prod": "node --loader esm-module-alias/loader dist/main",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "test": "jest --maxWorkers=50%",
         "test:exit": "jest --maxWorkers=50% --detectOpenHandles --forceExit",
@@ -25,7 +24,7 @@
         "clean": "rm -rf dist",
         "clean:module": "rm -rf node_modules",
         "clean:all": "rm -rf dist node_modules",
-        "typeorm": "node -r tsconfig-paths/register -r ts-node/register ./node_modules/typeorm/cli.js --config dist/ormConfig.js",
+        "typeorm": "node --loader esm-module-alias/loader -r ts-node/register ./node_modules/typeorm/cli.js --config dist/ormConfig.js",
         "migration:create": "yarn typeorm migration:create",
         "migration:run": "yarn typeorm migration:run",
         "migration:revert": "yarn typeorm migration:revert"
@@ -47,6 +46,7 @@
         "cheerio": "^1.0.0-rc.10",
         "class-transformer": "^0.5.1",
         "class-validator": "^0.13.2",
+        "esm-module-alias": "^2.0.1",
         "lodash-es": "^4.17.21",
         "mysql2": "^2.3.3",
         "n-gram": "^2.0.1",
@@ -57,9 +57,12 @@
         "rimraf": "^3.0.2",
         "rxjs": "^7.2.0",
         "swagger-ui-express": "^4.3.0",
-        "tsc-alias": "^1.6.11",
-        "tsconfig-paths": "^4.1.0",
         "typeorm": "^0.3.8"
+    },
+    "aliases": {
+        "@": "dist",
+        "@feelin-types": "dist/types",
+        "@utils": "dist/utils"
     },
     "devDependencies": {
         "@babel/core": "^7.18.10",
