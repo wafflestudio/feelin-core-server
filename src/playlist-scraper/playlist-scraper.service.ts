@@ -51,20 +51,7 @@ export class PlaylistScraperService {
                 }
 
                 url = new URL(redirectUrl);
-                if (url.host !== 'm2.melon.com') {
-                    throw new Error('Melon url malformed');
-                }
-
-                paths = url.pathname.split('/');
-                if (
-                    !(
-                        paths.length === 4 &&
-                        paths[0] === '' &&
-                        paths[1] === 'pda' &&
-                        paths[2] === 'msvc' &&
-                        paths[3] === 'snsGatePage.jsp'
-                    )
-                ) {
+                if (!/m2\.melon\.com\/pda\/msvc\/snsGatePage\.jsp.*/.test(url.host)) {
                     throw new Error('Melon url malformed');
                 }
 
@@ -87,14 +74,10 @@ export class PlaylistScraperService {
 
             case 'www.melon.com': {
                 vendor = 'melon';
-                const paths = url.pathname.split('/');
-                if (!(paths.length === 4 && paths[0] === '' && paths[1] === 'mymusic')) {
-                    throw new Error('Melon url malformed');
-                }
-
-                if (paths[2] === 'playlist' && paths[3] === 'mymusicplaylistview_inform.htm') {
+                const path = url.pathname;
+                if (/^\/mymusic\/playlist\/mymusicplaylistview_inform.htm[^\/]*/.test(path)) {
                     playlistId += 'user:';
-                } else if (paths[2] === 'dj' && paths[3] === 'mymusicdjplaylistview_inform.htm') {
+                } else if (/^\/mymusic\/dj\/mymusicdjplaylistview_inform.htm[^\/]*/.test(path)) {
                     playlistId += 'dj:';
                 } else {
                     throw new Error('Melon url malformed');
@@ -112,31 +95,26 @@ export class PlaylistScraperService {
             // http://flomuz.io/s/[r,d]{id}
             case 'flomuz.io': {
                 vendor = 'flo';
-                const paths = url.pathname.split('/');
-                if (!(paths.length === 3 && paths[0] === '' && paths[1] === 's' && paths[2].split('.').length === 2)) {
-                    throw new Error('Flo url malformed');
-                }
-                const [type, id] = paths[2].split('.');
-                if (type === 'r') {
-                    playlistId += 'user:';
-                } else if (type === 'd') {
-                    playlistId += 'dj:';
+                const playlistIdMatch = url.pathname.match(/^\/s\/([rd])\.([a-zA-Z0-9]+)/);
+                if (playlistIdMatch) {
+                    const id = playlistIdMatch.pop();
+                    const type = playlistIdMatch.pop() === 'r' ? 'user' : 'dj';
+                    playlistId = `${type}:${shareId2ApiId(id)}`;
                 } else {
                     throw new Error('Flo url malformed');
                 }
-                playlistId += shareId2ApiId(id);
                 break;
             }
 
             // https://www.music-flo.com/detail/channel/{id}
             case 'www.music-flo.com': {
                 vendor = 'flo';
-                const paths = url.pathname.split('/');
-                if (!(paths.length === 4 && paths[0] === '' && paths[1] === 'detail' && paths[2] === 'channel')) {
+                const playlistIdMatch = url.pathname.match(/^\/detail\/channel\/([danielzohy]+)/);
+                if (playlistIdMatch) {
+                    playlistId = `dj:${detailId2ApiId(playlistIdMatch.pop())}`;
+                } else {
                     throw new Error('Flo url malformed');
                 }
-                playlistId += 'dj:';
-                playlistId += detailId2ApiId(paths[3]);
                 break;
             }
         }

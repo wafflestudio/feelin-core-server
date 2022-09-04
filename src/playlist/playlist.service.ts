@@ -16,7 +16,7 @@ import { VendorUser } from '@/user/entity/vendorUser.entity.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { asymmDecrypt, symmDecrypt } from '@utils/cipher.js';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
 import { Playlist } from './entity/playlist.entity.js';
@@ -28,6 +28,7 @@ import { PlaylistPreviewDto } from './dto/playlist-preview.dto.js';
 import { TrackDto } from '@/track/dto/track.dto.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
 import { AlbumDto } from '@/album/dto/album.dto.js';
+import { PlaylistTrackRepository } from './playlistTrack.repository.js';
 
 @Injectable()
 export class PlaylistService {
@@ -36,8 +37,9 @@ export class PlaylistService {
         private readonly playlistRepository: Repository<Playlist>,
         @InjectRepository(VendorPlaylist)
         private readonly vendorPlaylistRepository: Repository<VendorPlaylist>,
-        @InjectRepository(PlaylistTrack)
-        private readonly playlistTrackRepository: Repository<PlaylistTrack>,
+        @InjectRepository(TrackArtist)
+        private readonly trackArtistRepository: Repository<TrackArtist>,
+        private readonly playlistTrackRepository: PlaylistTrackRepository,
         private readonly vendorTrackRepository: VendorTrackRepository,
         private readonly vendorArtistRepository: VendorArtistRepository,
         private readonly vendorAlbumRepository: VendorAlbumRepository,
@@ -56,74 +58,56 @@ export class PlaylistService {
         return;
     }
 
+    async getPlaylist(playlistId: string): Promise<PlaylistDto> {
+        const playlist = await this.playlistRepository.findOne({ where: { id: playlistId } });
+        if (!playlist) {
+            throw new Error(`playlist with id ${playlistId} not found`);
+        }
+
+        const playlistTracks = await this.playlistTrackRepository.findAllWithTrackWithAlbumById(playlistId);
+        const trackArtistMap: Map<string, Artist[]> = new Map();
+        const trackArtists = await this.trackArtistRepository.find({
+            where: { track: { id: In(playlistTracks.map(({ track }) => track.id)) } },
+            relations: {
+                track: true,
+                artist: true,
+            },
+        });
+        trackArtists.forEach(({ track, artist }) =>
+            trackArtistMap.set(track.id, [...(trackArtistMap.get(track.id) ?? []), artist]),
+        );
+
+        return new PlaylistDto(
+            playlistId,
+            playlist.title,
+            playlistTracks.map(
+                ({ track }) =>
+                    new TrackDto(
+                        track.id,
+                        track.title,
+                        trackArtistMap.get(track.id).map((artist) => new ArtistDto(artist.id, artist.name)),
+                        new AlbumDto(track.album.id, track.album.title, track.album.coverUrl),
+                    ),
+            ),
+            new PlaylistPreviewDto(playlistId, playlistTracks[0].track.album.coverUrl),
+        );
+    }
+
     async createPlaylist(createPlaylistDto: CreatePlaylistRequestDto): Promise<PlaylistDto> {
         const { playlistUrl } = createPlaylistDto;
         const { vendor, playlistId } = await this.playlistScraperService.getStreamAndId(playlistUrl);
 
-        const streamPlaylist = await this.vendorPlaylistRepository.findOne({
+        const vendorPlaylist = await this.vendorPlaylistRepository.findOne({
             where: { vendorId: playlistId, vendor: vendor },
             relations: ['playlist'],
         });
 
-        if (streamPlaylist) {
-            // return streamPlaylist.playlist;
+        if (vendorPlaylist) {
+            return this.getPlaylist(vendorPlaylist.playlist.id);
         }
 
         let playlistData = await this.playlistScraperService.get(vendor).getPlaylist(playlistId);
         return this.saveAndGetPlaylistDto(playlistData);
-    }
-
-    async savePlaylistToAccount(userId: string, playlistId: string, savePlaylistDto: SavePlaylistDto) {
-        const user = await this.userRepository.findOne({
-            where: {
-                id: userId,
-            },
-        });
-        if (user === undefined) {
-            throw new NotFoundException('Not Found', 'user not found');
-        }
-
-        const playlist = await this.playlistRepository.findOne({
-            where: {
-                id: playlistId,
-            },
-        });
-        if (playlist === undefined) {
-            throw new NotFoundException('Not Found', 'playlist not found');
-        }
-
-        const playlistTrack = await this.playlistTrackRepository.find({
-            where: {
-                playlist: {
-                    id: playlistId,
-                },
-            },
-            relations: ['track', 'playlist'],
-        });
-
-        const { symmKey, publicKey } = savePlaylistDto;
-        const account = await this.streamAccountRepository.findOne({
-            where: {
-                user: {
-                    id: userId,
-                },
-                publicKey: publicKey,
-            },
-        });
-
-        if (account === undefined) {
-            throw new NotFoundException('Not Found', 'available streaming service account not found');
-        }
-
-        const key = await asymmDecrypt(symmKey, account.privateKey);
-        const cookie = await symmDecrypt(account.cookie, key);
-
-        const response = await this.playlistScraperService.get(account.vendor).savePlaylist(
-            playlist,
-            playlistTrack.map(({ track }) => track),
-            this.authdataService.fromString(account.vendor, cookie),
-        );
-        return response;
     }
 
     protected async saveAndGetPlaylistDto(playlistData: IPlaylist): Promise<PlaylistDto> {
@@ -279,5 +263,58 @@ export class PlaylistService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async savePlaylistToAccount(userId: string, playlistId: string, savePlaylistDto: SavePlaylistDto) {
+        const user = await this.userRepository.findOne({
+            where: {
+                id: userId,
+            },
+        });
+        if (user === undefined) {
+            throw new NotFoundException('Not Found', 'user not found');
+        }
+
+        const playlist = await this.playlistRepository.findOne({
+            where: {
+                id: playlistId,
+            },
+        });
+        if (playlist === undefined) {
+            throw new NotFoundException('Not Found', 'playlist not found');
+        }
+
+        const playlistTrack = await this.playlistTrackRepository.find({
+            where: {
+                playlist: {
+                    id: playlistId,
+                },
+            },
+            relations: ['track', 'playlist'],
+        });
+
+        const { symmKey, publicKey } = savePlaylistDto;
+        const account = await this.streamAccountRepository.findOne({
+            where: {
+                user: {
+                    id: userId,
+                },
+                publicKey: publicKey,
+            },
+        });
+
+        if (account === undefined) {
+            throw new NotFoundException('Not Found', 'available streaming service account not found');
+        }
+
+        const key = await asymmDecrypt(symmKey, account.privateKey);
+        const cookie = await symmDecrypt(account.cookie, key);
+
+        const response = await this.playlistScraperService.get(account.vendor).savePlaylist(
+            playlist,
+            playlistTrack.map(({ track }) => track),
+            this.authdataService.fromString(account.vendor, cookie),
+        );
+        return response;
     }
 }

@@ -15,13 +15,16 @@ import { CustomTypeOrmModule } from '@/dao/custom-typeorm.module.js';
 import { VendorTrackRepository } from '@/track/vendorTrack.repository.js';
 import { VendorArtistRepository } from '@/artist/vendorArtist.repository.js';
 import { VendorAlbumRepository } from '@/album/vendorAlbum.repository.js';
+import { PlaylistTrackRepository } from './playlistTrack.repository.js';
+import { TrackArtist } from '@/track/entity/track-artist.entity.js';
 
 @Module({
     imports: [
         PlaylistScraperModule,
         forwardRef(() => UserModule),
         forwardRef(() => TrackModule),
-        TypeOrmModule.forFeature([Playlist, VendorPlaylist, User, VendorUser, PlaylistTrack]),
+        TypeOrmModule.forFeature([Playlist, VendorPlaylist, User, VendorUser, PlaylistTrack, TrackArtist]),
+        CustomTypeOrmModule.forCustomRepository(PlaylistTrackRepository),
         CustomTypeOrmModule.forCustomRepository(VendorTrackRepository),
         CustomTypeOrmModule.forCustomRepository(VendorArtistRepository),
         CustomTypeOrmModule.forCustomRepository(VendorAlbumRepository),

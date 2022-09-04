@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
@@ -16,5 +16,15 @@ export class PlaylistController {
     })
     async createPlaylist(@Body() createPlaylistDto: CreatePlaylistRequestDto): Promise<PlaylistDto> {
         return this.playlistService.createPlaylist(createPlaylistDto);
+    }
+
+    @Get('/:playlistId')
+    @HttpCode(200)
+    @ApiOperation({
+        summary: 'Playlist get API',
+        description: `Gets a playlist with the given id`,
+    })
+    async getPlaylist(@Param('playlistId') playlistId: string): Promise<PlaylistDto> {
+        return this.playlistService.getPlaylist(playlistId);
     }
 }

@@ -54,7 +54,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
         return {
             vendor: 'flo',
             title: playlistData?.name,
-            id,
+            id: playlistId,
             tracks,
         };
     }
