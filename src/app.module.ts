@@ -38,6 +38,7 @@ import { getEnvFile } from './utils/getEnvFile.js';
                 cli: {
                     migrationsDir: 'src/migration',
                 },
+                dropSchema: !process.env.NODE_ENV || process.env.NODE_ENV === 'dev',
                 logging: true,
             }),
             inject: [ConfigService],

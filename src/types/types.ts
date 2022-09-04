@@ -13,6 +13,7 @@ export type Vendors = typeof VendorEnum[number];
 
 export interface IAlbum {
     vendor: Vendors;
+    coverUrl: string;
     title: string;
     id: string;
 }

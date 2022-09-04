@@ -160,10 +160,10 @@ export class PlaylistService {
                         trackIdMap.get(id).id,
                         title,
                         artists.map((artist) => new ArtistDto(artistIdMap.get(artist.id).id, artist.name)),
-                        new AlbumDto(albumIdMap.get(album.id).id, album.title, ''),
+                        new AlbumDto(albumIdMap.get(album.id).id, album.title, album.coverUrl),
                     ),
             ),
-            new PlaylistPreviewDto(playlistId, ''),
+            new PlaylistPreviewDto(playlistId, playlistData.tracks[0].album.coverUrl),
         );
     }
 
@@ -198,7 +198,9 @@ export class PlaylistService {
                         return { albumEntity: albumIdMap.get(albumData?.id), ...trackData };
                     }
 
-                    const album = await queryRunner.manager.save(Album.create({ title: albumData?.title }));
+                    const album = await queryRunner.manager.save(
+                        Album.create({ title: albumData?.title, coverUrl: albumData?.coverUrl }),
+                    );
                     await queryRunner.manager.upsert(
                         VendorAlbum,
                         VendorAlbum.create({

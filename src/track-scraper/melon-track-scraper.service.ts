@@ -12,6 +12,10 @@ export class MelonTrackScraper implements TrackScraper {
     private readonly recentTrackUrl = 'https://www.melon.com/mymusic/recent/mymusicrecentsong_list.htm';
     private readonly recentTrackListUrl = 'https://www.melon.com/mymusic/recent/mymusicrecentsong_listPaging.htm';
     private readonly melonURL = 'https://www.melon.com/search/song/index.htm';
+    private readonly melonCoverUrl = (id: string, origId: string, size: number) =>
+        `https://cdnimg.melon.co.kr/cm/album/images/${id.slice(0, 3)}/${id.slice(3, 5)}/${id.slice(5)}` +
+        `/${origId}_500.jpg/melon/resize/${size}/quality/80/optimize`;
+
     private readonly pageSize = 50;
 
     constructor(protected readonly authdataService: AuthdataService) {}
@@ -57,6 +61,10 @@ export class MelonTrackScraper implements TrackScraper {
             .filter((node) => $(node).attr('href').includes('AlbumDetail'))
             .pop();
 
+        if (!trackNode) {
+            return null;
+        }
+
         const title = $(trackNode).text();
         const id = $(trackNode)
             .attr('href')
@@ -70,13 +78,15 @@ export class MelonTrackScraper implements TrackScraper {
                 .match(/\(\'(.*)\'\)/)
                 .pop(),
         }));
-        let album: IAlbum = {
+        const albumId = $(albumNode)
+            .attr('href')
+            .match(/\(\'(.*)\'\)/)
+            .pop();
+        const album: IAlbum = {
             vendor: 'melon',
             title: $(albumNode).text(),
-            id: $(albumNode)
-                .attr('href')
-                .match(/\(\'(.*)\'\)/)
-                .pop(),
+            id: albumId,
+            coverUrl: this.melonCoverUrl(albumId.padStart(8, '0'), albumId, 240),
         };
 
         return { vendor: 'melon', title, id, artists, album };

@@ -10,10 +10,7 @@ import { TrackScraper } from './TrackScraper.js';
 export class TrackScraperService {
     trackScrapers: { [key in Vendors]: TrackScraper };
 
-    constructor(
-        private readonly melonTrackScraper: MelonTrackScraper,
-        private readonly floTrackScraper: FloTrackScraper,
-    ) {
+    constructor(private readonly melonTrackScraper: MelonTrackScraper, private readonly floTrackScraper: FloTrackScraper) {
         this.trackScrapers = {
             melon: melonTrackScraper,
             flo: floTrackScraper,

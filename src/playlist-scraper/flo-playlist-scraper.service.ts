@@ -35,24 +35,25 @@ export class FloPlaylistScraper implements PlaylistScraper {
             trackList = playlistData?.trackList;
         }
 
-        const tracks: ITrack[] = trackList?.map((trackData) => {
-            const { name, id, album, artistList } = trackData;
-            return {
+        const tracks: ITrack[] = trackList?.map(({ name, id, album, artistList }) => ({
+            vendor: 'flo',
+            title: name,
+            id,
+            artists: artistList?.map(({ id, name }) => ({ vendor: 'flo', id, name })),
+            album: {
                 vendor: 'flo',
-                name,
-                id,
-                artists: artistList?.map(({ id, name }) => ({ vendor: 'flo', id, name })),
-                album: {
-                    vendor: 'flo',
-                    name: album?.title,
-                    id: album?.id,
-                },
-            };
-        });
+                title: album?.title,
+                id: album?.id,
+                coverUrl: this.formatCoverUrl(
+                    album?.img.urlFormat,
+                    album?.img?.availableSizeList[Math.floor(album?.img?.availableSizeList?.length / 2)],
+                ),
+            },
+        }));
 
         return {
             vendor: 'flo',
-            title: playlistData?.title,
+            title: playlistData?.name,
             id,
             tracks,
         };
@@ -81,8 +82,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
         const trackIds = tracks
             .map(
                 (track) =>
-                    streamTracks.find((streamTrack) => streamTrack.track === track && streamTrack.vendor === 'flo')
-                        ?.vendorId,
+                    streamTracks.find((streamTrack) => streamTrack.track === track && streamTrack.vendor === 'flo')?.vendorId,
             )
             .filter((id) => id !== null); // Filter out un-found tracks
 
@@ -101,5 +101,9 @@ export class FloPlaylistScraper implements PlaylistScraper {
         if (addResponse.data?.code !== '2000000') {
             return null;
         }
+    }
+
+    protected formatCoverUrl(coverUrlFormat: string, size: number): string {
+        return coverUrlFormat.replace(/{size}/, `${size}x${size}`);
     }
 }

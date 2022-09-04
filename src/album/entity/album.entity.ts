@@ -8,9 +8,12 @@ export class Album extends BaseEntity {
     @Column({ name: 'title', type: 'varchar', length: 200 })
     title!: string;
 
+    @Column({ name: 'coverUrl', type: 'varchar', length: 400 })
+    coverUrl!: string;
+
     @Column({ name: 'description', type: 'varchar', length: 500, nullable: true })
-    description!: string;
+    description: string;
 
     @Column({ name: 'release_date', type: 'datetime', nullable: true })
-    releaseDate!: Date;
+    releaseDate: Date;
 }
