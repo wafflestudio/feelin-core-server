@@ -4,11 +4,24 @@ import { PlaylistService } from '@/playlist/playlist.service.js';
 import { LoginStreamDto } from './dto/login-stream.dto.js';
 import { SavePlaylistDto } from './dto/save-playlist.dto.js';
 import { UserService } from './user.service.js';
+import { SignUpDto } from './dto/signup.dto.js';
+import { UserDto } from './dto/user.dto.js';
 
 @Controller('users')
 @ApiTags('User API')
 export class UserController {
     constructor(private readonly userService: UserService, private readonly playlistService: PlaylistService) {}
+
+    @Post('')
+    @HttpCode(201)
+    @ApiOperation({
+        summary: 'User signup API',
+        description: 'Creates a new user',
+    })
+    async signup(@Body() signUpDto: SignUpDto) {
+        const user = await this.userService.signup(signUpDto);
+        return new UserDto(user.id, user.username);
+    }
 
     @Post(':userId/playlists/:playlistId')
     @HttpCode(201)

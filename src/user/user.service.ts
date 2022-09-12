@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, NotImplementedException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, NotImplementedException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
 import { VendorEnum } from '@feelin-types/types.js';
@@ -9,6 +9,7 @@ import { asymmEncrypt, symmEncrypt } from '@utils/cipher.js';
 import { Authdata } from '@/authdata/types.js';
 import { AuthdataService } from '@/authdata/authdata.service.js';
 import { User } from '@/user/entity/user.entity.js';
+import { SignUpDto } from './dto/signup.dto.js';
 @Injectable()
 export class UserService {
     constructor(
@@ -16,6 +17,16 @@ export class UserService {
         private readonly authdataService: AuthdataService,
         @InjectRepository(User) private userRepository: Repository<User>,
     ) {}
+
+    async signup(signUpDto: SignUpDto): Promise<User> {
+        const { id, username } = signUpDto;
+
+        const user = await this.userRepository.findOneBy({ id: id });
+        if (user) {
+            throw new ConflictException('conflict', 'user already exists');
+        }
+        return this.userRepository.save(User.create({ id: id, username: username }));
+    }
 
     async loginStreamAccount(
         userId: string,

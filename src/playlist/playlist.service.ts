@@ -13,7 +13,7 @@ import { TrackService } from '@/track/track.service.js';
 import { SavePlaylistDto } from '@/user/dto/save-playlist.dto.js';
 import { User } from '@/user/entity/user.entity.js';
 import { VendorUser } from '@/user/entity/vendorUser.entity.js';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { asymmDecrypt, symmDecrypt } from '@utils/cipher.js';
 import { DataSource, In, Repository } from 'typeorm';
@@ -61,7 +61,7 @@ export class PlaylistService {
     async getPlaylist(playlistId: string): Promise<PlaylistDto> {
         const playlist = await this.playlistRepository.findOne({ where: { id: playlistId } });
         if (!playlist) {
-            throw new Error(`playlist with id ${playlistId} not found`);
+            throw new NotFoundException('not found', `playlist with id ${playlistId} not found`);
         }
 
         const playlistTracks = await this.playlistTrackRepository.findAllWithTrackWithAlbumById(playlistId);
@@ -259,7 +259,7 @@ export class PlaylistService {
         } catch (error) {
             console.error(error);
             await queryRunner.rollbackTransaction();
-            throw new Error('failed to save playlist');
+            throw new InternalServerErrorException('DB error', 'failed to save playlist');
         } finally {
             await queryRunner.release();
         }
