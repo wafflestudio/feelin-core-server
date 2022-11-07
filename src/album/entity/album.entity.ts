@@ -1,10 +1,8 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseTimeEntity } from '@/dao/base-time.entity.js';
+import { Column, Entity } from 'typeorm';
 
 @Entity()
-export class Album extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
+export class Album extends BaseTimeEntity {
     @Column({ name: 'title', type: 'varchar', length: 200 })
     title!: string;
 

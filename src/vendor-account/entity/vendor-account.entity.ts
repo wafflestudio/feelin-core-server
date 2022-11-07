@@ -1,12 +1,10 @@
+import { BaseTimeEntity } from '@/dao/base-time.entity.js';
 import { Vendors } from '@feelin-types/types.js';
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { User } from '../../user/entity/user.entity.js';
 
 @Entity()
-export class VendorAccount extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
+export class VendorAccount extends BaseTimeEntity {
     @ManyToOne(() => User)
     @JoinColumn({ name: 'user' })
     user!: User;

@@ -1,12 +1,10 @@
-import { BaseEntity, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Playlist } from './playlist.entity.js';
+import { BaseTimeEntity } from '@/dao/base-time.entity.js';
+import { Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Track } from '../../track/entity/track.entity.js';
+import { Playlist } from './playlist.entity.js';
 
 @Entity()
-export class PlaylistTrack extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
+export class PlaylistTrack extends BaseTimeEntity {
     @ManyToOne(() => Playlist)
     @JoinColumn({ name: 'playlist' })
     playlist!: Playlist;

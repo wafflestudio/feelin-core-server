@@ -1,13 +1,11 @@
+import { BaseTimeEntity } from '@/dao/base-time.entity.js';
 import { Vendors } from '@feelin-types/types.js';
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { Artist } from './artist.entity.js';
 
 @Entity()
 @Unique('STREAM_ARTIST_ID', ['vendorId', 'vendor'])
-export class VendorArtist extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
+export class VendorArtist extends BaseTimeEntity {
     @Column({ name: 'vendor' })
     vendor!: Vendors;
 

@@ -1,13 +1,11 @@
+import { BaseTimeEntity } from '@/dao/base-time.entity.js';
 import { Vendors } from '@feelin-types/types.js';
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { Track } from './track.entity.js';
 
 @Entity()
 @Unique('STREAM_TRACK_ID', ['vendorId', 'vendor'])
-export class VendorTrack extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
+export class VendorTrack extends BaseTimeEntity {
     @Column({ name: 'vendor' })
     vendor!: Vendors;
 

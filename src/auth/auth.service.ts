@@ -23,7 +23,7 @@ export class AuthService {
 
     async validateUserToken(userToken: string): Promise<User> {
         const payload = await this.jwtService.verifyAsync(userToken, { secret: this.jwtSecret });
-        const user = await this.userService.findByUserId(payload.id).catch(() => {
+        const user = await this.userService.findById(payload.userId).catch(() => {
             throw new UnauthorizedException('unauthorized user');
         });
 

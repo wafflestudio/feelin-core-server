@@ -38,7 +38,7 @@ export class UserService {
         }
 
         const authData = await this.userScraperService.get(vendor).login(id, password);
-        if (!!authData) {
+        if (!authData) {
             throw new UnauthorizedException('Unauthorized', 'login to streaming service failed');
         }
         const authDataString = this.authdataService.toString(vendor, authData);
@@ -47,20 +47,24 @@ export class UserService {
         let vendorAccount = VendorAccount.create({ id: randomUUID(), user, vendor, encryptionKey: encryptionResult.key });
         vendorAccount = await this.vendorAccountRepository.save(vendorAccount);
 
-        return new LoginStreamResponseDto(vendorAccount.id, vendorAccount.encryptionKey.toString('hex'));
+        return new LoginStreamResponseDto(vendorAccount.id, encryptionResult.encryptedData);
     }
 
     async unlinkStreamAccount(user: User, accountId: string): Promise<void> {
         const vendorAccount = await this.vendorAccountRepository.findOneByOrFail({ id: accountId }).catch(() => {
             throw new NotFoundException('Not Found', 'vendor account not found');
         });
+        if (vendorAccount.user.id !== user.id) {
+            throw new UnauthorizedException('Unauthorized', 'vendor account does not belong to user');
+        }
+
         vendorAccount.isActive = false;
         await this.vendorAccountRepository.save(vendorAccount);
 
         return;
     }
 
-    async findByUserId(userId: string): Promise<User> {
+    async findById(userId: string): Promise<User> {
         return this.userRepository.findOneByOrFail({ id: userId }).catch(() => {
             throw new NotFoundException('Not Found', 'user not found');
         });
