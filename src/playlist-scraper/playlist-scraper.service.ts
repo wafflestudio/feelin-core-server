@@ -37,7 +37,7 @@ export class PlaylistScraperService {
             // TODO: Better error message
             case 'kko.to': {
                 vendor = 'melon';
-                let paths = url.pathname.split('/');
+                const paths = url.pathname.split('/');
                 if (!(paths.length === 2 && paths[0] === '')) {
                     throw new Error('Melon url malformed');
                 }

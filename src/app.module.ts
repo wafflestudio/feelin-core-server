@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { AlbumModule } from './album/album.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ArtistModule } from './artist/artist.module.js';
+import { AuthModule } from './auth/auth.module.js';
+import { AuthService } from './auth/auth.service.js';
 import { AuthdataService } from './authdata/authdata.service.js';
 import { MeModule } from './me/me.module.js';
 import { PlaylistScraperModule } from './playlist-scraper/playlist-scraper.module.js';
@@ -15,6 +18,8 @@ import { TrackModule } from './track/track.module.js';
 import { UserScraperModule } from './user-scraper/user-scraper.module.js';
 import { UserModule } from './user/user.module.js';
 import { getEnvFile } from './utils/getEnvFile.js';
+import { VendorAccountModule } from './vendor-account/vendor-account.module.js';
+import { CipherUtilService } from './utils/cipher-util/cipher-util.service.js';
 
 @Module({
     imports: [
@@ -44,6 +49,7 @@ import { getEnvFile } from './utils/getEnvFile.js';
             inject: [ConfigService],
         }),
         AlbumModule,
+        AuthModule,
         ArtistModule,
         MeModule,
         PlaylistModule,
@@ -52,9 +58,11 @@ import { getEnvFile } from './utils/getEnvFile.js';
         TrackScraperModule,
         UserModule,
         UserScraperModule,
+        VendorAccountModule,
+        JwtModule,
     ],
     controllers: [AppController],
-    providers: [AppService, AuthdataService],
+    providers: [AppService, AuthdataService, AuthService, CipherUtilService],
 })
 export class AppModule {
     constructor(private dataSource: DataSource) {}

@@ -12,7 +12,7 @@ export class TrackService {
     constructor(
         private readonly trackScraperService: TrackScraperService,
         @InjectRepository(VendorTrack)
-        private readonly streamTrackRepository: Repository<VendorTrack>,
+        private readonly vendorTrackRepository: Repository<VendorTrack>,
     ) {}
 
     async getMatchingTracks(track: Track): Promise<VendorTrack[]> {
@@ -39,23 +39,15 @@ export class TrackService {
     }
 
     async findStreamTracks(track: Track): Promise<VendorTrack[]> {
-        return this.streamTrackRepository.find({
-            where: {
-                track: {
-                    id: track.id,
-                },
-            },
+        return this.vendorTrackRepository.find({
+            where: { track: { id: track.id } },
         });
     }
 
     async findAllStreamTracks(tracks: Track[]): Promise<VendorTrack[]> {
-        return this.streamTrackRepository.find({
+        return this.vendorTrackRepository.find({
             relations: ['track'],
-            where: tracks.map((track) => ({
-                track: {
-                    id: track.id,
-                },
-            })),
+            where: tracks.map((track) => ({ track: { id: track.id } })),
         });
     }
 }

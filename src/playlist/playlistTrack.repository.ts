@@ -4,7 +4,7 @@ import { PlaylistTrack } from './entity/playlist-track.entity.js';
 
 @CustomRepository(PlaylistTrack)
 export class PlaylistTrackRepository extends Repository<PlaylistTrack> {
-    findAllWithTrackWithAlbumById(playlistId: string): Promise<PlaylistTrack[]> {
+    findAllWithTrackAndAlbumById(playlistId: string): Promise<PlaylistTrack[]> {
         return this.manager
             .createQueryBuilder(PlaylistTrack, 'p_t')
             .where('p_t.playlist = :playlistId', { playlistId: playlistId })

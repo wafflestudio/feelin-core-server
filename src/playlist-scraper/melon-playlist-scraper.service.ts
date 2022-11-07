@@ -5,6 +5,7 @@ import { IPlaylist } from '@/playlist/types/types.js';
 import { MelonTrackScraper } from '@/track-scraper/melon-track-scraper.service.js';
 import { Track } from '@/track/entity/track.entity.js';
 import { TrackService } from '@/track/track.service.js';
+import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
@@ -63,9 +64,9 @@ export class MelonPlaylistScraper implements PlaylistScraper {
         return { vendor: 'melon', title: title.trim(), id: playlistId, tracks: trackData.filter((x) => x) };
     }
 
-    public async savePlaylist(playlist: Playlist, tracks: Track[], melonAuthData: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], melonAuthData: Authdata) {
         const params = {
-            plylstTitle: playlist.title,
+            plylstTitle: request.title,
             // FIXME: description should come from post
             playlistDesc: '',
             openYn: 'Y',

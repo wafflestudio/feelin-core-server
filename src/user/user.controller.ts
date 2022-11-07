@@ -1,18 +1,24 @@
-import { Body, Controller, HttpCode, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard.js';
 import { PlaylistService } from '@/playlist/playlist.service.js';
-import { LoginStreamDto } from './dto/login-stream.dto.js';
-import { SavePlaylistDto } from './dto/save-playlist.dto.js';
-import { UserService } from './user.service.js';
+import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
+import { VendorAuthGuard } from '@/vendor-account/vendor-auth.guard.js';
+import { VendorAuthentication } from '@/vendor-account/vendor-authentication.decorator.js';
+import { Body, Controller, Delete, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { LoginStreamRequestDto } from './dto/login-stream.dto.js';
+import { SavePlaylistRequestDto } from './dto/save-playlist-request.dto.js';
 import { SignUpDto } from './dto/signup.dto.js';
 import { UserDto } from './dto/user.dto.js';
+import { User } from './entity/user.entity.js';
+import { UserAuthentication } from './user-authentication.decorator.js';
+import { UserService } from './user.service.js';
 
 @Controller('users')
 @ApiTags('User API')
 export class UserController {
     constructor(private readonly userService: UserService, private readonly playlistService: PlaylistService) {}
 
-    @Post('')
+    @Post()
     @HttpCode(201)
     @ApiOperation({
         summary: 'User signup API',
@@ -23,24 +29,33 @@ export class UserController {
         return new UserDto(user.id, user.username);
     }
 
-    @Post(':userId/playlists/:playlistId')
+    @UseGuards(JwtAuthGuard)
+    @Post('stream/account')
     @HttpCode(201)
+    async linkStreamAccount(@UserAuthentication() user: User, @Body() loginStreamDto: LoginStreamRequestDto) {
+        const key = await this.userService.linkStreamAccount(user, loginStreamDto);
+        return key;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete('stream/account/:accountId')
+    @HttpCode(204)
+    async unlinkStreamAccount(@UserAuthentication() user: User, @Param('accountId') accountId: string) {
+        await this.userService.unlinkStreamAccount(user, accountId);
+    }
+
+    @UseGuards(JwtAuthGuard, VendorAuthGuard)
+    @Post('playlists/:playlistId')
+    @HttpCode(200)
     @ApiOperation({
         summary: 'Playlist save API',
         description: `Saves a playlist to user's streaming service account`,
     })
     async savePlaylist(
-        @Param('userId') userId: string,
+        @VendorAuthentication() vendorAccount: DecryptedVendorAccountDto,
         @Param('playlistId') playlistId: string,
-        @Body() savePlaylistDto: SavePlaylistDto,
+        @Body() savePlaylistDto: SavePlaylistRequestDto,
     ) {
-        await this.playlistService.savePlaylistToAccount(userId, playlistId, savePlaylistDto);
-    }
-
-    @Post(':userId/stream/login')
-    @HttpCode(200)
-    async loginStreamAccont(@Param('userId') userId: string, @Body() loginStreamDto: LoginStreamDto) {
-        const key = await this.userService.loginStreamAccount(userId, loginStreamDto);
-        return key;
+        await this.playlistService.savePlaylistToAccount(vendorAccount, playlistId, savePlaylistDto);
     }
 }

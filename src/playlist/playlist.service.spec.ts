@@ -6,7 +6,7 @@ import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlaylistModule } from './playlist.module.js';
 import { PlaylistService } from './playlist.service.js';
-import { VendorUser } from '@/user/entity/vendorUser.entity.js';
+import { VendorAccount } from '@/vendor-account/entity/vendor-account.entity.js';
 import { Playlist } from './entity/playlist.entity.js';
 import { VendorPlaylist } from './entity/vendorPlaylist.entity.js';
 
@@ -19,7 +19,7 @@ describe('PlaylistService', () => {
                 PlaylistModule,
                 TrackModule,
                 UserModule,
-                ...TypeOrmSQLITETestingModule([Playlist, VendorPlaylist, User, VendorUser]),
+                ...TypeOrmSQLITETestingModule([Playlist, VendorPlaylist, User, VendorAccount]),
             ],
             providers: [AuthdataService],
         }).compile();

@@ -1,5 +1,5 @@
 import { User } from '@/user/entity/user.entity.js';
-import { VendorUser } from '@/user/entity/vendorUser.entity.js';
+import { VendorAccount } from '@/vendor-account/entity/vendor-account.entity.js';
 import { TypeOrmSQLITETestingModule } from '@/utils/testUtils.js';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Playlist } from './entity/playlist.entity.js';
@@ -12,7 +12,7 @@ describe('PlaylistController', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [PlaylistModule, ...TypeOrmSQLITETestingModule([Playlist, VendorPlaylist, User, VendorUser])],
+            imports: [PlaylistModule, ...TypeOrmSQLITETestingModule([Playlist, VendorPlaylist, User, VendorAccount])],
             controllers: [PlaylistController],
         }).compile();
 

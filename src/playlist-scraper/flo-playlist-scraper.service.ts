@@ -4,6 +4,7 @@ import { Playlist } from '@/playlist/entity/playlist.entity.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { Track } from '@/track/entity/track.entity.js';
 import { TrackService } from '@/track/track.service.js';
+import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
@@ -59,12 +60,12 @@ export class FloPlaylistScraper implements PlaylistScraper {
         };
     }
 
-    public async savePlaylist(playlist: Playlist, tracks: Track[], authData: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authData: Authdata) {
         const floAuthData = authData as FloAuthdata;
         const createResponse = await axios.post(
             this.createPlaylistUrl,
             {
-                memberChannelName: playlist.title,
+                memberChannelName: request.title,
             },
             {
                 headers: {
