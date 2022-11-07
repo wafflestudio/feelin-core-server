@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "node",
+            "name": "Launch via yarn",
+            "request": "launch",
+            "runtimeArgs": ["run", "start:debug"],
+            "runtimeExecutable": "yarn",
+            "sourceMaps": true,
+            "cwd": "${workspaceRoot}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
