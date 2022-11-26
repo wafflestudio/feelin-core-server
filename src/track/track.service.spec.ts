@@ -1,17 +1,18 @@
 import { TrackScraperModule } from '@/track-scraper/track-scraper.module.js';
-import { TypeOrmSQLITETestingModule } from '@utils/testUtils.js';
-import { Test, TestingModule } from '@nestjs/testing';
-import { TrackService } from './track.service.js';
+import { createTestingModule } from '@/utils/testUtils.js';
+import { TestingModule } from '@nestjs/testing';
 import { VendorTrack } from './entity/vendorTrack.entity.js';
+import { TrackService } from './track.service.js';
 
 describe('TrackService', () => {
     let service: TrackService;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            imports: [TrackScraperModule, ...TypeOrmSQLITETestingModule([VendorTrack])],
+        const module: TestingModule = await createTestingModule({
+            imports: [TrackScraperModule],
             providers: [TrackService],
-        }).compile();
+            entities: [VendorTrack],
+        });
 
         service = module.get<TrackService>(TrackService);
     });

@@ -1,20 +1,22 @@
+import { UserModule } from '@/user/user.module.js';
+import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
+import { createTestingModule } from '@/utils/testUtils.js';
+import { VendorAccountModule } from '@/vendor-account/vendor-account.module.js';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthModule } from './auth.module';
-import { AuthService } from './auth.service';
+import { TestingModule } from '@nestjs/testing';
+import { AuthModule } from './auth.module.js';
+import { AuthService } from './auth.service.js';
 
 describe('AuthService', () => {
     let service: AuthService;
-    let jwtService: JwtService;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            imports: [AuthModule, JwtModule.register({})],
-            providers: [AuthService, JwtService],
-        }).compile();
+        const module: TestingModule = await createTestingModule({
+            imports: [AuthModule, VendorAccountModule, UserModule, JwtModule.register({})],
+            providers: [AuthService, JwtService, CipherUtilService],
+        });
 
         service = module.get<AuthService>(AuthService);
-        jwtService = module.get<JwtService>(JwtService);
     });
 
     it('should be defined', () => {

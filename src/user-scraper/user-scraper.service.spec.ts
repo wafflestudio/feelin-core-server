@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { createTestingModule } from '@/utils/testUtils.js';
+import { TestingModule } from '@nestjs/testing';
 import { UserScraperModule } from './user-scraper.module.js';
 import { UserScraperService } from './user-scraper.service.js';
 
@@ -6,9 +7,9 @@ describe('UserScraperService', () => {
     let service: UserScraperService;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+        const module: TestingModule = await createTestingModule({
             imports: [UserScraperModule],
-        }).compile();
+        });
 
         service = module.get<UserScraperService>(UserScraperService);
     });

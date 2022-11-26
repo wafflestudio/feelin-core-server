@@ -1,13 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { VendorAccountService } from './vendor-account.service';
+import { createTestingModule } from '@/utils/testUtils.js';
+import { VendorAccount } from './entity/vendor-account.entity.js';
+import { VendorAccountModule } from './vendor-account.module.js';
+import { VendorAccountService } from './vendor-account.service.js';
 
 describe('VendorAccountService', () => {
     let service: VendorAccountService;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [VendorAccountService],
-        }).compile();
+        const module = await createTestingModule({
+            imports: [VendorAccountModule],
+            entities: [VendorAccount],
+        });
 
         service = module.get<VendorAccountService>(VendorAccountService);
     });

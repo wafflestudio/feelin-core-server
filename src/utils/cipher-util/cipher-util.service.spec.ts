@@ -1,13 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
+import { createTestingModule } from '../testUtils';
 import { CipherUtilService } from './cipher-util.service';
 
 describe('CipherUtilService', () => {
     let service: CipherUtilService;
 
     beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
+        const module: TestingModule = await createTestingModule({
             providers: [CipherUtilService],
-        }).compile();
+        });
 
         service = module.get<CipherUtilService>(CipherUtilService);
     });
