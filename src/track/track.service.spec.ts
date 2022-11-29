@@ -1,7 +1,7 @@
 import { TrackScraperModule } from '@/track-scraper/track-scraper.module.js';
 import { createTestingModule } from '@/utils/testUtils.js';
 import { TestingModule } from '@nestjs/testing';
-import { VendorTrack } from './entity/vendorTrack.entity.js';
+import { VendorTrack } from './entity/vendor-track.entity.js';
 import { TrackService } from './track.service.js';
 
 describe('TrackService', () => {

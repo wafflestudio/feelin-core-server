@@ -1,4 +1,4 @@
-import { VendorTrack } from '@/track/entity/vendorTrack.entity.js';
+import { VendorTrack } from '@/track/entity/vendor-track.entity.js';
 import { isEqual } from 'lodash-es';
 import { ITrack } from './types.js';
 

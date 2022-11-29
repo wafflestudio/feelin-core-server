@@ -1,10 +1,14 @@
-import { VendorTrack } from '@/track/entity/vendorTrack.entity.js';
+import { AlbumDto } from '@/album/dto/album.dto.js';
+import { ArtistDto } from '@/artist/dto/artist.dto.js';
+import { TrackSearchResultDto } from '@/playlist/dto/track-search-result.dto.js';
 import { TrackScraperService } from '@/track-scraper/track-scraper.service.js';
+import { VendorTrack } from '@/track/entity/vendor-track.entity.js';
 import { toStreamTrackEntity } from '@feelin-types/helpers.js';
-import { VendorEnum, ITrack } from '@feelin-types/types.js';
+import { ITrack, VendorEnum } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { TrackDto } from './dto/track.dto.js';
 import { Track } from './entity/track.entity.js';
 
 @Injectable()
@@ -49,5 +53,18 @@ export class TrackService {
             relations: ['track'],
             where: tracks.map((track) => ({ track: { id: track.id } })),
         });
+    }
+
+    getMatchedVendorTrack(candidates: TrackSearchResultDto[], reference: ITrack): string | null {
+        return candidates[0].vendorId;
+    }
+
+    toTrackDto(track: Track): TrackDto {
+        return new TrackDto(
+            track.id,
+            track.title,
+            track.artists.map((artist) => new ArtistDto(artist.id, artist.name)),
+            new AlbumDto(track.album.id, track.album.title, track.album.coverUrl),
+        );
     }
 }

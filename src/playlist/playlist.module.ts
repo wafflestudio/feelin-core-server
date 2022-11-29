@@ -12,7 +12,7 @@ import { PlaylistService } from './playlist.service.js';
 import { Playlist } from './entity/playlist.entity.js';
 import { VendorPlaylist } from './entity/vendorPlaylist.entity.js';
 import { CustomTypeOrmModule } from '@/dao/custom-typeorm.module.js';
-import { VendorTrackRepository } from '@/track/vendorTrack.repository.js';
+import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { VendorArtistRepository } from '@/artist/vendorArtist.repository.js';
 import { VendorAlbumRepository } from '@/album/vendorAlbum.repository.js';
 import { PlaylistTrackRepository } from './playlistTrack.repository.js';

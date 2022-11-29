@@ -3,7 +3,7 @@ import { Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { Album } from '../../album/entity/album.entity.js';
 import { Artist } from './artist.entity.js';
 
-@Entity()
+@Entity({ name: 'artist_album' })
 @Unique('ARTIST_ALBUM', ['artist', 'album'])
 export class ArtistAlbum extends BaseTimeEntity {
     @ManyToOne(() => Artist)

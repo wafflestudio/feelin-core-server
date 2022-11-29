@@ -12,20 +12,22 @@ import { PlaylistTrack } from '@/playlist/entity/playlist-track.entity.js';
 import { TrackDto } from '@/track/dto/track.dto.js';
 import { TrackArtist } from '@/track/entity/track-artist.entity.js';
 import { Track } from '@/track/entity/track.entity.js';
-import { VendorTrack } from '@/track/entity/vendorTrack.entity.js';
-import { VendorTrackRepository } from '@/track/vendorTrack.repository.js';
+import { VendorTrack } from '@/track/entity/vendor-track.entity.js';
+import { TrackService } from '@/track/track.service.js';
+import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
+import { ITrack } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
-import { User } from '@/user/entity/user.entity.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
-import { VendorAccount } from '@/vendor-account/entity/vendor-account.entity.js';
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistPreviewDto } from './dto/playlist-preview.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
+import { SavePlaylistResponseDto } from './dto/save-playlist-response.dto.js';
 import { Playlist } from './entity/playlist.entity.js';
 import { VendorPlaylist } from './entity/vendorPlaylist.entity.js';
+import { PlaylistRepository } from './playlist.repository.js';
 import { PlaylistTrackRepository } from './playlistTrack.repository.js';
 import { IPlaylist } from './types/types.js';
 
@@ -34,9 +36,10 @@ export class PlaylistService {
     constructor(
         private readonly playlistScraperService: PlaylistScraperService,
         private readonly authdataService: AuthdataService,
-        @InjectRepository(Playlist) private readonly playlistRepository: Repository<Playlist>,
+        private readonly trackService: TrackService,
         @InjectRepository(VendorPlaylist) private readonly vendorPlaylistRepository: Repository<VendorPlaylist>,
         @InjectRepository(TrackArtist) private readonly trackArtistRepository: Repository<TrackArtist>,
+        private readonly playlistRepository: PlaylistRepository,
         private readonly playlistTrackRepository: PlaylistTrackRepository,
         private readonly vendorTrackRepository: VendorTrackRepository,
         private readonly vendorArtistRepository: VendorArtistRepository,
@@ -105,19 +108,50 @@ export class PlaylistService {
         vendorAccount: DecryptedVendorAccountDto,
         playlistId: string,
         request: SavePlaylistRequestDto,
-    ): Promise<void> {
-        const playlist = await this.playlistRepository.findOneByOrFail({ id: playlistId }).catch(() => {
+    ): Promise<SavePlaylistResponseDto> {
+        const playlist = await this.playlistRepository.findWithTracksById(playlistId).catch(() => {
             throw new NotFoundException('Not Found', 'playlist not found');
         });
+        const trackIds = playlist.tracks.map((track) => track.id);
+        const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(vendorAccount.vendor, trackIds);
+        const vendorTrackMapById = new Map(vendorTracks.map((vendorTrack) => [vendorTrack.track.id, vendorTrack]));
+        const { vendor, authdata } = vendorAccount;
 
-        const playlistTrack = await this.playlistTrackRepository.find({
-            where: { playlist: { id: playlistId } },
-            relations: ['track'],
-        });
-        const tracks = playlistTrack.map(({ track }) => track);
-        const authData = this.authdataService.fromString(vendorAccount.vendor, vendorAccount.authdata);
+        if (!!request.searchResults) {
+            const tracksToSave = playlist.tracks.filter((track) => !vendorTrackMapById.has(track.id));
 
-        await this.playlistScraperService.get(vendorAccount.vendor).savePlaylist(request, tracks, authData);
+            const vendorTracksToSave = tracksToSave
+                .map((track) => {
+                    const reference: ITrack = {
+                        vendor,
+                        title: track.title,
+                        id: '',
+                        artists: track.artists.map(({ name }) => ({ vendor, name, id: '' })),
+                        album: { vendor, title: track.album.title, id: '', coverUrl: track.album.coverUrl },
+                    };
+
+                    const matchedVendorTrackId = this.trackService.getMatchedVendorTrack(request.searchResults, reference);
+                    if (!!matchedVendorTrackId) {
+                        return VendorTrack.create({ vendor, vendorId: matchedVendorTrackId, track });
+                    }
+                    return null;
+                })
+                .filter((vendorTrack) => !!vendorTrack);
+
+            await this.vendorTrackRepository.save(vendorTracksToSave);
+        } else {
+            const missingTracks = playlist.tracks.filter((track) => !vendorTrackMapById.get(track.id));
+            if (!missingTracks) {
+                // FIXME: throw error and return with body
+                return new SavePlaylistResponseDto(
+                    false,
+                    missingTracks.map((track) => this.trackService.toTrackDto(track)),
+                );
+            }
+        }
+
+        const authdataInterface = this.authdataService.fromString(vendor, authdata);
+        await this.playlistScraperService.get(vendor).savePlaylist(request, playlist.tracks, authdataInterface);
     }
 
     private async saveAndGetPlaylistDto(playlistData: IPlaylist): Promise<PlaylistDto> {
@@ -125,7 +159,7 @@ export class PlaylistService {
         const artistIdMap = new Map<string, Artist>();
         const albumIdMap = new Map<string, Album>();
 
-        const vendorTracks = await this.vendorTrackRepository.findAllWithTrackById(
+        const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
             playlistData.vendor,
             playlistData.tracks.map(({ id }) => id),
         );

@@ -1,4 +1,9 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard.js';
+import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
+import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
+import { VendorAuthGuard } from '@/vendor-account/vendor-auth.guard.js';
+import { VendorAuthentication } from '@/vendor-account/vendor-authentication.decorator.js';
+import { Body, Controller, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
@@ -26,5 +31,20 @@ export class PlaylistController {
     })
     async getPlaylist(@Param('playlistId') playlistId: string): Promise<PlaylistDto> {
         return this.playlistService.getPlaylist(playlistId);
+    }
+
+    @UseGuards(JwtAuthGuard, VendorAuthGuard)
+    @Post(':playlistId/save')
+    @HttpCode(201)
+    @ApiOperation({
+        summary: 'Playlist save API',
+        description: `Saves a playlist to user's streaming service account`,
+    })
+    async savePlaylist(
+        @VendorAuthentication() vendorAccount: DecryptedVendorAccountDto,
+        @Param('playlistId') playlistId: string,
+        @Body() savePlaylistDto: SavePlaylistRequestDto,
+    ) {
+        await this.playlistService.savePlaylistToAccount(vendorAccount, playlistId, savePlaylistDto);
     }
 }

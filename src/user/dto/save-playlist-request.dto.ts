@@ -1,4 +1,4 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class SavePlaylistRequestDto {
     @IsString()
@@ -6,4 +6,6 @@ export class SavePlaylistRequestDto {
 
     @IsString()
     description!: string;
+
+    searchResults: [];
 }

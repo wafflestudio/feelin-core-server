@@ -5,7 +5,7 @@ import { VendorArtist } from '@/artist/entity/vendorArtist.entity.js';
 import { Playlist } from '@/playlist/entity/playlist.entity.js';
 import { VendorPlaylist } from '@/playlist/entity/vendorPlaylist.entity.js';
 import { Track } from '@/track/entity/track.entity.js';
-import { VendorTrack } from '@/track/entity/vendorTrack.entity.js';
+import { VendorTrack } from '@/track/entity/vendor-track.entity.js';
 import { User } from '@/user/entity/user.entity.js';
 import { ModuleMetadata } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
