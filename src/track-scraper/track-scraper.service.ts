@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { nGram } from 'n-gram';
 import { FloTrackScraper } from './flo-track-scraper.service.js';
 import { MelonTrackScraper } from './melon-track-scraper.service.js';
-import { TrackScraper } from './TrackScraper.js';
+import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class TrackScraperService {

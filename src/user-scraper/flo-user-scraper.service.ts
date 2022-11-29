@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FloAuthdata } from '@/authdata/types.js';
-import { UserScraper } from './UserScraper.js';
+import { UserScraper } from './user-scraper.js';
 import axios from 'axios';
 
 @Injectable()

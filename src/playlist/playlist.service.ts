@@ -1,11 +1,11 @@
 import { AlbumDto } from '@/album/dto/album.dto.js';
 import { Album } from '@/album/entity/album.entity.js';
-import { VendorAlbum } from '@/album/entity/vendorAlbum.entity.js';
-import { VendorAlbumRepository } from '@/album/vendorAlbum.repository.js';
+import { VendorAlbum } from '@/album/entity/vendor-album.entity.js';
+import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
 import { Artist } from '@/artist/entity/artist.entity.js';
-import { VendorArtist } from '@/artist/entity/vendorArtist.entity.js';
-import { VendorArtistRepository } from '@/artist/vendorArtist.repository.js';
+import { VendorArtist } from '@/artist/entity/vendor-artist.entity.js';
+import { VendorArtistRepository } from '@/artist/vendor-artist.repository.js';
 import { AuthdataService } from '@/authdata/authdata.service.js';
 import { PlaylistScraperService } from '@/playlist-scraper/playlist-scraper.service.js';
 import { PlaylistTrack } from '@/playlist/entity/playlist-track.entity.js';
@@ -26,9 +26,9 @@ import { PlaylistPreviewDto } from './dto/playlist-preview.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
 import { SavePlaylistResponseDto } from './dto/save-playlist-response.dto.js';
 import { Playlist } from './entity/playlist.entity.js';
-import { VendorPlaylist } from './entity/vendorPlaylist.entity.js';
+import { VendorPlaylist } from './entity/vendor-playlist.entity.js';
 import { PlaylistRepository } from './playlist.repository.js';
-import { PlaylistTrackRepository } from './playlistTrack.repository.js';
+import { PlaylistTrackRepository } from './playlist-track.repository.js';
 import { IPlaylist } from './types/types.js';
 
 @Injectable()

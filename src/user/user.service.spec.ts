@@ -2,7 +2,7 @@ import { AuthdataService } from '@/authdata/authdata.service.js';
 import { TrackModule } from '@/track/track.module.js';
 import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
-import { createTestingModule } from '@/utils/testUtils.js';
+import { createTestingModule } from '@/utils/test-utils.js';
 import { VendorAccount } from '@/vendor-account/entity/vendor-account.entity.js';
 import { TestingModule } from '@nestjs/testing';
 import { User } from './entity/user.entity.js';

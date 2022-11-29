@@ -1,4 +1,4 @@
-import { createTestingModule } from '@/utils/testUtils.js';
+import { createTestingModule } from '@/utils/test-utils.js';
 import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { AppModule } from '../app.module.js';

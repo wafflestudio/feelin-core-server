@@ -1,17 +1,17 @@
 import { CustomRepository } from '@/dao/custom-repository.decorator.js';
 import { Vendors } from '@/types/types.js';
 import { In, Repository } from 'typeorm';
-import { VendorArtist } from './entity/vendorArtist.entity.js';
+import { VendorAlbum } from './entity/vendor-album.entity.js';
 
-@CustomRepository(VendorArtist)
-export class VendorArtistRepository extends Repository<VendorArtist> {
-    findAllWithArtistById(vendor: Vendors, ids: string[]): Promise<VendorArtist[]> {
+@CustomRepository(VendorAlbum)
+export class VendorAlbumRepository extends Repository<VendorAlbum> {
+    findAllWithAlbumById(vendor: Vendors, ids: string[]): Promise<VendorAlbum[]> {
         return this.find({
             where: {
                 vendor: vendor,
                 vendorId: In(ids),
             },
-            relations: ['artist'],
+            relations: ['album'],
         });
     }
 }

@@ -1,9 +1,9 @@
 import { Album } from '@/album/entity/album.entity.js';
-import { VendorAlbum } from '@/album/entity/vendorAlbum.entity.js';
+import { VendorAlbum } from '@/album/entity/vendor-album.entity.js';
 import { Artist } from '@/artist/entity/artist.entity.js';
-import { VendorArtist } from '@/artist/entity/vendorArtist.entity.js';
+import { VendorArtist } from '@/artist/entity/vendor-artist.entity.js';
 import { Playlist } from '@/playlist/entity/playlist.entity.js';
-import { VendorPlaylist } from '@/playlist/entity/vendorPlaylist.entity.js';
+import { VendorPlaylist } from '@/playlist/entity/vendor-playlist.entity.js';
 import { Track } from '@/track/entity/track.entity.js';
 import { VendorTrack } from '@/track/entity/vendor-track.entity.js';
 import { User } from '@/user/entity/user.entity.js';
@@ -14,7 +14,7 @@ import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import { DataType, newDb } from 'pg-mem';
 import { DataSource, Repository } from 'typeorm';
-import { getEnvFile } from './getEnvFile';
+import { getEnvFile } from './get-env-file';
 
 export const mockRepository = () => ({
     save: jest.fn(),

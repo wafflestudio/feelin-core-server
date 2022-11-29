@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserScraper } from './UserScraper.js';
+import { UserScraper } from './user-scraper.js';
 import puppeteer from 'puppeteer';
 import { MelonAuthdata } from '@/authdata/types.js';
 

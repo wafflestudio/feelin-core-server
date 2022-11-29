@@ -10,12 +10,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PlaylistController } from './playlist.controller.js';
 import { PlaylistService } from './playlist.service.js';
 import { Playlist } from './entity/playlist.entity.js';
-import { VendorPlaylist } from './entity/vendorPlaylist.entity.js';
+import { VendorPlaylist } from './entity/vendor-playlist.entity.js';
 import { CustomTypeOrmModule } from '@/dao/custom-typeorm.module.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
-import { VendorArtistRepository } from '@/artist/vendorArtist.repository.js';
-import { VendorAlbumRepository } from '@/album/vendorAlbum.repository.js';
-import { PlaylistTrackRepository } from './playlistTrack.repository.js';
+import { VendorArtistRepository } from '@/artist/vendor-artist.repository.js';
+import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
+import { PlaylistTrackRepository } from './playlist-track.repository.js';
 import { TrackArtist } from '@/track/entity/track-artist.entity.js';
 
 @Module({

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Vendors } from '@feelin-types/types.js';
 import { MelonPlaylistScraper } from './melon-playlist-scraper.service.js';
-import { PlaylistScraper } from './PlaylistScraper.js';
+import { PlaylistScraper } from './playlist-scraper.js';
 import { URL } from 'url';
-import { detailId2ApiId, shareId2ApiId } from '@utils/floUtils.js';
+import { detailId2ApiId, shareId2ApiId } from '@/utils/flo-utils.js';
 import { FloPlaylistScraper } from './flo-playlist-scraper.service.js';
 
 @Injectable()

@@ -1,9 +1,9 @@
 import { User } from '@/user/entity/user.entity.js';
-import { createTestingModule } from '@/utils/testUtils.js';
+import { createTestingModule } from '@/utils/test-utils.js';
 import { VendorAccount } from '@/vendor-account/entity/vendor-account.entity.js';
 import { TestingModule } from '@nestjs/testing';
 import { Playlist } from './entity/playlist.entity.js';
-import { VendorPlaylist } from './entity/vendorPlaylist.entity.js';
+import { VendorPlaylist } from './entity/vendor-playlist.entity.js';
 import { PlaylistController } from './playlist.controller.js';
 import { PlaylistModule } from './playlist.module.js';
 

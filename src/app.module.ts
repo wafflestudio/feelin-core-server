@@ -17,7 +17,7 @@ import { TrackScraperModule } from './track-scraper/track-scraper.module.js';
 import { TrackModule } from './track/track.module.js';
 import { UserScraperModule } from './user-scraper/user-scraper.module.js';
 import { UserModule } from './user/user.module.js';
-import { getEnvFile } from './utils/getEnvFile.js';
+import { getEnvFile } from './utils/get-env-file.js';
 import { VendorAccountModule } from './vendor-account/vendor-account.module.js';
 import { CipherUtilService } from './utils/cipher-util/cipher-util.service.js';
 

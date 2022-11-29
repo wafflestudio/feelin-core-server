@@ -1,6 +1,6 @@
 import { UserModule } from '@/user/user.module.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
-import { createTestingModule } from '@/utils/testUtils.js';
+import { createTestingModule } from '@/utils/test-utils.js';
 import { VendorAccountModule } from '@/vendor-account/vendor-account.module.js';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';

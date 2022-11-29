@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
 import randomUseragent from 'random-useragent';
-import { TrackScraper } from './TrackScraper.js';
+import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class MelonTrackScraper implements TrackScraper {

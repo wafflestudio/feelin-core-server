@@ -8,7 +8,7 @@ import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js'
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { PlaylistScraper } from './PlaylistScraper.js';
+import { PlaylistScraper } from './playlist-scraper.js';
 
 @Injectable()
 export class FloPlaylistScraper implements PlaylistScraper {

@@ -3,7 +3,7 @@ import { FloAuthdata } from '@/authdata/types.js';
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { TrackScraper } from './TrackScraper.js';
+import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class FloTrackScraper implements TrackScraper {

@@ -1,4 +1,4 @@
-import { createTestingModule } from '@/utils/testUtils.js';
+import { createTestingModule } from '@/utils/test-utils.js';
 import { TestingModule } from '@nestjs/testing';
 import { PlaylistScraperModule } from './playlist-scraper.module.js';
 import { PlaylistScraperService } from './playlist-scraper.service.js';

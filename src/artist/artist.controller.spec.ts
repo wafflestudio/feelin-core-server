@@ -1,4 +1,4 @@
-import { createTestingModule } from '@/utils/testUtils.js';
+import { createTestingModule } from '@/utils/test-utils.js';
 import { TestingModule } from '@nestjs/testing';
 import { ArtistController } from './artist.controller.js';
 

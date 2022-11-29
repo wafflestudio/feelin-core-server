@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Vendors } from '@feelin-types/types.js';
 import { FloUserScraper } from './flo-user-scraper.service.js';
 import { MelonUserScraper } from './melon-user-scraper.service.js';
-import { UserScraper } from './UserScraper.js';
+import { UserScraper } from './user-scraper.js';
 
 @Injectable()
 export class UserScraperService {

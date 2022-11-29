@@ -1,5 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
-import { createTestingModule } from '../testUtils';
+import { createTestingModule } from '../test-utils';
 import { CipherUtilService } from './cipher-util.service';
 
 describe('CipherUtilService', () => {

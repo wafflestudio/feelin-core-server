@@ -10,7 +10,7 @@ import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import cheerio from 'cheerio';
-import { PlaylistScraper } from './PlaylistScraper.js';
+import { PlaylistScraper } from './playlist-scraper.js';
 
 @Injectable()
 export class MelonPlaylistScraper implements PlaylistScraper {
