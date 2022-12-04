@@ -90,12 +90,11 @@ model TrackOnPlaylist {
 }
 
 model Track {
-    id            String   @id @map("id") @db.VarChar(26)
-    createdAt     DateTime @default(now()) @map("created_at") @db.DateTime(6)
-    updatedAt     DateTime @updatedAt @map("updated_at") @db.DateTime(6)
-    title         String   @map("title") @db.VarChar(255)
-    duration      Int?     @map("duration") @db.UnsignedInt
-    trackSequence Int      @map("track_sequence") @db.UnsignedInt
+    id        String   @id @map("id") @db.VarChar(26)
+    createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
+    updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
+    title     String   @map("title") @db.VarChar(255)
+    duration  Int?     @map("duration") @db.UnsignedInt
 
     vendorTracks VendorTrack[]
     album        Album             @relation(fields: [albumId], references: [id])

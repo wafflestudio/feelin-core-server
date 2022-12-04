@@ -6,7 +6,8 @@ import { Artist, Prisma, PrismaPromise } from '@prisma/client';
 export class ArtistRepository {
     constructor(private readonly prismaService: PrismaService) {}
 
-    create(data: Prisma.ArtistCreateInput): PrismaPromise<Artist> {
-        return this.prismaService.artist.create({ data });
+    create(data: Prisma.ArtistCreateInput, tx?: Prisma.TransactionClient): PrismaPromise<Artist> {
+        const client = !!tx ? tx : this.prismaService;
+        return client.artist.create({ data });
     }
 }

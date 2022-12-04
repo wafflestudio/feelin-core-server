@@ -6,8 +6,8 @@ import { Playlist, Prisma, PrismaPromise } from '@prisma/client';
 export class PlaylistRepository {
     constructor(private readonly prismaService: PrismaService) {}
 
-    create(data: Prisma.PlaylistCreateInput): PrismaPromise<Playlist> {
-        return this.prismaService.playlist.create({ data });
+    create(data: Prisma.PlaylistCreateInput, tx?: Prisma.TransactionClient): PrismaPromise<Playlist> {
+        return !!tx ? tx.playlist.create({ data }) : this.prismaService.playlist.create({ data });
     }
 
     async findById(id: string): Promise<Playlist> {

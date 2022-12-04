@@ -1,4 +1,3 @@
-import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
 import { AlbumRepository } from '@/album/album-repository.js';
 import { AlbumDto } from '@/album/dto/album.dto.js';
 import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
@@ -16,8 +15,9 @@ import { ITrack } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Album, Artist, Playlist, Track } from '@prisma/client';
+import { Album, Artist, Playlist, Prisma, Track } from '@prisma/client';
 import { ulid } from 'ulid';
+import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistPreviewDto } from './dto/playlist-preview.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
@@ -148,21 +148,26 @@ export class PlaylistService {
             playlistData.vendor,
             playlistData.tracks.map(({ id }) => id),
         );
-        const trackIdByVendorId = new Map(vendorTracks.map((vendorTrack) => [vendorTrack.vendorId, vendorTrack.trackId]));
+        const trackByVendorId = new Map(vendorTracks.map((vendorTrack) => [vendorTrack.vendorId, vendorTrack.track]));
 
         const vendorArtists = await this.vendorArtistRepository.findAllWithArtistById(
             playlistData.vendor,
             playlistData.tracks.flatMap(({ artists }) => artists.map(({ id }) => id)),
         );
-        const artistIdByVendorId = new Map(vendorArtists.map((vendorArtist) => [vendorArtist.vendorId, vendorArtist.artistId]));
+        const artistByVendorId = new Map(vendorArtists.map((vendorArtist) => [vendorArtist.vendorId, vendorArtist.artist]));
 
         const vendorAlbums = await this.vendorAlbumRepository.findAllWithAlbumById(
             playlistData.vendor,
             playlistData.tracks.map(({ album }) => album.id),
         );
-        const albumIdByVendorId = new Map(vendorAlbums.map((vendorAlbum) => [vendorAlbum.vendorId, vendorAlbum.albumId]));
+        const albumByVendorId = new Map(vendorAlbums.map((vendorAlbum) => [vendorAlbum.vendorId, vendorAlbum.album]));
 
-        const { playlist } = await this.savePlaylist(playlistData, trackIdByVendorId, artistIdByVendorId, albumIdByVendorId);
+        const playlist = await this.prismaService.$transaction(
+            async (tx) => this.savePlaylist(tx, playlistData, trackByVendorId, artistByVendorId, albumByVendorId),
+            {
+                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+            },
+        );
 
         return new PlaylistDto(
             playlist.id,
@@ -170,10 +175,10 @@ export class PlaylistService {
             playlistData.tracks.map(
                 ({ id, title, artists, album }) =>
                     new TrackDto(
-                        trackIdByVendorId.get(id),
+                        trackByVendorId.get(id).id,
                         title,
-                        artists.map(({ id, name }) => new ArtistDto(artistIdByVendorId.get(id), name)),
-                        new AlbumDto(albumIdByVendorId.get(album.id), album.title, album.coverUrl),
+                        artists.map(({ id, name }) => new ArtistDto(artistByVendorId.get(id).id, name)),
+                        new AlbumDto(albumByVendorId.get(album.id).id, album.title, album.coverUrl),
                     ),
             ),
             new PlaylistPreviewDto(playlist.id, playlistData.tracks[0].album.coverUrl),
@@ -181,45 +186,55 @@ export class PlaylistService {
     }
 
     private async savePlaylist(
+        tx: Prisma.TransactionClient,
         playlistData: IPlaylist,
-        trackIdByVendorId: Map<string, string>,
-        artistIdByVendorId: Map<string, string>,
-        albumIdByVendorId: Map<string, string>,
-    ): Promise<{
-        playlist: Playlist;
-        tracks: Track[];
-        artists: Artist[];
-        albums: Album[];
-    }> {
+        trackByVendorId: Map<string, Track>,
+        artistByVendorId: Map<string, Artist>,
+        albumByVendorId: Map<string, Album>,
+    ): Promise<Playlist> {
         const { vendor, id, title, tracks: tracksData } = playlistData;
 
-        const playlistId = ulid();
-        const createPlaylist = this.playlistRepository.create({
-            id: playlistId,
-            title,
-            vendorPlaylist: {
-                connectOrCreate: {
-                    where: { vendorId_vendor: { vendorId: id, vendor } },
-                    create: {
-                        id: ulid(),
-                        vendor,
-                        vendorId: id,
+        const playlist = await this.playlistRepository.create(
+            {
+                id: ulid(),
+                title,
+                vendorPlaylist: {
+                    connectOrCreate: {
+                        where: { vendorId_vendor: { vendorId: id, vendor } },
+                        create: {
+                            id: ulid(),
+                            vendor,
+                            vendorId: id,
+                        },
                     },
                 },
             },
-        });
+            tx,
+        );
 
-        const createTracks = tracksData
-            .map((trackData, idx) => {
-                const { vendor, title, id, album: albumData, artists: artistsData } = trackData;
-                if (trackIdByVendorId.has(id)) {
-                    return null;
-                }
+        const createTracksAndArtistsAndAlbums = tracksData.map(async (trackData, idx) => {
+            const { vendor, title, id, album: albumData, artists: artistsData } = trackData;
+            if (trackByVendorId.has(id)) {
+                return this.trackRepository.update(
+                    {
+                        playlists: {
+                            create: {
+                                id: ulid(),
+                                playlist: { connect: { id: playlist.id } },
+                                trackSequence: idx,
+                            },
+                        },
+                    },
+                    { id: trackByVendorId.get(id).id },
+                    tx,
+                );
+            }
 
-                const albumId = albumIdByVendorId.get(albumData.id) ?? ulid();
-                const album = albumIdByVendorId.has(albumData.id)
-                    ? null
-                    : this.albumRepository.create({
+            const albumId = albumByVendorId.get(albumData.id)?.id ?? ulid();
+            const album = albumByVendorId.has(albumData.id)
+                ? null
+                : await this.albumRepository.create(
+                      {
                           id: albumId,
                           title: albumData?.title,
                           coverUrl: albumData?.coverUrl,
@@ -233,41 +248,49 @@ export class PlaylistService {
                                   },
                               },
                           },
-                      });
-                albumIdByVendorId.set(albumData.id, albumId);
+                      },
+                      tx,
+                  );
+            albumByVendorId.set(albumData.id, album);
 
-                const artists = artistsData.map((artistData) => {
-                    const { vendor, name, id } = artistData;
-                    const artistId = artistIdByVendorId.get(id) ?? ulid();
-                    const artist = this.artistRepository.create({
-                        id: artistId,
-                        name,
-                        vendorArtists: {
-                            connectOrCreate: {
-                                where: { vendorId_vendor: { vendorId: id, vendor } },
-                                create: {
-                                    id: ulid(),
-                                    vendor,
-                                    vendorId: id,
-                                },
-                            },
-                        },
-                    });
-                    artistIdByVendorId.set(id, artistId);
+            const createArtists = artistsData.map(async (artistData) => {
+                const { vendor, name, id } = artistData;
+                const artistId = artistByVendorId.get(id)?.id ?? ulid();
+                const artist = artistByVendorId.has(id)
+                    ? null
+                    : await this.artistRepository.create(
+                          {
+                              id: artistId,
+                              name,
+                              vendorArtists: {
+                                  connectOrCreate: {
+                                      where: { vendorId_vendor: { vendorId: id, vendor } },
+                                      create: {
+                                          id: ulid(),
+                                          vendor,
+                                          vendorId: id,
+                                      },
+                                  },
+                              },
+                          },
+                          tx,
+                      );
+                artistByVendorId.set(id, artist);
 
-                    return artist;
-                });
+                return artist;
+            });
+            const artists = await Promise.all(createArtists.filter((x) => !!x));
 
-                const trackId = ulid();
-                const track = this.trackRepository.create({
-                    id: trackId,
+            const track = await this.trackRepository.create(
+                {
+                    id: ulid(),
                     title,
-                    album: { connect: { id: albumIdByVendorId[albumData.id] } },
+                    album: { connect: { id: albumByVendorId.get(albumData.id).id } },
                     artists: {
                         createMany: {
                             data: artistsData.map(({ id }, idx) => ({
                                 id: ulid(),
-                                artistId: id,
+                                artistId: artistByVendorId.get(id).id,
                                 artistSequence: idx,
                             })),
                         },
@@ -275,11 +298,10 @@ export class PlaylistService {
                     playlists: {
                         create: {
                             id: ulid(),
-                            playlist: { connect: { id: playlistId } },
+                            playlist: { connect: { id: playlist.id } },
                             trackSequence: idx,
                         },
                     },
-                    trackSequence: idx,
                     vendorTracks: {
                         connectOrCreate: {
                             where: { vendorId_vendor: { vendorId: id, vendor } },
@@ -290,18 +312,15 @@ export class PlaylistService {
                             },
                         },
                     },
-                });
-                trackIdByVendorId.set(id, trackId);
+                },
+                tx,
+            );
+            trackByVendorId.set(id, track);
 
-                return { album, artists, track };
-            })
-            .filter((track) => !!track);
+            return { album, artists, track };
+        });
+        await Promise.all(createTracksAndArtistsAndAlbums.filter((x) => !!x));
 
-        const [playlist] = await this.prismaService.$transaction([createPlaylist]);
-        const albums = await this.prismaService.$transaction(createTracks.map(({ album }) => album));
-        const artists = await this.prismaService.$transaction(createTracks.flatMap(({ artists }) => artists));
-        const tracks = await this.prismaService.$transaction(createTracks.map(({ track }) => track));
-
-        return { playlist, tracks, artists, albums };
+        return playlist;
     }
 }
