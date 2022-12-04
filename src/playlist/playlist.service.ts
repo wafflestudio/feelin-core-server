@@ -1,3 +1,4 @@
+import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
 import { AlbumRepository } from '@/album/album-repository.js';
 import { AlbumDto } from '@/album/dto/album.dto.js';
 import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
@@ -31,6 +32,7 @@ export class PlaylistService {
         private readonly playlistScraperService: PlaylistScraperService,
         private readonly authdataService: AuthdataService,
         private readonly trackService: TrackService,
+        private readonly trackMatcherService: TrackMatcherService,
         private readonly prismaService: PrismaService,
         private readonly playlistRepository: PlaylistRepository,
         private readonly trackRepository: TrackRepository,
@@ -112,12 +114,12 @@ export class PlaylistService {
                         album: { vendor, title: track.album.title, id: '', coverUrl: track.album.coverUrl },
                     };
 
-                    const matchedVendorTrackId = this.trackService.getMatchedVendorTrack(request.searchResults, reference);
-                    if (!!matchedVendorTrackId) {
+                    const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(request.searchResults, reference);
+                    if (!!matchedVendorTrack) {
                         return this.vendorTrackRepository.create({
                             id: ulid(),
                             vendor,
-                            vendorId: matchedVendorTrackId,
+                            vendorId: matchedVendorTrack.id,
                             track: { connect: { id: track.id } },
                         });
                     }

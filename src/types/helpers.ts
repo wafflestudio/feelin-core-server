@@ -1,4 +1,5 @@
-import { isEqual } from 'lodash-es';
+import { TrackSearchResultDto } from './../playlist/dto/track-search-result.dto';
+import _ from 'lodash-es';
 import { ITrack } from './types.js';
 
 export type ValuesToArray<T> = { [P in keyof T]: T[P][] };
@@ -17,7 +18,10 @@ export function collectToObject<T>(objArray: T[]): ValuesToArray<T> {
     }, {} as ValuesToArray<T>);
 }
 
-// ITrack interface
-export function isSameTrack(a: ITrack, b: ITrack): boolean {
-    return a.title == b.title && isEqual(a.artists.sort(), b.artists.sort()) && a.album == b.album;
+export function isExactMatch(a: ITrack, b: TrackSearchResultDto): boolean {
+    return (
+        a.title == b.title &&
+        _.isEqual(_.sortBy(a.artists.map(({ name }) => name)), _.sortBy(b.artists)) &&
+        a.album.title == b.album
+    );
 }

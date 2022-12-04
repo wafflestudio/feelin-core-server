@@ -8,13 +8,14 @@ import { PlaylistScraperModule } from '@/playlist-scraper/playlist-scraper.modul
 import { PrismaService } from '@/prisma.service.js';
 import { TrackModule } from '@/track/track.module.js';
 import { forwardRef, Module } from '@nestjs/common';
+import { TrackMatcherModule } from './../track-matcher/track-matcher.module.js';
 import { PlaylistController } from './playlist.controller.js';
 import { PlaylistRepository } from './playlist.repository.js';
 import { PlaylistService } from './playlist.service.js';
 import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
 
 @Module({
-    imports: [PlaylistScraperModule, forwardRef(() => TrackModule), forwardRef(() => AuthModule)],
+    imports: [PlaylistScraperModule, TrackMatcherModule, forwardRef(() => TrackModule), forwardRef(() => AuthModule)],
     controllers: [PlaylistController],
     providers: [
         PlaylistService,

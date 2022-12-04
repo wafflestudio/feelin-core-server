@@ -19,6 +19,8 @@ import { UserModule } from './user/user.module.js';
 import { CipherUtilService } from './utils/cipher-util/cipher-util.service.js';
 import { getEnvFile } from './utils/get-env-file.js';
 import { VendorAccountModule } from './vendor-account/vendor-account.module.js';
+import { SimilarityUtilService } from './utils/similarity-util/similarity-util.service.js';
+import { TrackMatcherModule } from './track-matcher/track-matcher.module.js';
 
 @Module({
     imports: [
@@ -38,8 +40,9 @@ import { VendorAccountModule } from './vendor-account/vendor-account.module.js';
         UserScraperModule,
         VendorAccountModule,
         JwtModule,
+        TrackMatcherModule,
     ],
     controllers: [AppController],
-    providers: [AppService, PrismaService, AuthdataService, AuthService, CipherUtilService],
+    providers: [AppService, PrismaService, AuthdataService, AuthService, CipherUtilService, SimilarityUtilService],
 })
 export class AppModule {}
