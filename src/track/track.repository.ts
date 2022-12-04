@@ -22,25 +22,26 @@ export class TrackRepository {
     }
 
     async findAllWithArtistAndAlbumByPlaylistId(playlistId: string): Promise<TrackWithArtistAndAlbum[]> {
-        const tracks = await this.prismaService.track.findMany({
-            where: {
-                playlists: {
-                    some: { playlistId },
+        const trackOnPlaylists = await this.prismaService.trackOnPlaylist.findMany({
+            where: { playlistId },
+            include: {
+                track: {
+                    include: {
+                        artists: { include: { artist: true } },
+                        album: true,
+                    },
                 },
             },
-            include: {
-                artists: { include: { artist: true } },
-                album: true,
-                playlists: { where: { playlistId } },
+            orderBy: {
+                trackSequence: 'asc',
             },
         });
         // FIXME: Prisma doesn't support nested orderBy yet
-        return _.sortBy(tracks, (track) => track.playlists[0].trackSequence);
+        return trackOnPlaylists.map(({ track }) => track);
     }
 }
 
 export type TrackWithArtistAndAlbum = Track & {
     artists: (ArtistOnTrack & { artist: Artist })[];
     album: Album;
-    playlists: TrackOnPlaylist[];
 };
