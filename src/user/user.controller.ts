@@ -2,10 +2,10 @@ import { JwtAuthGuard } from '@/auth/jwt-auth.guard.js';
 import { PlaylistService } from '@/playlist/playlist.service.js';
 import { Body, Controller, Delete, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { LoginStreamRequestDto } from './dto/login-stream.dto.js';
 import { SignUpDto } from './dto/signup.dto.js';
 import { UserDto } from './dto/user.dto.js';
-import { User } from './entity/user.entity.js';
 import { UserAuthentication } from './user-authentication.decorator.js';
 import { UserService } from './user.service.js';
 

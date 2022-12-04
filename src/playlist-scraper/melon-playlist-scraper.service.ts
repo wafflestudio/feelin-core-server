@@ -1,13 +1,12 @@
 import { AuthdataService } from '@/authdata/authdata.service.js';
 import { Authdata } from '@/authdata/types.js';
-import { Playlist } from '@/playlist/entity/playlist.entity.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { MelonTrackScraper } from '@/track-scraper/melon-track-scraper.service.js';
-import { Track } from '@/track/entity/track.entity.js';
-import { TrackService } from '@/track/track.service.js';
+import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
+import { Track } from '@prisma/client';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { PlaylistScraper } from './playlist-scraper.js';
@@ -28,7 +27,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
     constructor(
         protected readonly authdataService: AuthdataService,
         protected readonly melonTrackScraper: MelonTrackScraper,
-        protected readonly trackService: TrackService,
+        protected readonly vendorTrackRepository: VendorTrackRepository,
     ) {}
 
     async getPlaylist(playlistId: string): Promise<IPlaylist> {
@@ -74,13 +73,13 @@ export class MelonPlaylistScraper implements PlaylistScraper {
             repntImagePathDefaultYn: 'N',
         };
         const data = new URLSearchParams(params);
-        const streamTracks = await this.trackService.findAllStreamTracks(tracks);
-        tracks.map((track) => {
-            const melonId = streamTracks.find(
-                (streamTrack) => streamTrack.track === track && streamTrack?.vendor === 'melon',
-            )?.vendorId;
-            if (melonId) {
-                data.append('songIds[]', melonId);
+        const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
+            'melon',
+            tracks.map(({ id }) => id),
+        );
+        tracks.forEach(({ id }) => {
+            if (!!vendorTracks[id]) {
+                data.append('songIds[]', vendorTracks[id].vendorId);
             }
         });
 

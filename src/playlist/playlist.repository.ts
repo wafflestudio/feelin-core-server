@@ -1,10 +1,19 @@
-import { CustomRepository } from '@/dao/custom-repository.decorator.js';
-import { Repository } from 'typeorm';
-import { Playlist } from './entity/playlist.entity';
+import { PrismaService } from '@/prisma.service.js';
+import { Injectable } from '@nestjs/common';
+import { Playlist, Prisma, PrismaPromise } from '@prisma/client';
 
-@CustomRepository(Playlist)
-export class PlaylistRepository extends Repository<Playlist> {
-    async findWithTracksById(id: string): Promise<Playlist | undefined> {
-        return this.findOneOrFail({ where: { id }, relations: { tracks: true } });
+@Injectable()
+export class PlaylistRepository {
+    constructor(private readonly prismaService: PrismaService) {}
+
+    create(data: Prisma.PlaylistCreateInput): PrismaPromise<Playlist> {
+        return this.prismaService.playlist.create({ data });
+    }
+
+    async findById(id: string): Promise<Playlist> {
+        const playlist = await this.prismaService.playlist.findUnique({
+            where: { id },
+        });
+        return playlist;
     }
 }

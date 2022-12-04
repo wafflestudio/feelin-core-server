@@ -1,18 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { VendorAccount } from './entity/vendor-account.entity.js';
+import { PrismaService } from '@/prisma.service.js';
+import { Injectable } from '@nestjs/common';
+import { VendorAccount } from '@prisma/client';
 
 @Injectable()
 export class VendorAccountService {
-    constructor(
-        @InjectRepository(VendorAccount)
-        private readonly vendorAccountRepository: Repository<VendorAccount>,
-    ) {}
+    constructor(private readonly prismaService: PrismaService) {}
 
     async getVendorAccountById(id: string): Promise<VendorAccount> {
-        return this.vendorAccountRepository.findOneOrFail({ where: { id }, relations: ['user'] }).catch(() => {
-            throw new NotFoundException('vendor account not found');
+        const vendorAccount = this.prismaService.vendorAccount.findUnique({
+            where: { id },
+            include: { user: true },
         });
+        return vendorAccount;
     }
 }

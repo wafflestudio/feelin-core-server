@@ -2,7 +2,7 @@
     "rootDir": "./",
     "testRegex": ".*\\.spec\\.ts$",
     "setupFiles": [
-        "<rootDir>/src/test/setupEnvVars.ts"
+        "<rootDir>/src/test/setup-env-vars.ts"
     ],
     "moduleFileExtensions": [
         "js",
@@ -23,7 +23,10 @@
         "<rootDir>/node_modules/(?!lodash-es|n-gram).+\\.js"
     ],
     "transform": {
-        "^.+\\.ts$": ["ts-jest", "{ \"useESM\": true }"],
+        "^.+\\.ts$": [
+            "ts-jest",
+            "{ \"useESM\": true }"
+        ],
         "^.+\\.js$": "babel-jest"
     },
     "collectCoverageFrom": [

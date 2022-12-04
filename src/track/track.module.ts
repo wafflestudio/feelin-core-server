@@ -1,14 +1,15 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { PrismaService } from '@/prisma.service.js';
 import { TrackScraperModule } from '@/track-scraper/track-scraper.module.js';
+import { Module } from '@nestjs/common';
 import { TrackController } from './track.controller.js';
+import { TrackRepository } from './track.repository.js';
 import { TrackService } from './track.service.js';
-import { VendorTrack } from '@/track/entity/vendor-track.entity.js';
+import { VendorTrackRepository } from './vendor-track.repository.js';
 
 @Module({
-    imports: [TrackScraperModule, TypeOrmModule.forFeature([VendorTrack])],
+    imports: [TrackScraperModule],
     controllers: [TrackController],
-    providers: [TrackService],
-    exports: [TrackService],
+    providers: [TrackService, PrismaService, PrismaService, TrackRepository, VendorTrackRepository],
+    exports: [TrackService, TrackRepository, VendorTrackRepository],
 })
 export class TrackModule {}

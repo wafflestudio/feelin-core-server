@@ -1,12 +1,11 @@
 import { AuthdataService } from '@/authdata/authdata.service.js';
 import { Authdata, FloAuthdata } from '@/authdata/types.js';
-import { Playlist } from '@/playlist/entity/playlist.entity.js';
 import { IPlaylist } from '@/playlist/types/types.js';
-import { Track } from '@/track/entity/track.entity.js';
-import { TrackService } from '@/track/track.service.js';
+import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
+import { Track } from '@prisma/client';
 import axios from 'axios';
 import { PlaylistScraper } from './playlist-scraper.js';
 
@@ -18,7 +17,10 @@ export class FloPlaylistScraper implements PlaylistScraper {
     };
     private readonly createPlaylistUrl = 'https://www.music-flo.com/api/personal/v1/myplaylist';
 
-    constructor(protected readonly authdataService: AuthdataService, protected readonly trackService: TrackService) {}
+    constructor(
+        private readonly authdataService: AuthdataService,
+        private readonly vendorTrackRepository: VendorTrackRepository,
+    ) {}
 
     async getPlaylist(playlistId: string): Promise<IPlaylist> {
         const [type, id] = playlistId.split(':');
@@ -79,13 +81,12 @@ export class FloPlaylistScraper implements PlaylistScraper {
         }
 
         const playlistId = createResponse.data?.data?.id;
-        const streamTracks = await this.trackService.findAllStreamTracks(tracks);
-        const trackIds = tracks
-            .map(
-                (track) =>
-                    streamTracks.find((streamTrack) => streamTrack.track === track && streamTrack.vendor === 'flo')?.vendorId,
-            )
-            .filter((id) => id !== null); // Filter out un-found tracks
+        const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
+            'flo',
+            tracks.map(({ id }) => id),
+        );
+
+        const trackIds = tracks.map(({ id }) => vendorTracks[id]?.vendorId).filter((id) => !!id);
 
         const addResponse = await axios.post(
             this.createPlaylistUrl + `/${playlistId}/tracks`,

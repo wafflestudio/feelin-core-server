@@ -1,9 +1,6 @@
-import { User } from '@/user/entity/user.entity.js';
+import { AuthModule } from '@/auth/auth.module.js';
 import { createTestingModule } from '@/utils/test-utils.js';
-import { VendorAccount } from '@/vendor-account/entity/vendor-account.entity.js';
 import { TestingModule } from '@nestjs/testing';
-import { Playlist } from './entity/playlist.entity.js';
-import { VendorPlaylist } from './entity/vendor-playlist.entity.js';
 import { PlaylistController } from './playlist.controller.js';
 import { PlaylistModule } from './playlist.module.js';
 
@@ -12,9 +9,8 @@ describe('PlaylistController', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await createTestingModule({
-            imports: [PlaylistModule],
+            imports: [PlaylistModule, AuthModule],
             controllers: [PlaylistController],
-            entities: [Playlist, VendorPlaylist, User, VendorAccount],
         });
 
         controller = module.get<PlaylistController>(PlaylistController);

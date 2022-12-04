@@ -1,17 +1,23 @@
-import { CustomRepository } from '@/dao/custom-repository.decorator.js';
+import { PrismaService } from '@/prisma.service.js';
 import { Vendors } from '@/types/types.js';
-import { In, Repository } from 'typeorm';
-import { VendorAlbum } from './entity/vendor-album.entity.js';
+import { Injectable } from '@nestjs/common';
+import { Album, VendorAlbum } from '@prisma/client';
 
-@CustomRepository(VendorAlbum)
-export class VendorAlbumRepository extends Repository<VendorAlbum> {
-    findAllWithAlbumById(vendor: Vendors, ids: string[]): Promise<VendorAlbum[]> {
-        return this.find({
+@Injectable()
+export class VendorAlbumRepository {
+    constructor(private readonly prismaService: PrismaService) {}
+
+    findAllWithAlbumById(vendor: Vendors, ids: string[]): Promise<VendorAlbumWithAlbum[]> {
+        return this.prismaService.vendorAlbum.findMany({
             where: {
-                vendor: vendor,
-                vendorId: In(ids),
+                vendor,
+                albumId: { in: ids },
             },
-            relations: ['album'],
+            include: {
+                album: true,
+            },
         });
     }
 }
+
+export type VendorAlbumWithAlbum = VendorAlbum & { album: Album };

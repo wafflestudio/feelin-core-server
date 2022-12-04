@@ -1,35 +1,29 @@
+import { AlbumRepository } from '@/album/album-repository.js';
 import { AlbumDto } from '@/album/dto/album.dto.js';
-import { Album } from '@/album/entity/album.entity.js';
-import { VendorAlbum } from '@/album/entity/vendor-album.entity.js';
 import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
+import { ArtistRepository } from '@/artist/artist.repository.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
-import { Artist } from '@/artist/entity/artist.entity.js';
-import { VendorArtist } from '@/artist/entity/vendor-artist.entity.js';
 import { VendorArtistRepository } from '@/artist/vendor-artist.repository.js';
 import { AuthdataService } from '@/authdata/authdata.service.js';
 import { PlaylistScraperService } from '@/playlist-scraper/playlist-scraper.service.js';
-import { PlaylistTrack } from '@/playlist/entity/playlist-track.entity.js';
+import { PrismaService } from '@/prisma.service.js';
 import { TrackDto } from '@/track/dto/track.dto.js';
-import { TrackArtist } from '@/track/entity/track-artist.entity.js';
-import { Track } from '@/track/entity/track.entity.js';
-import { VendorTrack } from '@/track/entity/vendor-track.entity.js';
+import { TrackRepository } from '@/track/track.repository.js';
 import { TrackService } from '@/track/track.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { ITrack } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Album, Artist, Playlist, Track } from '@prisma/client';
+import { ulid } from 'ulid';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistPreviewDto } from './dto/playlist-preview.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
 import { SavePlaylistResponseDto } from './dto/save-playlist-response.dto.js';
-import { Playlist } from './entity/playlist.entity.js';
-import { VendorPlaylist } from './entity/vendor-playlist.entity.js';
 import { PlaylistRepository } from './playlist.repository.js';
-import { PlaylistTrackRepository } from './playlist-track.repository.js';
 import { IPlaylist } from './types/types.js';
+import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
 
 @Injectable()
 export class PlaylistService {
@@ -37,14 +31,15 @@ export class PlaylistService {
         private readonly playlistScraperService: PlaylistScraperService,
         private readonly authdataService: AuthdataService,
         private readonly trackService: TrackService,
-        @InjectRepository(VendorPlaylist) private readonly vendorPlaylistRepository: Repository<VendorPlaylist>,
-        @InjectRepository(TrackArtist) private readonly trackArtistRepository: Repository<TrackArtist>,
+        private readonly prismaService: PrismaService,
         private readonly playlistRepository: PlaylistRepository,
-        private readonly playlistTrackRepository: PlaylistTrackRepository,
+        private readonly trackRepository: TrackRepository,
+        private readonly artistRepository: ArtistRepository,
+        private readonly albumRepository: AlbumRepository,
+        private readonly vendorPlaylistRepository: VendorPlaylistRepository,
         private readonly vendorTrackRepository: VendorTrackRepository,
         private readonly vendorArtistRepository: VendorArtistRepository,
         private readonly vendorAlbumRepository: VendorAlbumRepository,
-        private readonly dataSource: DataSource,
     ) {}
 
     async getMatchedTracks(playlist: Playlist) {
@@ -53,37 +48,25 @@ export class PlaylistService {
     }
 
     async getPlaylist(playlistId: string): Promise<PlaylistDto> {
-        const playlist = await this.playlistRepository.findOneBy({ id: playlistId });
+        const playlist = await this.playlistRepository.findById(playlistId);
         if (!playlist) {
             throw new NotFoundException('not found', `playlist with id ${playlistId} not found`);
         }
 
-        const playlistTracks = await this.playlistTrackRepository.findAllWithTrackAndAlbumById(playlistId);
-        const trackArtistMap: Map<string, Artist[]> = new Map();
-        const trackArtists = await this.trackArtistRepository.find({
-            where: { track: { id: In(playlistTracks.map(({ track }) => track.id)) } },
-            relations: {
-                track: true,
-                artist: true,
-            },
-        });
-        trackArtists.forEach(({ track, artist }) =>
-            trackArtistMap.set(track.id, [...(trackArtistMap.get(track.id) ?? []), artist]),
-        );
-
+        const tracks = await this.trackRepository.findAllWithArtistAndAlbumByPlaylistId(playlistId);
         return new PlaylistDto(
             playlistId,
             playlist.title,
-            playlistTracks.map(
-                ({ track }) =>
+            tracks.map(
+                (track) =>
                     new TrackDto(
                         track.id,
                         track.title,
-                        trackArtistMap.get(track.id).map((artist) => new ArtistDto(artist.id, artist.name)),
+                        track.artists.map(({ artist }) => new ArtistDto(artist.id, artist.name)),
                         new AlbumDto(track.album.id, track.album.title, track.album.coverUrl),
                     ),
             ),
-            new PlaylistPreviewDto(playlistId, playlistTracks[0].track.album.coverUrl),
+            new PlaylistPreviewDto(playlistId, tracks[0].album.coverUrl),
         );
     }
 
@@ -91,10 +74,7 @@ export class PlaylistService {
         const { playlistUrl } = createPlaylistDto;
         const { vendor, playlistId } = await this.playlistScraperService.getStreamAndId(playlistUrl);
 
-        const vendorPlaylist = await this.vendorPlaylistRepository.findOne({
-            where: { vendorId: playlistId, vendor: vendor },
-            relations: ['playlist'],
-        });
+        const vendorPlaylist = await this.vendorPlaylistRepository.findWithPlaylistById(playlistId, vendor);
 
         if (vendorPlaylist) {
             return this.getPlaylist(vendorPlaylist.playlist.id);
@@ -109,16 +89,18 @@ export class PlaylistService {
         playlistId: string,
         request: SavePlaylistRequestDto,
     ): Promise<SavePlaylistResponseDto> {
-        const playlist = await this.playlistRepository.findWithTracksById(playlistId).catch(() => {
-            throw new NotFoundException('Not Found', 'playlist not found');
-        });
-        const trackIds = playlist.tracks.map((track) => track.id);
+        const playlist = this.playlistRepository.findById(playlistId);
+        if (!playlist) {
+            throw new NotFoundException('not found', `playlist with id ${playlistId} not found`);
+        }
+        const tracks = await this.trackRepository.findAllWithArtistAndAlbumByPlaylistId(playlistId);
+        const trackIds = tracks.map((track) => track.id);
         const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(vendorAccount.vendor, trackIds);
         const vendorTrackMapById = new Map(vendorTracks.map((vendorTrack) => [vendorTrack.track.id, vendorTrack]));
         const { vendor, authdata } = vendorAccount;
 
         if (!!request.searchResults) {
-            const tracksToSave = playlist.tracks.filter((track) => !vendorTrackMapById.has(track.id));
+            const tracksToSave = tracks.filter((track) => !vendorTrackMapById.has(track.id));
 
             const vendorTracksToSave = tracksToSave
                 .map((track) => {
@@ -126,21 +108,26 @@ export class PlaylistService {
                         vendor,
                         title: track.title,
                         id: '',
-                        artists: track.artists.map(({ name }) => ({ vendor, name, id: '' })),
+                        artists: track.artists.map(({ artist: { name } }) => ({ vendor, name, id: '' })),
                         album: { vendor, title: track.album.title, id: '', coverUrl: track.album.coverUrl },
                     };
 
                     const matchedVendorTrackId = this.trackService.getMatchedVendorTrack(request.searchResults, reference);
                     if (!!matchedVendorTrackId) {
-                        return VendorTrack.create({ vendor, vendorId: matchedVendorTrackId, track });
+                        return this.vendorTrackRepository.create({
+                            id: ulid(),
+                            vendor,
+                            vendorId: matchedVendorTrackId,
+                            track: { connect: { id: track.id } },
+                        });
                     }
                     return null;
                 })
                 .filter((vendorTrack) => !!vendorTrack);
 
-            await this.vendorTrackRepository.save(vendorTracksToSave);
+            await this.prismaService.$transaction(vendorTracksToSave);
         } else {
-            const missingTracks = playlist.tracks.filter((track) => !vendorTrackMapById.get(track.id));
+            const missingTracks = tracks.filter((track) => !vendorTrackMapById.get(track.id));
             if (!missingTracks) {
                 // FIXME: throw error and return with body
                 return new SavePlaylistResponseDto(
@@ -151,161 +138,168 @@ export class PlaylistService {
         }
 
         const authdataInterface = this.authdataService.fromString(vendor, authdata);
-        await this.playlistScraperService.get(vendor).savePlaylist(request, playlist.tracks, authdataInterface);
+        await this.playlistScraperService.get(vendor).savePlaylist(request, tracks, authdataInterface);
     }
 
     private async saveAndGetPlaylistDto(playlistData: IPlaylist): Promise<PlaylistDto> {
-        const trackIdMap = new Map<string, Track>();
-        const artistIdMap = new Map<string, Artist>();
-        const albumIdMap = new Map<string, Album>();
-
         const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
             playlistData.vendor,
             playlistData.tracks.map(({ id }) => id),
         );
-        vendorTracks.forEach((vendorTrack) => trackIdMap.set(vendorTrack.vendorId, vendorTrack.track));
+        const trackIdByVendorId = new Map(vendorTracks.map((vendorTrack) => [vendorTrack.vendorId, vendorTrack.trackId]));
 
         const vendorArtists = await this.vendorArtistRepository.findAllWithArtistById(
             playlistData.vendor,
             playlistData.tracks.flatMap(({ artists }) => artists.map(({ id }) => id)),
         );
-        vendorArtists.forEach((vendorArtist) => artistIdMap.set(vendorArtist.vendorId, vendorArtist.artist));
+        const artistIdByVendorId = new Map(vendorArtists.map((vendorArtist) => [vendorArtist.vendorId, vendorArtist.artistId]));
 
         const vendorAlbums = await this.vendorAlbumRepository.findAllWithAlbumById(
             playlistData.vendor,
-            playlistData.tracks.flatMap(({ album }) => album.id),
+            playlistData.tracks.map(({ album }) => album.id),
         );
-        vendorAlbums.forEach((vendorAlbum) => albumIdMap.set(vendorAlbum.vendorId, vendorAlbum.album));
+        const albumIdByVendorId = new Map(vendorAlbums.map((vendorAlbum) => [vendorAlbum.vendorId, vendorAlbum.albumId]));
 
-        const playlistId = await this.savePlaylist(playlistData, trackIdMap, artistIdMap, albumIdMap);
+        const { playlist } = await this.savePlaylist(playlistData, trackIdByVendorId, artistIdByVendorId, albumIdByVendorId);
 
         return new PlaylistDto(
-            playlistId,
+            playlist.id,
             playlistData.title,
             playlistData.tracks.map(
                 ({ id, title, artists, album }) =>
                     new TrackDto(
-                        trackIdMap.get(id).id,
+                        trackIdByVendorId.get(id),
                         title,
-                        artists.map((artist) => new ArtistDto(artistIdMap.get(artist.id).id, artist.name)),
-                        new AlbumDto(albumIdMap.get(album.id).id, album.title, album.coverUrl),
+                        artists.map(({ id, name }) => new ArtistDto(artistIdByVendorId.get(id), name)),
+                        new AlbumDto(albumIdByVendorId.get(album.id), album.title, album.coverUrl),
                     ),
             ),
-            new PlaylistPreviewDto(playlistId, playlistData.tracks[0].album.coverUrl),
+            new PlaylistPreviewDto(playlist.id, playlistData.tracks[0].album.coverUrl),
         );
     }
 
     private async savePlaylist(
         playlistData: IPlaylist,
-        trackIdMap: Map<string, Track>,
-        artistIdMap: Map<string, Artist>,
-        albumIdMap: Map<string, Album>,
-    ): Promise<string> {
+        trackIdByVendorId: Map<string, string>,
+        artistIdByVendorId: Map<string, string>,
+        albumIdByVendorId: Map<string, string>,
+    ): Promise<{
+        playlist: Playlist;
+        tracks: Track[];
+        artists: Artist[];
+        albums: Album[];
+    }> {
         const { vendor, id, title, tracks: tracksData } = playlistData;
 
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
+        const playlistId = ulid();
+        const createPlaylist = this.playlistRepository.create({
+            id: playlistId,
+            title,
+            vendorPlaylist: {
+                connectOrCreate: {
+                    where: { vendorId_vendor: { vendorId: id, vendor } },
+                    create: {
+                        id: ulid(),
+                        vendor,
+                        vendorId: id,
+                    },
+                },
+            },
+        });
 
-        try {
-            const playlist = await queryRunner.manager.save(Playlist.create({ title: title }));
-            await queryRunner.manager.upsert(
-                VendorPlaylist,
-                VendorPlaylist.create({
-                    vendor: vendor,
-                    vendorId: id,
-                    playlist: playlist,
-                }),
-                ['vendorId', 'vendor'],
-            );
+        const createTracks = tracksData
+            .map((trackData, idx) => {
+                const { vendor, title, id, album: albumData, artists: artistsData } = trackData;
+                if (trackIdByVendorId.has(id)) {
+                    return null;
+                }
 
-            const tracksDataWithAlbum = await Promise.all(
-                tracksData.map(async (trackData) => {
-                    const { album: albumData } = trackData;
-                    if (!!albumIdMap.get(albumData?.id)) {
-                        return { albumEntity: albumIdMap.get(albumData?.id), ...trackData };
-                    }
+                const albumId = albumIdByVendorId.get(albumData.id) ?? ulid();
+                const album = albumIdByVendorId.has(albumData.id)
+                    ? null
+                    : this.albumRepository.create({
+                          id: albumId,
+                          title: albumData?.title,
+                          coverUrl: albumData?.coverUrl,
+                          vendorAlbums: {
+                              connectOrCreate: {
+                                  where: { vendorId_vendor: { vendorId: albumData?.id, vendor } },
+                                  create: {
+                                      id: ulid(),
+                                      vendor,
+                                      vendorId: albumData?.id,
+                                  },
+                              },
+                          },
+                      });
+                albumIdByVendorId.set(albumData.id, albumId);
 
-                    const album = await queryRunner.manager.save(
-                        Album.create({ title: albumData?.title, coverUrl: albumData?.coverUrl }),
-                    );
-                    await queryRunner.manager.upsert(
-                        VendorAlbum,
-                        VendorAlbum.create({
-                            vendor: vendor,
-                            vendorId: albumData?.id,
-                            album: album,
-                        }),
-                        ['vendorId', 'vendor'],
-                    );
-                    albumIdMap.set(albumData?.id, album);
-                    return { albumEntity: album, ...trackData };
-                }),
-            );
-
-            const artistsDataWithTrack = await Promise.all(
-                tracksDataWithAlbum.map(async (trackData) => {
-                    const { albumEntity, id, title, artists } = trackData;
-                    if (!!trackIdMap.get(id)) {
-                        return { trackEntity: trackIdMap.get(id), artists };
-                    }
-
-                    const track = await queryRunner.manager.save(Track.create({ title: title, album: albumEntity }));
-                    await queryRunner.manager.upsert(
-                        VendorTrack,
-                        VendorTrack.create({
-                            vendor: vendor,
-                            vendorId: id,
-                            track: track,
-                        }),
-                        ['vendorId', 'vendor'],
-                    );
-                    trackIdMap.set(id, track);
-                    return { trackEntity: track, artists };
-                }),
-            );
-
-            await Promise.all(
-                artistsDataWithTrack.map(async ({ trackEntity, artists }) => {
-                    artists.forEach(async (artistData) => {
-                        if (!!artistIdMap.get(artistData?.id)) {
-                            return;
-                        }
-
-                        const artist = await queryRunner.manager.save(Artist.create({ name: artistData?.name }));
-                        await queryRunner.manager.upsert(
-                            VendorArtist,
-                            VendorArtist.create({
-                                vendor: vendor,
-                                vendorId: artistData?.id,
-                                artist: artist,
-                            }),
-                            ['vendorId', 'vendor'],
-                        );
-                        await queryRunner.manager.save(TrackArtist.create({ track: trackEntity, artist: artist }));
-                        artistIdMap.set(artistData?.id, artist);
+                const artists = artistsData.map((artistData) => {
+                    const { vendor, name, id } = artistData;
+                    const artistId = artistIdByVendorId.get(id) ?? ulid();
+                    const artist = this.artistRepository.create({
+                        id: artistId,
+                        name,
+                        vendorArtists: {
+                            connectOrCreate: {
+                                where: { vendorId_vendor: { vendorId: id, vendor } },
+                                create: {
+                                    id: ulid(),
+                                    vendor,
+                                    vendorId: id,
+                                },
+                            },
+                        },
                     });
-                }),
-            );
+                    artistIdByVendorId.set(id, artistId);
 
-            await queryRunner.manager.save(
-                artistsDataWithTrack.map(({ trackEntity }) =>
-                    PlaylistTrack.create({
-                        playlist: playlist,
-                        track: trackEntity,
-                    }),
-                ),
-            );
+                    return artist;
+                });
 
-            await queryRunner.commitTransaction();
+                const trackId = ulid();
+                const track = this.trackRepository.create({
+                    id: trackId,
+                    title,
+                    album: { connect: { id: albumIdByVendorId[albumData.id] } },
+                    artists: {
+                        createMany: {
+                            data: artistsData.map(({ id }, idx) => ({
+                                id: ulid(),
+                                artistId: id,
+                                artistSequence: idx,
+                            })),
+                        },
+                    },
+                    playlists: {
+                        create: {
+                            id: ulid(),
+                            playlist: { connect: { id: playlistId } },
+                            trackSequence: idx,
+                        },
+                    },
+                    trackSequence: idx,
+                    vendorTracks: {
+                        connectOrCreate: {
+                            where: { vendorId_vendor: { vendorId: id, vendor } },
+                            create: {
+                                id: ulid(),
+                                vendor,
+                                vendorId: id,
+                            },
+                        },
+                    },
+                });
+                trackIdByVendorId.set(id, trackId);
 
-            return playlist.id;
-        } catch (error) {
-            console.error(error);
-            await queryRunner.rollbackTransaction();
-            throw new InternalServerErrorException('DB error', 'failed to save playlist');
-        } finally {
-            await queryRunner.release();
-        }
+                return { album, artists, track };
+            })
+            .filter((track) => !!track);
+
+        const [playlist] = await this.prismaService.$transaction([createPlaylist]);
+        const albums = await this.prismaService.$transaction(createTracks.map(({ album }) => album));
+        const artists = await this.prismaService.$transaction(createTracks.flatMap(({ artists }) => artists));
+        const tracks = await this.prismaService.$transaction(createTracks.map(({ track }) => track));
+
+        return { playlist, tracks, artists, albums };
     }
 }

@@ -1,4 +1,3 @@
-import { VendorTrack } from '@/track/entity/vendor-track.entity.js';
 import { isEqual } from 'lodash-es';
 import { ITrack } from './types.js';
 
@@ -21,11 +20,4 @@ export function collectToObject<T>(objArray: T[]): ValuesToArray<T> {
 // ITrack interface
 export function isSameTrack(a: ITrack, b: ITrack): boolean {
     return a.title == b.title && isEqual(a.artists.sort(), b.artists.sort()) && a.album == b.album;
-}
-
-export function toStreamTrackEntity(trackInfo: ITrack): VendorTrack {
-    const streamTrack = new VendorTrack();
-    streamTrack.vendorId = trackInfo.id;
-    streamTrack.vendor = trackInfo.vendor;
-    return streamTrack;
 }
