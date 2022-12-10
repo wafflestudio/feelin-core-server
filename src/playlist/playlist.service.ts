@@ -194,127 +194,63 @@ export class PlaylistService {
     ): Promise<Playlist> {
         const { vendor, id, title, tracks: tracksData } = playlistData;
 
-        const playlist = await this.playlistRepository.create(
-            {
-                id: ulid(),
-                title,
-                vendorPlaylist: {
-                    connectOrCreate: {
-                        where: { vendorId_vendor: { vendorId: id, vendor } },
-                        create: {
-                            id: ulid(),
-                            vendor,
-                            vendorId: id,
-                        },
-                    },
-                },
-            },
+        const playlist = await this.playlistRepository.createWithVendorPlaylist({
+            data: { id: ulid(), title },
+            vendorPlaylist: { vendor, id },
             tx,
-        );
+        });
 
         const createTracksAndArtistsAndAlbums = tracksData.map(async (trackData, idx) => {
             const { vendor, title, id, album: albumData, artists: artistsData } = trackData;
             if (trackByVendorId.has(id)) {
-                return this.trackRepository.update(
-                    {
-                        playlists: {
-                            create: {
-                                id: ulid(),
-                                playlist: { connect: { id: playlist.id } },
-                                trackSequence: idx,
-                            },
-                        },
-                    },
-                    { id: trackByVendorId.get(id).id },
+                return this.trackRepository.connectPlaylist({
+                    playlistId: playlist.id,
+                    trackId: trackByVendorId.get(id).id,
+                    trackSequence: idx,
                     tx,
-                );
+                });
             }
 
-            const albumId = albumByVendorId.get(albumData.id)?.id ?? ulid();
-            const album = albumByVendorId.has(albumData.id)
-                ? null
-                : await this.albumRepository.create(
-                      {
-                          id: albumId,
-                          title: albumData?.title,
-                          coverUrl: albumData?.coverUrl,
-                          vendorAlbums: {
-                              connectOrCreate: {
-                                  where: { vendorId_vendor: { vendorId: albumData?.id, vendor } },
-                                  create: {
-                                      id: ulid(),
-                                      vendor,
-                                      vendorId: albumData?.id,
-                                  },
-                              },
-                          },
-                      },
-                      tx,
-                  );
+            const album =
+                albumByVendorId.get(albumData.id) ??
+                (await this.albumRepository.createWithVendorAlbum({
+                    data: {
+                        id: ulid(),
+                        title: albumData?.title,
+                        coverUrl: albumData?.coverUrl,
+                    },
+                    vendorAlbum: { vendor, id: albumData.id },
+                    tx,
+                }));
             albumByVendorId.set(albumData.id, album);
 
             const createArtists = artistsData.map(async (artistData) => {
                 const { vendor, name, id } = artistData;
-                const artistId = artistByVendorId.get(id)?.id ?? ulid();
-                const artist = artistByVendorId.has(id)
-                    ? null
-                    : await this.artistRepository.create(
-                          {
-                              id: artistId,
-                              name,
-                              vendorArtists: {
-                                  connectOrCreate: {
-                                      where: { vendorId_vendor: { vendorId: id, vendor } },
-                                      create: {
-                                          id: ulid(),
-                                          vendor,
-                                          vendorId: id,
-                                      },
-                                  },
-                              },
-                          },
-                          tx,
-                      );
+                const artist =
+                    artistByVendorId.get(id) ??
+                    (await this.artistRepository.createWithVendorArtist({
+                        data: { id: ulid(), name },
+                        vendorArtist: { vendor, id },
+                        tx,
+                    }));
                 artistByVendorId.set(id, artist);
 
                 return artist;
             });
             const artists = await Promise.all(createArtists.filter((x) => !!x));
 
-            const track = await this.trackRepository.create(
-                {
-                    id: ulid(),
-                    title,
-                    album: { connect: { id: albumByVendorId.get(albumData.id).id } },
-                    artists: {
-                        createMany: {
-                            data: artistsData.map(({ id }, idx) => ({
-                                id: ulid(),
-                                artistId: artistByVendorId.get(id).id,
-                                artistSequence: idx,
-                            })),
-                        },
-                    },
-                    playlists: {
-                        create: {
-                            id: ulid(),
-                            playlist: { connect: { id: playlist.id } },
-                            trackSequence: idx,
-                        },
-                    },
-                    vendorTracks: {
-                        connectOrCreate: {
-                            where: { vendorId_vendor: { vendorId: id, vendor } },
-                            create: {
-                                id: ulid(),
-                                vendor,
-                                vendorId: id,
-                            },
-                        },
-                    },
-                },
+            const track = await this.trackRepository.createWithArtistAndAlbumAndPlaylistAndVendorTrack({
+                data: { id: ulid(), title },
+                artists: artistsData.map(({ id }, idx) => ({
+                    artistId: artistByVendorId.get(id).id,
+                    artistSequence: idx,
+                })),
+                albumId: albumByVendorId.get(albumData.id).id,
+                playlistId: playlist.id,
+                trackSequence: idx,
+                vendorTrack: { vendor, id },
                 tx,
-            );
+            });
             trackByVendorId.set(id, track);
 
             return { album, artists, track };
