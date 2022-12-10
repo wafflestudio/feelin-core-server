@@ -1,7 +1,7 @@
 import { PrismaService } from '@/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import _ from 'lodash-es';
-import { Album, Artist, ArtistOnTrack, Prisma, PrismaPromise, Track, TrackOnPlaylist } from '@prisma/client';
+import { Album, Artist, ArtistOnTrack, Prisma, PrismaPromise, Track } from '@prisma/client';
+import { ulid } from 'ulid';
 
 @Injectable()
 export class TrackRepository {
@@ -21,22 +21,95 @@ export class TrackRepository {
         return client.track.update({ data, where });
     }
 
+    async connectPlaylist(input: {
+        playlistId: string;
+        trackId: string;
+        trackSequence: number;
+        tx?: Prisma.TransactionClient;
+    }): Promise<Track> {
+        const { playlistId, trackId, trackSequence, tx } = input;
+        const client = !!tx ? tx : this.prismaService;
+
+        const track = await client.track.update({
+            where: { id: trackId },
+            data: {
+                playlists: {
+                    create: {
+                        id: ulid(),
+                        playlist: { connect: { id: playlistId } },
+                        trackSequence,
+                    },
+                },
+            },
+        });
+
+        return track;
+    }
+
+    async createWithArtistAndAlbumAndPlaylistAndVendorTrack(input: {
+        data: Omit<Prisma.TrackCreateInput, 'artists' | 'album' | 'playlists' | 'vendorTracks'>;
+        artists: { artistId: string; artistSequence: number }[];
+        albumId: string;
+        playlistId: string;
+        trackSequence: number;
+        vendorTrack: { vendor: string; id: string };
+        tx?: Prisma.TransactionClient;
+    }): Promise<Track> {
+        const { data, artists, albumId, playlistId, trackSequence, vendorTrack, tx } = input;
+        const client = !!tx ? tx : this.prismaService;
+        const { vendor, id } = vendorTrack;
+
+        const track = await client.track.create({
+            data: {
+                ...data,
+                artists: {
+                    create: artists.map(({ artistId, artistSequence }) => ({
+                        id: ulid(),
+                        artist: { connect: { id: artistId } },
+                        artistSequence,
+                    })),
+                },
+                album: { connect: { id: albumId } },
+                playlists: {
+                    create: {
+                        id: ulid(),
+                        playlist: { connect: { id: playlistId } },
+                        trackSequence,
+                    },
+                },
+                vendorTracks: {
+                    connectOrCreate: {
+                        where: { vendorId_vendor: { vendorId: id, vendor } },
+                        create: {
+                            id: ulid(),
+                            vendor,
+                            vendorId: id,
+                        },
+                    },
+                },
+            },
+        });
+
+        return track;
+    }
+
     async findAllWithArtistAndAlbumByPlaylistId(playlistId: string): Promise<TrackWithArtistAndAlbum[]> {
         const trackOnPlaylists = await this.prismaService.trackOnPlaylist.findMany({
             where: { playlistId },
             include: {
                 track: {
                     include: {
-                        artists: { include: { artist: true } },
+                        artists: {
+                            include: { artist: true },
+                            orderBy: { artistSequence: 'asc' },
+                        },
                         album: true,
                     },
                 },
             },
-            orderBy: {
-                trackSequence: 'asc',
-            },
+            orderBy: { trackSequence: 'asc' },
         });
-        // FIXME: Prisma doesn't support nested orderBy yet
+
         return trackOnPlaylists.map(({ track }) => track);
     }
 }
