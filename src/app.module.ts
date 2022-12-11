@@ -26,7 +26,7 @@ import { TrackMatcherModule } from './track-matcher/track-matcher.module.js';
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: [getEnvFile()],
+            envFilePath: ['.env', getEnvFile()],
         }),
         AlbumModule,
         AuthModule,
