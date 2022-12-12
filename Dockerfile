@@ -15,6 +15,8 @@ RUN yarn install
 
 COPY --chown=node:node . .
 
+RUN yarn prisma:migrate
+
 RUN yarn build
 
 # Production stage
