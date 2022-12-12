@@ -7,15 +7,15 @@ RUN echo "Building for $APP_ENV"
 
 WORKDIR /app
 
-COPY --chown=node:node package.json yarn.lock ./
+COPY package.json yarn.lock ./
 
-RUN chown -R node:node /app/node_modules
+RUN chown -R node:node /app
 
 USER node
 
 RUN yarn install
 
-COPY --chown=node:node . .
+COPY . .
 
 RUN yarn prisma:migrate
 
@@ -30,11 +30,11 @@ RUN echo "Running for $NODE_ENV"
 
 WORKDIR /app
 
-COPY --chown=node:node --from=build /app/package.json ./package.json
-COPY --chown=node:node --from=build /app/yarn.lock ./yarn.lock
-COPY --chown=node:node --from=build /app/dist ./dist
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/yarn.lock ./yarn.lock
+COPY --from=build /app/dist ./dist
 
-RUN chown -R node:node /app/node_modules
+RUN chown -R node:node /app
 
 USER node
 
