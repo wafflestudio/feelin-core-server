@@ -16,9 +16,6 @@ USER node
 RUN yarn install
 
 COPY . .
-COPY .env .env
-
-RUN yarn prisma:migrate
 
 RUN yarn build
 
@@ -34,12 +31,16 @@ WORKDIR /app
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/yarn.lock ./yarn.lock
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/.env ./.env
 
 RUN chown -R node:node /app
 
 USER node
 
 RUN yarn install --production
+
+RUN yarn prisma:migrate
 
 EXPOSE 3000
 
