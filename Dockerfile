@@ -3,6 +3,8 @@ FROM node:18-alpine AS build
 ARG APP_ENV
 ENV NODE_ENV $APP_ENV
 
+RUN echo "Building for $APP_ENV"
+
 USER node
 
 WORKDIR /app
@@ -17,6 +19,10 @@ RUN yarn build
 
 # Production stage
 FROM node:18-alpine
+ARG APP_ENV
+ENV NODE_ENV $APP_ENV
+
+RUN echo "Running for $NODE_ENV"
 
 USER node
 
