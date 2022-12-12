@@ -16,6 +16,7 @@ USER node
 RUN yarn install
 
 COPY . .
+COPY .env .env
 
 RUN yarn prisma:migrate
 
