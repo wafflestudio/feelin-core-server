@@ -1,5 +1,6 @@
 src/test/setupEnvVars.ts
-*.env
+.env
+.env.*.local
 scribble
 
 # compiled output

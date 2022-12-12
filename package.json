@@ -23,7 +23,9 @@
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "clean": "rm -rf dist",
         "clean:module": "rm -rf node_modules",
-        "clean:all": "rm -rf dist node_modules"
+        "clean:all": "rm -rf dist node_modules",
+        "prisma:generate": "prisma generate",
+        "prisma:migrate": "prisma migrate deploy"
     },
     "dependencies": {
         "@grpc/grpc-js": "^1.6.12",
