@@ -5,11 +5,13 @@ ENV NODE_ENV $APP_ENV
 
 RUN echo "Building for $APP_ENV"
 
-USER node
-
 WORKDIR /app
 
 COPY --chown=node:node package.json yarn.lock ./
+
+RUN chown -R node:node /app/node_modules
+
+USER node
 
 RUN yarn install
 
@@ -26,13 +28,15 @@ ENV NODE_ENV $APP_ENV
 
 RUN echo "Running for $NODE_ENV"
 
-USER node
-
 WORKDIR /app
 
 COPY --chown=node:node --from=build /app/package.json ./package.json
 COPY --chown=node:node --from=build /app/yarn.lock ./yarn.lock
 COPY --chown=node:node --from=build /app/dist ./dist
+
+RUN chown -R node:node /app/node_modules
+
+USER node
 
 RUN yarn install --production
 
