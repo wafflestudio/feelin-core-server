@@ -11,13 +11,17 @@ COPY package.json yarn.lock ./
 
 RUN chown -R node:node /app
 
-USER node
-
 RUN yarn install
 
 COPY . .
 
-RUN yarn build
+RUN chown -R node:node /app/node_modules/prisma
+RUN chown -R node:node /app/node_modules/.prisma
+RUN mkdir /app/dist && chown -R node:node /app/dist
+
+USER node
+
+RUN yarn prisma:generate && yarn build
 
 # Production stage
 FROM node:18-alpine
@@ -33,12 +37,11 @@ COPY --from=build /app/yarn.lock ./yarn.lock
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/.env ./.env
-
-RUN chown -R node:node /app
-
-USER node
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 
 RUN yarn install --production
+
+USER node
 
 RUN yarn prisma:migrate
 
