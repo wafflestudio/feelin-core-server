@@ -43,8 +43,6 @@ RUN yarn install --production
 
 USER node
 
-RUN yarn prisma:migrate
-
 EXPOSE 3000
 
-CMD ["yarn", "start:prod"]
+CMD ["yarn", "start:prod-deploy"]
