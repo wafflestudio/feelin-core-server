@@ -1,6 +1,6 @@
 import { Vendors } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
-import { Authdata, MelonAuthdataKeys, FloAuthdataKeys } from './types.js';
+import { Authdata, FloAuthdataKeys, MelonAuthdataKeys, SpotifyAuthdataKeys } from './types.js';
 
 @Injectable()
 export class AuthdataService {
@@ -10,6 +10,7 @@ export class AuthdataService {
         this.authdataKeys = {
             melon: MelonAuthdataKeys,
             flo: FloAuthdataKeys,
+            spotify: SpotifyAuthdataKeys,
         };
     }
 
