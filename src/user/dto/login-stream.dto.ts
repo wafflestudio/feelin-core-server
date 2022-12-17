@@ -1,5 +1,6 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsULID } from '@/validation/ulid.validator.js';
 import { Vendors } from '@feelin-types/types.js';
+import { IsString } from 'class-validator';
 
 export class LoginStreamRequestDto {
     @IsString()
@@ -13,7 +14,7 @@ export class LoginStreamRequestDto {
 }
 
 export class LoginStreamResponseDto {
-    @IsUUID()
+    @IsULID()
     id!: string;
 
     @IsString()

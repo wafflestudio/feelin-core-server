@@ -1,7 +1,8 @@
-import { IsUrl, IsUUID } from 'class-validator';
+import { IsULID } from '@/validation/ulid.validator.js';
+import { IsUrl } from 'class-validator';
 
 export class PlaylistPreviewDto {
-    @IsUUID()
+    @IsULID()
     id!: string;
 
     @IsUrl()

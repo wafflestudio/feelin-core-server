@@ -1,9 +1,9 @@
 import { TrackDto } from '@/track/dto/track.dto.js';
-import { IsUUID } from 'class-validator';
+import { IsULID } from '@/validation/ulid.validator.js';
 import { PlaylistPreviewDto } from './playlist-preview.dto.js';
 
 export class PlaylistDto {
-    @IsUUID()
+    @IsULID()
     id!: string;
 
     title!: string;
