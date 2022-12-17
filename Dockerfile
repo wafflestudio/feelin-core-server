@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS build
+FROM node:18.12-alpine3.16 AS build
 ARG APP_ENV
 ENV NODE_ENV $APP_ENV
 
@@ -25,7 +25,7 @@ USER node
 RUN yarn prisma:generate && yarn build
 
 # Production stage
-FROM node:18-alpine
+FROM node:18.12-alpine3.16
 ARG APP_ENV
 ENV NODE_ENV $APP_ENV
 
