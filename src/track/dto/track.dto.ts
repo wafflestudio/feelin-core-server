@@ -1,9 +1,9 @@
 import { AlbumDto } from '@/album/dto/album.dto.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
-import { IsUUID } from 'class-validator';
+import { IsULID } from '@/validation/ulid.validator.js';
 
 export class TrackDto {
-    @IsUUID()
+    @IsULID()
     id!: string;
 
     title!: string;

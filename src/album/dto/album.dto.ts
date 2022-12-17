@@ -1,7 +1,8 @@
-import { IsUrl, IsUUID } from 'class-validator';
+import { IsULID } from '@/validation/ulid.validator.js';
+import { IsUrl } from 'class-validator';
 
 export class AlbumDto {
-    @IsUUID()
+    @IsULID()
     id!: string;
 
     title!: string;

@@ -1,7 +1,7 @@
-import { IsUUID } from 'class-validator';
+import { IsULID } from '@/validation/ulid.validator.js';
 
 export class TrackSearchResultDto {
-    @IsUUID()
+    @IsULID()
     id: string;
 
     vendorId: string;
