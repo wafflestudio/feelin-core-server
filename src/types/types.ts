@@ -1,11 +1,11 @@
 export const VendorEnum = [
     'melon',
     'flo',
+    'spotify',
     // 'genie',
     // 'bugs',
     // 'vibe',
     // 'ytmusic',
-    // 'spotify',
     // 'applemusic',
 ] as const;
 
