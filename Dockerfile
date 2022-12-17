@@ -15,6 +15,7 @@ RUN yarn install
 
 COPY . .
 
+RUN chown -R node:node /app/node_modules/@prisma
 RUN chown -R node:node /app/node_modules/prisma
 RUN chown -R node:node /app/node_modules/.prisma
 RUN mkdir /app/dist && chown -R node:node /app/dist
