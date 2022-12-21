@@ -7,6 +7,7 @@ import { Module } from '@nestjs/common';
 import { FloPlaylistScraper } from './flo-playlist-scraper.service.js';
 import { MelonPlaylistScraper } from './melon-playlist-scraper.service.js';
 import { PlaylistScraperService } from './playlist-scraper.service.js';
+import { SpotifyPlaylistScraper } from './spotify-playlist-scraper.service.js';
 
 @Module({
     imports: [TrackModule, TrackScraperModule],
@@ -14,11 +15,12 @@ import { PlaylistScraperService } from './playlist-scraper.service.js';
     providers: [
         MelonPlaylistScraper,
         FloPlaylistScraper,
+        SpotifyPlaylistScraper,
         PlaylistScraperService,
         AuthdataService,
         PrismaService,
         VendorPlaylistRepository,
     ],
-    exports: [PlaylistScraperService, MelonPlaylistScraper, FloPlaylistScraper],
+    exports: [PlaylistScraperService, MelonPlaylistScraper, FloPlaylistScraper, SpotifyPlaylistScraper],
 })
 export class PlaylistScraperModule {}

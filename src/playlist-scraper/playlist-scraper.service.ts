@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { detailId2ApiId, shareId2ApiId } from '@/utils/flo-utils.js';
 import { Vendors } from '@feelin-types/types.js';
+import { Injectable } from '@nestjs/common';
+import { URL } from 'url';
+import { FloPlaylistScraper } from './flo-playlist-scraper.service.js';
 import { MelonPlaylistScraper } from './melon-playlist-scraper.service.js';
 import { PlaylistScraper } from './playlist-scraper.js';
-import { URL } from 'url';
-import { detailId2ApiId, shareId2ApiId } from '@/utils/flo-utils.js';
-import { FloPlaylistScraper } from './flo-playlist-scraper.service.js';
+import { SpotifyPlaylistScraper } from './spotify-playlist-scraper.service.js';
 
 @Injectable()
 export class PlaylistScraperService {
@@ -13,10 +14,12 @@ export class PlaylistScraperService {
     constructor(
         private readonly melonPlaylistScraper: MelonPlaylistScraper,
         private readonly floPlaylistScraper: FloPlaylistScraper,
+        private readonly spotifyPlaylistScraper: SpotifyPlaylistScraper,
     ) {
         this.playlistScrapers = {
             melon: melonPlaylistScraper,
             flo: floPlaylistScraper,
+            spotify: spotifyPlaylistScraper,
         };
     }
 
