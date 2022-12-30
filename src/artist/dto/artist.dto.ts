@@ -1,7 +1,7 @@
-import { IsULID } from '@/validation/ulid.validator.js';
+import { IsUUID } from 'class-validator';
 
 export class ArtistDto {
-    @IsULID()
+    @IsUUID()
     id!: string;
 
     name!: string;
