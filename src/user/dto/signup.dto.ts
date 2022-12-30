@@ -1,8 +1,7 @@
-import { IsULID } from '@/validation/ulid.validator.js';
-import { IsString } from 'class-validator';
+import { IsString, IsUUID } from 'class-validator';
 
 export class SignUpDto {
-    @IsULID()
+    @IsUUID()
     id!: string;
 
     @IsString()

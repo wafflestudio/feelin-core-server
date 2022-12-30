@@ -5,7 +5,7 @@ import { VendorEnum } from '@feelin-types/types.js';
 import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import dayjs from 'dayjs';
-import { ulid } from 'ulid';
+import { v4 as uuidv4 } from 'uuid';
 import { LoginStreamRequestDto, LoginStreamResponseDto } from './dto/login-stream.dto.js';
 import { SignUpDto } from './dto/signup.dto.js';
 import { UserRepository } from './user.repository.js';
@@ -45,7 +45,7 @@ export class UserService {
         const encryptionResult = this.cipherUtilService.encrypt(authDataString);
 
         const vendorAccount = await this.vendorAccountRepository.create({
-            id: ulid(),
+            id: uuidv4(),
             user: { connect: { id: user.id } },
             vendor,
             encryptionKey: encryptionResult.key,
