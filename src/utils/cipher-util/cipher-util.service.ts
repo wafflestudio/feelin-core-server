@@ -3,9 +3,9 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 @Injectable()
 export class CipherUtilService {
-    readonly algorithm = 'aes-256-cbc';
-    readonly ivLength = 16;
-    readonly inputEncoding = 'utf8';
+    private readonly algorithm = 'aes-256-cbc';
+    private readonly ivLength = 16;
+    private readonly inputEncoding = 'utf8';
 
     encrypt(text: string): EncryptionResult {
         const key = randomBytes(32);
@@ -16,6 +16,16 @@ export class CipherUtilService {
         const encryptedData = iv.toString('hex') + ':' + ciphered;
 
         return { key, encryptedData };
+    }
+
+    encryptWithKey(text: string, key: Buffer): string {
+        const iv = randomBytes(this.ivLength);
+
+        const cipher = createCipheriv(this.algorithm, key, iv);
+        const ciphered = Buffer.concat([cipher.update(text, this.inputEncoding), cipher.final()]).toString('hex');
+        const encryptedData = iv.toString('hex') + ':' + ciphered;
+
+        return encryptedData;
     }
 
     decrypt(text: string, key: Buffer): string {

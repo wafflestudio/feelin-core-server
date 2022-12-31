@@ -122,7 +122,9 @@ model VendorAccount {
     updatedAt     DateTime  @updatedAt @map("updated_at") @db.DateTime(6)
     deactivatedAt DateTime? @map("deactivated_at") @db.DateTime(6)
     vendor        String    @map("vendor") @db.VarChar(32)
-    encryptionKey Bytes     @map("encryption_key") @db.Binary(32)
+    accessToken   String?   @map("access_token") @db.VarChar(2047)
+    refreshToken  String?   @map("refresh_token") @db.VarChar(2047)
+    expiresAt     DateTime? @map("expires_at") @db.DateTime(6)
 
     user   User   @relation(fields: [userId], references: [id])
     userId String @map("user_id") @db.VarChar(36)

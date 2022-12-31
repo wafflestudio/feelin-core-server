@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { Prisma, User, VendorAccount } from '@prisma/client';
+import { Prisma, PrismaPromise, User, VendorAccount } from '@prisma/client';
 
 @Injectable()
 export class VendorAccountRepository {
@@ -14,13 +14,11 @@ export class VendorAccountRepository {
         return vendorAccount;
     }
 
-    async update(data: Prisma.VendorAccountUpdateArgs): Promise<VendorAccount> {
-        const vendorAccount = await this.prismaService.vendorAccount.update(data);
-        return vendorAccount;
+    create(data: Prisma.VendorAccountCreateInput, tx?: Prisma.TransactionClient): PrismaPromise<VendorAccount> {
+        return (tx ?? this.prismaService).vendorAccount.create({ data });
     }
 
-    async create(data: Prisma.VendorAccountCreateInput): Promise<VendorAccount> {
-        const vendorAccount = await this.prismaService.vendorAccount.create({ data });
-        return vendorAccount;
+    update(data: Prisma.VendorAccountUpdateArgs, tx?: Prisma.TransactionClient): PrismaPromise<VendorAccount> {
+        return (tx ?? this.prismaService).vendorAccount.update(data);
     }
 }
