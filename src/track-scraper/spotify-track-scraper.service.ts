@@ -1,17 +1,54 @@
-import { Authdata } from '@/authdata/types.js';
+import { Authdata, SpotifyAuthdata, SpotifyAuthdataKeys } from '@/authdata/types.js';
 import { ITrack } from '@/types/types.js';
 import { Injectable } from '@nestjs/common';
+import axios from 'axios';
 import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class SpotifyTrackScraper implements TrackScraper {
-    searchTrack(track: ITrack): Promise<ITrack[]> {
+    private readonly searchUrl = 'https://api.spotify.com/v1/search';
+    private readonly recentTrackUrl = 'https://api.spotify.com/v1/me/player/recently-played';
+
+    async searchTrack(track: ITrack, authData : Authdata): Promise<ITrack[]> {
         // TODO: Implement me
-        return null;
+        const spotifyAuthData = authData as SpotifyAuthdata;
+        const response = await axios.get( this.searchUrl + track.title, {
+          params:{
+            'q' : track.title,
+            'type' : 'track',
+            'include_external' : 'audio',
+            'limit' : 50,
+            'offset' : 0
+          },
+          headers: {
+            Authorization : spotifyAuthData,
+            'Content-Type' : 'application/json'
+            },
+        })
+        
+        const trackList: ITrack[] = response.data?.data?.list[0]?.list?.map((track) => {
+            const { id, name, artistList, album } = track;
+            const artists = artistList.map((artist) => artist.name);
+            return {
+                vendor: 'spotify',
+                title: name,
+                vendorId: id,
+                artists: artists,
+                album: album.title,
+            };
+        });
+
+        return trackList;
     }
 
-    getMyRecentTracks(authToken: Authdata) {
+    async getMyRecentTracks(spoifyAuthdata  : SpotifyAuthdata) {
         // TODO: Implement me
-        return null;
+        const res = await axios.get(this.recentTrackUrl, {
+            headers: {
+                Authorization : spoifyAuthdata,
+                'Content-Type' : 'application/json'
+            },
+        });
+        console.log(res);
     }
 }
