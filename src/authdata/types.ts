@@ -18,8 +18,10 @@ export interface FloAuthdata {
 
 export const FloAuthdataKeys = ['accessToken', 'refreshToken'];
 
-export interface SpotifyAuthdata {}
+export interface SpotifyAuthdata {
+    accessToken: string;
+}
 
-export const SpotifyAuthdataKeys = [];
+export const SpotifyAuthdataKeys = ['accessToken'];
 
 export type Authdata = MelonAuthdata | FloAuthdata | SpotifyAuthdata;
