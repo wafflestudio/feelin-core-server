@@ -15,34 +15,32 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         user: 'https://api.spotify.com/v1/me/playlist',
     };
 
-    userUrl : 'https://api.spotify.com/v1/me';
-    
-    
+    userUrl: 'https://api.spotify.com/v1/me';
+
     constructor(
         private readonly authdataService: AuthdataService,
         private readonly vendorTrackRepository: VendorTrackRepository,
     ) {}
 
-    
     public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authData: Authdata) {
         const spotifyAuthData = authData as SpotifyAuthdata;
-        const userData = await axios.get(this.userUrl, {
+        const userData: any = await axios.get(this.userUrl, {
             headers: {
-                Authorization : spotifyAuthData,
-                'Content-Type' : 'application/json'
+                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                'Content-Type': 'application/json',
             },
         });
         const createPlaylistUrl = `https://api.spotify.com/v1/users/${userData.id}/playlists`;
         const createResponse = await axios.post(
             createPlaylistUrl,
             {
-                name : request.title,
-                description : request.description
+                name: request.title,
+                description: request.description,
             },
             {
                 headers: {
-                    Authorization : spotifyAuthData,
-                    'Content-Type' : 'application/json'
+                    Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                    'Content-Type': 'application/json',
                 },
             },
         );
@@ -57,24 +55,21 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
             'spotify',
             tracks.map(({ id }) => id),
-        ); //extracting tracks from input 'tracks' 
+        ); //extracting tracks from input 'tracks'
 
         const trackIds = tracks.map(({ id }) => vendorTracks[id]?.vendorId).filter((id) => !!id); //extracting track id (where its id exists) from input 'tracks'
-        
+
         //add tracks to new playlist
         const addTracksToPlaylistUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-        const addResponse = await axios.post(
-            addTracksToPlaylistUrl, null,
-            {  
-                params: {
-                    uris : '' + trackIds.map((id) => 'spotify:track:'+id)
-                },
-                headers: {
-                    Authorization : spotifyAuthData,
-                    'Content-Type' : 'application/json'
-                },
+        const addResponse = await axios.post(addTracksToPlaylistUrl, null, {
+            params: {
+                uris: '' + trackIds.map((id) => 'spotify:track:' + id),
             },
-        );
+            headers: {
+                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                'Content-Type': 'application/json',
+            },
+        });
 
         //handling exception
         /*if (addResponse.data?.code !== '2000000') {
@@ -82,29 +77,27 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         }*/
     }
 
-    async getPlaylist(playlistId: string, authData : Authdata): Promise<IPlaylist> {
+    async getPlaylist(playlistId: string, authData: Authdata): Promise<IPlaylist> {
         const spotifyAuthData = authData as SpotifyAuthdata;
-        const playlistItemsUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`
+        const playlistItemsUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
         /*const [type, id] = playlistId.split(':');
         if (type != 'user') {
             throw new Error('Not supported playlist type');
         }*/
 
-        const res = await axios
-        .get( `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-            {
+        const res = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
             headers: {
-                Authorization : spotifyAuthData,
-                'Content-Type' : 'application/json'
+                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                'Content-Type': 'application/json',
             },
         });
         const playlistData = res.data?.items;
 
-        const tracks: ITrack[] = playlistData?.map((item : any) => ({
+        const tracks: ITrack[] = playlistData?.map((item: any) => ({
             vendor: 'spotify',
             title: item?.track?.name,
-            id : item?.track?.id,
-            artists: item?.track?.artists?.map((artist : any) => ({ vendor: 'spotify', id : artist.id, name : artist.name })),
+            id: item?.track?.id,
+            artists: item?.track?.artists?.map((artist: any) => ({ vendor: 'spotify', id: artist.id, name: artist.name })),
             album: {
                 vendor: 'spotify',
                 title: item?.track?.album?.name,
@@ -114,8 +107,8 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
                     item?.track?.album?.img?.availableSizeList[Math.floor(item?.track?.album?.images?.length / 2)],
                 ),
                 //coverUrl -> flo playlist response json 구조를 확인해봐야 할 것 같음
-          },
-      }));
+            },
+        }));
 
         return {
             vendor: 'spotify',
@@ -123,10 +116,8 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
             id: playlistId,
             tracks,
         };
-
-        
     }
-    
+
     protected formatCoverUrl(coverUrlFormat: string, size: number): string {
         return coverUrlFormat.replace(/{size}/, `${size}x${size}`);
     }
