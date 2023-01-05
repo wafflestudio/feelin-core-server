@@ -82,7 +82,9 @@ export class PlaylistService {
             return this.getPlaylist(vendorPlaylist.playlist.id);
         }
 
-        const playlistData = await this.playlistScraperService.get(vendor).getPlaylist(playlistId);
+        const playlistData = await this.playlistScraperService
+            .get(vendor)
+            .getPlaylist(playlistId, this.authdataService.fromString(vendor, 'cookieString')); //cookieString should be filled somehow..:(
         return this.saveAndGetPlaylistDto(playlistData);
     }
 
