@@ -18,7 +18,9 @@ export interface FloAuthdata {
 
 export const FloAuthdataKeys = ['accessToken', 'refreshToken'];
 
-export interface SpotifyAuthdata {}
+export interface SpotifyAuthdata {
+    _: any;
+}
 
 export const SpotifyAuthdataKeys = [];
 

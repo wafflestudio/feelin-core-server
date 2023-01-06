@@ -44,11 +44,6 @@ export class PlaylistService {
         private readonly vendorAlbumRepository: VendorAlbumRepository,
     ) {}
 
-    async getMatchedTracks(playlist: Playlist) {
-        // TODO: Implement me
-        return;
-    }
-
     async getPlaylist(playlistId: string): Promise<PlaylistDto> {
         const playlist = await this.playlistRepository.findById(playlistId);
         if (!playlist) {

@@ -1,6 +1,6 @@
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard.js';
 import { Body, Controller, Delete, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { SignUpDto } from './dto/signup.dto.js';
 import { UserDto } from './dto/user.dto.js';
@@ -14,10 +14,8 @@ export class UserController {
 
     @Post()
     @HttpCode(201)
-    @ApiOperation({
-        summary: 'User signup API',
-        description: 'Creates a new user',
-    })
+    @ApiOperation({ summary: 'User signup API', description: 'Creates a new user' })
+    @ApiCreatedResponse()
     async signup(@Body() signUpDto: SignUpDto) {
         const user = await this.userService.signup(signUpDto);
         return new UserDto(user.id, user.username);
@@ -26,6 +24,9 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @Delete('stream/account/:accountId')
     @HttpCode(204)
+    @ApiBearerAuth('Authorization')
+    @ApiOperation({ summary: 'Unlink stream account API', description: 'Unlinks a stream account from the user' })
+    @ApiNoContentResponse()
     async unlinkStreamAccount(@UserAuthentication() user: User, @Param('accountId') accountId: string) {
         await this.userService.unlinkStreamAccount(user, accountId);
     }
