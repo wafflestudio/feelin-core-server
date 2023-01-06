@@ -13,9 +13,8 @@ export class SpotifyTrackScraper implements TrackScraper {
     constructor(private readonly authdataService: AuthdataService) {}
 
     async searchTrack(track: ITrack, authData: Authdata): Promise<ITrack[]> {
-        // TODO: Implement me
         const spotifyAuthData = authData as SpotifyAuthdata;
-        const response = await axios.get(this.searchUrl + track.title, {
+        const response = await axios.get(this.searchUrl, {
             params: {
                 q: track.title,
                 type: 'track',
@@ -29,15 +28,13 @@ export class SpotifyTrackScraper implements TrackScraper {
             },
         });
 
-        const trackList: ITrack[] = response.data?.data?.list[0]?.list?.map((track) => {
-            const { id, name, artistList, album } = track;
-            const artists = artistList.map((artist) => artist.name);
+        const trackList: ITrack[] = response.data?.tracks?.items?.map((track) => {
+            const artists = track.artists.map((artist) => artist.name);
             return {
-                vendor: 'spotify',
-                title: name,
-                vendorId: id,
+                title: track.name,
+                id: track.id,
                 artists: artists,
-                album: album.title,
+                album: track.album.name,
             };
         });
 
@@ -45,13 +42,23 @@ export class SpotifyTrackScraper implements TrackScraper {
     }
 
     async getMyRecentTracks(spotifyAuthdata: SpotifyAuthdata) {
-        // TODO: Implement me
-        const res = await axios.get(this.recentTrackUrl, {
+        const response = await axios.get(this.recentTrackUrl, {
             headers: {
                 Authorization: this.authdataService.toString('spotify', spotifyAuthdata),
                 'Content-Type': 'application/json',
             },
         });
-        console.log(res);
+
+        const recentTrackList: ITrack[] = response.data?.items?.map((track) => {
+            const artists = track.track.artists.map((artist) => artist.name);
+            return {
+                title: track.track.name,
+                id: track.track.id,
+                artists: artists,
+                album: track.track.album.name,
+            };
+        });
+
+        return recentTrackList;
     }
 }
