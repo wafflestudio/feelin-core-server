@@ -4,7 +4,7 @@ import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor
 import { VendorAuthGuard } from '@/vendor-account/vendor-auth.guard.js';
 import { VendorAuthentication } from '@/vendor-account/vendor-authentication.decorator.js';
 import { Body, Controller, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
 import { PlaylistService } from './playlist.service.js';
@@ -15,20 +15,16 @@ export class PlaylistController {
 
     @Post('/')
     @HttpCode(201)
-    @ApiOperation({
-        summary: 'Playlist create API',
-        description: `Creates a playlist to the database from a streaming service's playlist url`,
-    })
+    @ApiOperation({ summary: 'Playlist create API', description: `Creates a playlist from a streaming service's playlist url` })
+    @ApiCreatedResponse({ type: PlaylistDto })
     async createPlaylist(@Body() createPlaylistDto: CreatePlaylistRequestDto): Promise<PlaylistDto> {
         return this.playlistService.createPlaylist(createPlaylistDto);
     }
 
     @Get('/:playlistId')
     @HttpCode(200)
-    @ApiOperation({
-        summary: 'Playlist get API',
-        description: `Gets a playlist with the given id`,
-    })
+    @ApiOperation({ summary: 'Playlist get API', description: `Gets a playlist with the given id` })
+    @ApiOkResponse({ type: PlaylistDto })
     async getPlaylist(@Param('playlistId') playlistId: string): Promise<PlaylistDto> {
         return this.playlistService.getPlaylist(playlistId);
     }
@@ -36,10 +32,8 @@ export class PlaylistController {
     @UseGuards(JwtAuthGuard, VendorAuthGuard)
     @Post(':playlistId/save')
     @HttpCode(201)
-    @ApiOperation({
-        summary: 'Playlist save API',
-        description: `Saves a playlist to user's streaming service account`,
-    })
+    @ApiOperation({ summary: 'Playlist save API', description: `Saves a playlist to user's streaming service account` })
+    @ApiCreatedResponse()
     async savePlaylist(
         @VendorAuthentication() vendorAccount: DecryptedVendorAccountDto,
         @Param('playlistId') playlistId: string,
