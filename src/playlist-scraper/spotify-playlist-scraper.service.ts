@@ -68,7 +68,6 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
     async getPlaylist(playlistId: string, authData: Authdata): Promise<IPlaylist> {
         const spotifyAuthData = authData as SpotifyAuthdata;
         const playlistItemsUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-
         const res = await axios.get(playlistItemsUrl, {
             headers: {
                 Authorization: this.authdataService.toString('spotify', spotifyAuthData),

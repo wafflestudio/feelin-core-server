@@ -53,6 +53,7 @@
         "lodash-es": "^4.17.21",
         "mysql2": "^2.3.3",
         "n-gram": "^2.0.1",
+        "nestjs": "^0.0.1",
         "node-fetch": "^3.2.6",
         "node-rsa": "^1.1.1",
         "passport": "^0.6.0",
