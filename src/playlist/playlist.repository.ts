@@ -1,7 +1,7 @@
 import { PrismaService } from '@/prisma.service.js';
 import { Injectable } from '@nestjs/common';
 import { Playlist, Prisma, PrismaPromise } from '@prisma/client';
-import { ulid } from 'ulid';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class PlaylistRepository {
@@ -27,7 +27,7 @@ export class PlaylistRepository {
                     connectOrCreate: {
                         where: { vendorId_vendor: { vendorId: id, vendor } },
                         create: {
-                            id: ulid(),
+                            id: uuidv4(),
                             vendor,
                             vendorId: id,
                         },

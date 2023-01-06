@@ -1,7 +1,7 @@
 import { PrismaService } from '@/prisma.service.js';
 import { Injectable } from '@nestjs/common';
 import { Album, Artist, ArtistOnTrack, Prisma, PrismaPromise, Track } from '@prisma/client';
-import { ulid } from 'ulid';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class TrackRepository {
@@ -35,7 +35,7 @@ export class TrackRepository {
             data: {
                 playlists: {
                     create: {
-                        id: ulid(),
+                        id: uuidv4(),
                         playlist: { connect: { id: playlistId } },
                         trackSequence,
                     },
@@ -64,7 +64,7 @@ export class TrackRepository {
                 ...data,
                 artists: {
                     create: artists.map(({ artistId, artistSequence }) => ({
-                        id: ulid(),
+                        id: uuidv4(),
                         artist: { connect: { id: artistId } },
                         artistSequence,
                     })),
@@ -72,7 +72,7 @@ export class TrackRepository {
                 album: { connect: { id: albumId } },
                 playlists: {
                     create: {
-                        id: ulid(),
+                        id: uuidv4(),
                         playlist: { connect: { id: playlistId } },
                         trackSequence,
                     },
@@ -81,7 +81,7 @@ export class TrackRepository {
                     connectOrCreate: {
                         where: { vendorId_vendor: { vendorId: id, vendor } },
                         create: {
-                            id: ulid(),
+                            id: uuidv4(),
                             vendor,
                             vendorId: id,
                         },

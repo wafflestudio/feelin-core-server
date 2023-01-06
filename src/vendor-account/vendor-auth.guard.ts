@@ -7,13 +7,13 @@ export class VendorAuthGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
-        const vendorToken = request.header['Vendor-Authorization'];
+        const vendorAccountId = request.header['Vendor-Authorization'];
 
-        if (!vendorToken) {
+        if (!vendorAccountId) {
             return false;
         }
 
-        const vendorAccount = await this.authService.validateVendorToken(vendorToken, request.user);
+        const vendorAccount = await this.authService.validateVendorAccountId(vendorAccountId, request.user);
         if (!vendorAccount) {
             return false;
         }

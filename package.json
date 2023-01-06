@@ -65,6 +65,7 @@
         "rxjs": "^7.2.0",
         "swagger-ui-express": "^4.3.0",
         "ulid": "^2.3.0",
+        "uuid": "^9.0.0",
         "watchman": "^1.0.0",
         "webpack": "^5.75.0"
     },
@@ -86,6 +87,7 @@
         "@types/node": "^18.7.14",
         "@types/passport-jwt": "^3.0.7",
         "@types/supertest": "^2.0.11",
+        "@types/uuid": "^9.0.0",
         "@typescript-eslint/eslint-plugin": "^5.36.1",
         "@typescript-eslint/parser": "^5.36.1",
         "babel-jest": "^29.0.2",

@@ -16,7 +16,7 @@ import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js'
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Album, Artist, Playlist, Prisma, Track } from '@prisma/client';
-import { ulid } from 'ulid';
+import { v4 as uuidv4 } from 'uuid';
 import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistPreviewDto } from './dto/playlist-preview.dto.js';
@@ -43,11 +43,6 @@ export class PlaylistService {
         private readonly vendorArtistRepository: VendorArtistRepository,
         private readonly vendorAlbumRepository: VendorAlbumRepository,
     ) {}
-
-    async getMatchedTracks(playlist: Playlist) {
-        // TODO: Implement me
-        return;
-    }
 
     async getPlaylist(playlistId: string): Promise<PlaylistDto> {
         const playlist = await this.playlistRepository.findById(playlistId);
@@ -119,7 +114,7 @@ export class PlaylistService {
                     const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(request.searchResults, reference);
                     if (!!matchedVendorTrack) {
                         return this.vendorTrackRepository.create({
-                            id: ulid(),
+                            id: uuidv4(),
                             vendor,
                             vendorId: matchedVendorTrack.id,
                             track: { connect: { id: track.id } },
@@ -197,7 +192,7 @@ export class PlaylistService {
         const { vendor, id, title, tracks: tracksData } = playlistData;
 
         const playlist = await this.playlistRepository.createWithVendorPlaylist({
-            data: { id: ulid(), title },
+            data: { id: uuidv4(), title },
             vendorPlaylist: { vendor, id },
             tx,
         });
@@ -217,7 +212,7 @@ export class PlaylistService {
                 albumByVendorId.get(albumData.id) ??
                 (await this.albumRepository.createWithVendorAlbum({
                     data: {
-                        id: ulid(),
+                        id: uuidv4(),
                         title: albumData?.title,
                         coverUrl: albumData?.coverUrl,
                     },
@@ -231,7 +226,7 @@ export class PlaylistService {
                 const artist =
                     artistByVendorId.get(id) ??
                     (await this.artistRepository.createWithVendorArtist({
-                        data: { id: ulid(), name },
+                        data: { id: uuidv4(), name },
                         vendorArtist: { vendor, id },
                         tx,
                     }));
@@ -242,7 +237,7 @@ export class PlaylistService {
             const artists = await Promise.all(createArtists.filter((x) => !!x));
 
             const track = await this.trackRepository.createWithArtistAndAlbumAndPlaylistAndVendorTrack({
-                data: { id: ulid(), title },
+                data: { id: uuidv4(), title },
                 artists: artistsData.map(({ id }, idx) => ({
                     artistId: artistByVendorId.get(id).id,
                     artistSequence: idx,

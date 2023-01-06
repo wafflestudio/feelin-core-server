@@ -1,4 +1,4 @@
-interface EncryptionResult {
+export interface EncryptionResult {
     key: Buffer;
     encryptedData: string;
 }

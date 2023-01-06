@@ -41,12 +41,12 @@ export class FloPlaylistScraper implements PlaylistScraper {
         const tracks: ITrack[] = trackList?.map(({ name, id, album, artistList }) => ({
             vendor: 'flo',
             title: name,
-            id,
-            artists: artistList?.map(({ id, name }) => ({ vendor: 'flo', id, name })),
+            id: String(id),
+            artists: artistList?.map(({ id, name }) => ({ vendor: 'flo', id: String(id), name })),
             album: {
                 vendor: 'flo',
                 title: album?.title,
-                id: album?.id,
+                id: String(album?.id),
                 coverUrl: this.formatCoverUrl(
                     album?.img.urlFormat,
                     album?.img?.availableSizeList[Math.floor(album?.img?.availableSizeList?.length / 2)],

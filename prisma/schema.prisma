@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Album {
-    id          String    @id @map("id") @db.VarChar(26)
+    id          String    @id @map("id") @db.VarChar(36)
     createdAt   DateTime  @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt   DateTime  @updatedAt @map("updated_at") @db.DateTime(6)
     title       String    @map("title") @db.VarChar(200)
@@ -24,7 +24,7 @@ model Album {
 }
 
 model Artist {
-    id        String   @id @map("id") @db.VarChar(26)
+    id        String   @id @map("id") @db.VarChar(36)
     createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
     name      String   @map("name") @db.VarChar(200)
@@ -37,22 +37,22 @@ model Artist {
 }
 
 model ArtistOnTrack {
-    id             String @id @map("id") @db.VarChar(26)
+    id             String @id @map("id") @db.VarChar(36)
     artist         Artist @relation(fields: [artistId], references: [id])
-    artistId       String @map("artist_id") @db.VarChar(26)
+    artistId       String @map("artist_id") @db.VarChar(36)
     track          Track  @relation(fields: [trackId], references: [id])
-    trackId        String @map("track_id") @db.VarChar(26)
+    trackId        String @map("track_id") @db.VarChar(36)
     artistSequence Int    @map("artist_sequence") @db.UnsignedTinyInt
 
     @@map("artist_on_track")
 }
 
 model ArtistOnAlbum {
-    id             String @id @map("id") @db.VarChar(26)
+    id             String @id @map("id") @db.VarChar(36)
     artist         Artist @relation(fields: [artistId], references: [id])
-    artistId       String @map("artist_id") @db.VarChar(26)
+    artistId       String @map("artist_id") @db.VarChar(36)
     album          Album  @relation(fields: [albumId], references: [id])
-    albumId        String @map("album_id") @db.VarChar(26)
+    albumId        String @map("album_id") @db.VarChar(36)
     artistSequence Int    @map("artist_sequence") @db.TinyInt
 
     @@map("artist_on_album")
@@ -65,7 +65,7 @@ model Migrations {
 }
 
 model Playlist {
-    id        String   @id @map("id") @db.VarChar(26)
+    id        String   @id @map("id") @db.VarChar(36)
     createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
     title     String   @map("title") @db.VarChar(200)
@@ -79,18 +79,18 @@ model Playlist {
 }
 
 model TrackOnPlaylist {
-    id            String   @id @map("id") @db.VarChar(26)
+    id            String   @id @map("id") @db.VarChar(36)
     playlist      Playlist @relation(fields: [playlistId], references: [id])
-    playlistId    String   @map("playlist_id") @db.VarChar(26)
+    playlistId    String   @map("playlist_id") @db.VarChar(36)
     track         Track    @relation(fields: [trackId], references: [id])
-    trackId       String   @map("track_id") @db.VarChar(26)
+    trackId       String   @map("track_id") @db.VarChar(36)
     trackSequence Int      @map("track_sequence") @db.UnsignedInt
 
     @@map("track_on_playlist")
 }
 
 model Track {
-    id        String   @id @map("id") @db.VarChar(26)
+    id        String   @id @map("id") @db.VarChar(36)
     createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
     title     String   @map("title") @db.VarChar(255)
@@ -98,7 +98,7 @@ model Track {
 
     vendorTracks VendorTrack[]
     album        Album             @relation(fields: [albumId], references: [id])
-    albumId      String            @map("album_id") @db.VarChar(26)
+    albumId      String            @map("album_id") @db.VarChar(36)
     playlists    TrackOnPlaylist[]
     artists      ArtistOnTrack[]
 
@@ -106,7 +106,7 @@ model Track {
 }
 
 model User {
-    id        String   @id @map("id") @db.VarChar(26)
+    id        String   @id @map("id") @db.VarChar(36)
     createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
     username  String   @map("username") @db.VarChar(50)
@@ -117,28 +117,30 @@ model User {
 }
 
 model VendorAccount {
-    id            String    @id @map("id") @db.VarChar(26)
+    id            String    @id @map("id") @db.VarChar(36)
     createdAt     DateTime  @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt     DateTime  @updatedAt @map("updated_at") @db.DateTime(6)
     deactivatedAt DateTime? @map("deactivated_at") @db.DateTime(6)
     vendor        String    @map("vendor") @db.VarChar(32)
-    encryptionKey Bytes     @map("encryption_key") @db.Binary(32)
+    accessToken   String?   @map("access_token") @db.VarChar(2047)
+    refreshToken  String?   @map("refresh_token") @db.VarChar(2047)
+    expiresAt     DateTime? @map("expires_at") @db.DateTime(6)
 
     user   User   @relation(fields: [userId], references: [id])
-    userId String @map("user_id") @db.VarChar(26)
+    userId String @map("user_id") @db.VarChar(36)
 
     @@map("vendor_accounts")
 }
 
 model VendorAlbum {
-    id        String   @id @map("id") @db.VarChar(26)
+    id        String   @id @map("id") @db.VarChar(36)
     createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
     vendor    String   @map("vendor") @db.VarChar(32)
     vendorId  String   @map("vendor_id") @db.VarChar(255)
 
     album   Album  @relation(fields: [albumId], references: [id])
-    albumId String @map("album_id") @db.VarChar(26)
+    albumId String @map("album_id") @db.VarChar(36)
 
     @@unique([vendorId, vendor], map: "vendor_album_vendor_id")
     @@index([vendorId, vendor], map: "vendor_album_vendor_id_idx")
@@ -146,14 +148,14 @@ model VendorAlbum {
 }
 
 model VendorArtist {
-    id        String   @id @map("id") @db.VarChar(26)
+    id        String   @id @map("id") @db.VarChar(36)
     createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
     vendor    String   @map("vendor") @db.VarChar(32)
     vendorId  String   @map("vendor_id") @db.VarChar(255)
 
     artist   Artist @relation(fields: [artistId], references: [id])
-    artistId String @map("artist_id") @db.VarChar(26)
+    artistId String @map("artist_id") @db.VarChar(36)
 
     @@unique([vendorId, vendor], map: "vendor_artist_vendor_id")
     @@index([vendorId, vendor], map: "vendor_artist_vendor_id_idx")
@@ -161,14 +163,14 @@ model VendorArtist {
 }
 
 model VendorPlaylist {
-    id        String   @id @map("id") @db.VarChar(26)
+    id        String   @id @map("id") @db.VarChar(36)
     createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
     vendor    String   @map("vendor") @db.VarChar(32)
     vendorId  String   @map("vendor_id") @db.VarChar(255)
 
     playlist   Playlist @relation(fields: [playlistId], references: [id])
-    playlistId String   @map("playlist_id") @db.VarChar(26)
+    playlistId String   @map("playlist_id") @db.VarChar(36)
 
     @@unique([vendorId, vendor], map: "vendor_playlist_vendor_id")
     @@index([vendorId, vendor], map: "vendor_playlist_vendor_id_idx")
@@ -176,14 +178,14 @@ model VendorPlaylist {
 }
 
 model VendorTrack {
-    id        String   @id @map("id") @db.VarChar(26)
+    id        String   @id @map("id") @db.VarChar(36)
     createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
     vendor    String   @map("vendor") @db.VarChar(32)
     vendorId  String   @map("vendor_id") @db.VarChar(255)
 
     track   Track  @relation(fields: [trackId], references: [id])
-    trackId String @map("track_id") @db.VarChar(26)
+    trackId String @map("track_id") @db.VarChar(36)
 
     @@unique([vendorId, vendor], map: "vendor_track_vendor_id")
     @@index([vendorId, vendor], map: "vendor_track_vendor_id_idx")
