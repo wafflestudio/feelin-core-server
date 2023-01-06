@@ -45,21 +45,14 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
             },
         );
 
-        //handling exception
-        /*if (createResponse.data?.code !== '2000000') {
-            return null;
-        }*/
-
-        const playlistId = createResponse.data?.id; //created playlist id
+        const playlistId = createResponse.data?.id;
 
         const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
             'spotify',
             tracks.map(({ id }) => id),
-        ); //extracting tracks from input 'tracks'
+        );
 
-        const trackIds = tracks.map(({ id }) => vendorTracks[id]?.vendorId).filter((id) => !!id); //extracting track id (where its id exists) from input 'tracks'
-
-        //add tracks to new playlist
+        const trackIds = tracks.map(({ id }) => vendorTracks[id]?.vendorId).filter((id) => !!id);
         const addTracksToPlaylistUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
         const addResponse = await axios.post(addTracksToPlaylistUrl, null, {
             params: {
@@ -70,22 +63,13 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
                 'Content-Type': 'application/json',
             },
         });
-
-        //handling exception
-        /*if (addResponse.data?.code !== '2000000') {
-            return null;
-        }*/
     }
 
     async getPlaylist(playlistId: string, authData: Authdata): Promise<IPlaylist> {
         const spotifyAuthData = authData as SpotifyAuthdata;
         const playlistItemsUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-        /*const [type, id] = playlistId.split(':');
-        if (type != 'user') {
-            throw new Error('Not supported playlist type');
-        }*/
 
-        const res = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        const res = await axios.get(playlistItemsUrl, {
             headers: {
                 Authorization: this.authdataService.toString('spotify', spotifyAuthData),
                 'Content-Type': 'application/json',
@@ -102,11 +86,8 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
                 vendor: 'spotify',
                 title: item?.track?.album?.name,
                 id: item?.track?.album?.id,
-                coverUrl: this.formatCoverUrl(
-                    item?.track?.album?.images.url,
-                    item?.track?.album?.img?.availableSizeList[Math.floor(item?.track?.album?.images?.length / 2)],
-                ),
-                //coverUrl -> flo playlist response json 구조를 확인해봐야 할 것 같음
+                coverUrl: item?.track.album?.images[0].url,
+                //coverUrl -> flo playlist response json 구조를 알아야 할 것 같음. 우선은 가장 큰 사이즈의 앨범커버 url으로
             },
         }));
 
