@@ -31,6 +31,7 @@ export class SpotifyTrackScraper implements TrackScraper {
         const trackList: ITrack[] = response.data?.tracks?.items?.map((track) => {
             const artists = track.artists.map((artist) => artist.name);
             return {
+                vendor: 'spotify',
                 title: track.name,
                 id: track.id,
                 artists: artists,
@@ -52,6 +53,7 @@ export class SpotifyTrackScraper implements TrackScraper {
         const recentTrackList: ITrack[] = response.data?.items?.map((track) => {
             const artists = track.track.artists.map((artist) => artist.name);
             return {
+                vendor: 'spotify',
                 title: track.track.name,
                 id: track.track.id,
                 artists: artists,
