@@ -26,7 +26,7 @@ export class AuthService {
 
     async validateUserToken(userToken: string): Promise<User> {
         const payload = await this.jwtService.verifyAsync(userToken, { secret: this.jwtSecret });
-        const user = await this.userRepository.findUniqueOrThrow({ id: payload.userId }).catch(() => {
+        const user = await this.userRepository.findUniqueOrThrow({ id: payload.id }).catch(() => {
             throw new UnauthorizedException('unauthorized user');
         });
 
