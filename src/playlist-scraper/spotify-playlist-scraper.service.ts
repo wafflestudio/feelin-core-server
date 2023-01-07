@@ -1,9 +1,9 @@
 import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata, SpotifyAuthdata, SpotifyAuthdataKeys } from '@/authdata/types.js';
+import { Authdata, SpotifyAuthdata } from '@/authdata/types.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
-import { ITrack } from '@feelin-types/types.js';
+import { IAlbum, IArtist, ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { Track } from '@prisma/client';
 import axios from 'axios';
@@ -54,7 +54,7 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
 
         const trackIds = tracks.map(({ id }) => vendorTracks[id]?.vendorId).filter((id) => !!id);
         const addTracksToPlaylistUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-        const addResponse = await axios.post(addTracksToPlaylistUrl, null, {
+        await axios.post(addTracksToPlaylistUrl, null, {
             params: {
                 uris: '' + trackIds.map((id) => 'spotify:track:' + id),
             },
@@ -76,19 +76,28 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         });
         const playlistData = res.data?.items;
 
-        const tracks: ITrack[] = playlistData?.map((item: any) => ({
-            vendor: 'spotify',
-            title: item?.track?.name,
-            id: item?.track?.id,
-            artists: item?.track?.artists?.map((artist: any) => ({ vendor: 'spotify', id: artist.id, name: artist.name })),
-            album: {
+        const tracks: ITrack[] = playlistData?.map((item) => {
+            const artists: IArtist[] = item?.track?.artists?.map((artist) => ({
+                vendor: 'spotify',
+                id: artist?.id,
+                name: artist?.name,
+            }));
+            const album: IAlbum = {
                 vendor: 'spotify',
                 title: item?.track?.album?.name,
                 id: item?.track?.album?.id,
-                coverUrl: item?.track.album?.images[0].url,
+                coverUrl: item?.track.album?.images[0]?.url,
                 //coverUrl -> flo playlist response json 구조를 알아야 할 것 같음. 우선은 가장 큰 사이즈의 앨범커버 url으로
-            },
-        }));
+            };
+
+            return {
+                vendor: 'spotify',
+                title: item?.track?.name,
+                id: item?.track?.id,
+                artists: artists,
+                album: album,
+            };
+        });
 
         return {
             vendor: 'spotify',
