@@ -1,11 +1,13 @@
-import { Authdata } from '@/authdata/types.js';
+import { SpotifyAuthdata } from '@/authdata/types.js';
 import { Injectable } from '@nestjs/common';
 import { UserScraper } from './user-scraper.js';
+import axios from 'axios';
 
 @Injectable()
 export class SpotifyUserScraper implements UserScraper {
-    login(id: string, password: string): Promise<Authdata> {
-        // TODO: Implement me
-        return null;
+    private readonly loginUrl = '';
+
+    async login(): Promise<SpotifyAuthdata | null> {
+        return;
     }
 }

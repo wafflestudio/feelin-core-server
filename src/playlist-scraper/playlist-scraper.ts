@@ -5,5 +5,5 @@ import { Track } from '@prisma/client';
 
 export interface PlaylistScraper {
     savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata): Promise<void>;
-    getPlaylist(playlistId: string): Promise<IPlaylist>;
+    getPlaylist(playlistId: string, authdata: Authdata): Promise<IPlaylist>;
 }
