@@ -16,8 +16,8 @@ export class VendorAccountController {
     @UseGuards(JwtAuthGuard)
     @Get('login')
     async returnLoginUrl(@UserAuthentication() user: User, @Query('vendor') vendor: Vendors) {
-        const loginUrl = this.vendorAccountService.getLoginUrl(user, vendor);
-        return { code: 302, url: loginUrl };
+        const loginUrl = await this.vendorAccountService.getLoginUrl(user, vendor);
+        return { statusCode: 302, url: loginUrl };
     }
 
     @ApiOperation({ summary: 'Callback URL for Spotify login', description: 'Gets access token using received code' })
