@@ -6,7 +6,7 @@ export const VendorEnum = [
     // 'bugs',
     // 'vibe',
     // 'ytmusic',
-    // 'applemusic',
+    'applemusic',
 ] as const;
 
 export type Vendors = typeof VendorEnum[number];
