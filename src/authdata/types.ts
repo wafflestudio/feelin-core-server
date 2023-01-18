@@ -25,9 +25,9 @@ export interface SpotifyAuthdata {
 export const SpotifyAuthdataKeys = ['accessToken'];
 
 export interface ApplemusicAuthdata {
-    accessToken: string;
+    developerToken: string;
 }
 
-export const ApplemusicAuthdataKeys = ['accessToken'];
+export const ApplemusicAuthdataKeys = ['developerToken'];
 
 export type Authdata = MelonAuthdata | FloAuthdata | SpotifyAuthdata | ApplemusicAuthdata;
