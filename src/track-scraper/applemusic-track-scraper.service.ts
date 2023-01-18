@@ -7,7 +7,7 @@ import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class AppleMusicTrackScraper implements TrackScraper {
-    private readonly searchUrl = 'https://api.music.apple.com/v1/me/library/search';
+    private readonly searchUrl = 'https://api.music.apple.com/v1/catalog/kr/search';
     private readonly recentTrackUrl = 'https://api.music.apple.com/v1/me/recent/played/tracks';
 
     constructor(private readonly authdataService: AuthdataService) {}
@@ -17,12 +17,13 @@ export class AppleMusicTrackScraper implements TrackScraper {
         const response = await axios.get(this.searchUrl, {
             params: {
                 term: track.title,
-                types: 'library-songs',
+                types: 'songs',
                 limit: 25,
                 offset: 0,
             },
             headers: {
-                Authorization: this.authdataService.toString('applemusic', applemusicAuthData),
+                Authorization: '',
+                'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthData),
                 'Content-Type': 'application/json',
             },
         });
@@ -33,7 +34,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
                       vendor: 'applemusic',
                       id: artist?.id,
                       name: artist?.attributes?.name,
-                  })) //By defalut, relationships.artists is not included -> parameter query 의 types에서 지정해주는 값에 영향을 받는것 or types는 검색하는 객체들 필터링만?
+                  }))
                 : [
                       {
                           vendor: 'applemusic',
@@ -68,7 +69,8 @@ export class AppleMusicTrackScraper implements TrackScraper {
     async getMyRecentTracks(applemusicAuthData: ApplemusicAuthdata): Promise<ITrack[]> {
         const response = await axios.get(this.recentTrackUrl, {
             headers: {
-                Authorization: this.authdataService.toString('applemusic', applemusicAuthData),
+                Authorization: '',
+                'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthData),
                 'Content-Type': 'application/json',
             },
         });
