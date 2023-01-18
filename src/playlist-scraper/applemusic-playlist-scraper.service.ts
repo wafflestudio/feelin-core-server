@@ -33,7 +33,8 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             },
             {
                 headers: {
-                    Authorization: this.authdataService.toString('applemusic', applemusicAuthdata),
+                    Authorization: '',
+                    'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthdata),
                     'Content-Type': 'application/json',
                 },
             },
@@ -49,7 +50,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         const addTracks = tracks
             .map(({ id }) => vendorTracks[id]?.vendorId)
             .filter((id) => !!id)
-            .map((item) => ({ ...item, type: 'library-songs' })); //songs, library-songs의 차이....?
+            .map((item) => ({ ...item, type: 'songs' }));
         const addTracksToPlaylistUrl = `https://api.music.apple.com/v1/me/library/playlists/${playlistId}/tracks`;
         await axios.post(
             addTracksToPlaylistUrl,
@@ -58,7 +59,8 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             },
             {
                 headers: {
-                    Authorization: this.authdataService.toString('applemusic', applemusicAuthdata),
+                    Authorization: '',
+                    'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthdata),
                     'Content-Type': 'application/json',
                 },
             },
@@ -67,14 +69,20 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
 
     async getPlaylist(playlistId: string, authData: Authdata): Promise<IPlaylist> {
         const applemusicAuthdata = authData as ApplemusicAuthdata;
-        const playlistItemsUrl = `https://api.music.apple.com/v1/me/library/playlists/${playlistId}`;
+        const type = playlistId.split('.')[0];
+        const playlistItemsUrl =
+            type == 'pl'
+                ? `https://api.music.apple.com/v1/catalog/kr/playlists/${playlistId}/tracks`
+                : `https://api.music.apple.com/v1/me/library/playlists/${playlistId}/tracks`;
+
         const res = await axios.get(playlistItemsUrl, {
             headers: {
-                Authorization: this.authdataService.toString('applemusic', applemusicAuthdata),
+                Authorization: '',
+                'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthdata),
                 'Content-Type': 'application/json',
             },
         });
-        const playlistData = res?.data?.relationships?.tracks?.data;
+        const playlistData = res?.data;
 
         const tracks: ITrack[] = playlistData?.map((track) => {
             const artists: IArtist[] = track?.relationships?.artists
@@ -82,7 +90,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
                       vendor: 'applemusic',
                       id: artist?.id,
                       name: artist?.attributes?.name,
-                  })) //By defalut, relationships.artists is not included -> parameter query 의 types에서 지정해주는 값에 영향을 받는것 or types는 검색하는 객체들 필터링만?
+                  }))
                 : [
                       {
                           vendor: 'applemusic',
@@ -105,7 +113,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             return {
                 vendor: 'applemusic',
                 title: track?.attributes?.name,
-                id: track?.id,
+                id: track?.attributes?.playParams?.catalogId,
                 artists: artists,
                 album: album,
             };
