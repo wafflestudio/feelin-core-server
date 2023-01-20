@@ -4,6 +4,7 @@ import { PrismaService } from '@/prisma.service.js';
 import { TrackScraperModule } from '@/track-scraper/track-scraper.module.js';
 import { TrackModule } from '@/track/track.module.js';
 import { Module } from '@nestjs/common';
+import { AppleMusicPlaylistScraper } from './applemusic-playlist-scraper.service.js';
 import { FloPlaylistScraper } from './flo-playlist-scraper.service.js';
 import { MelonPlaylistScraper } from './melon-playlist-scraper.service.js';
 import { PlaylistScraperService } from './playlist-scraper.service.js';
@@ -16,11 +17,18 @@ import { SpotifyPlaylistScraper } from './spotify-playlist-scraper.service.js';
         MelonPlaylistScraper,
         FloPlaylistScraper,
         SpotifyPlaylistScraper,
+        AppleMusicPlaylistScraper,
         PlaylistScraperService,
         AuthdataService,
         PrismaService,
         VendorPlaylistRepository,
     ],
-    exports: [PlaylistScraperService, MelonPlaylistScraper, FloPlaylistScraper, SpotifyPlaylistScraper],
+    exports: [
+        PlaylistScraperService,
+        MelonPlaylistScraper,
+        FloPlaylistScraper,
+        SpotifyPlaylistScraper,
+        AppleMusicPlaylistScraper,
+    ],
 })
 export class PlaylistScraperModule {}
