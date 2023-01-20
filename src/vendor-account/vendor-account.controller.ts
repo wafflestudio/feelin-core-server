@@ -23,8 +23,12 @@ export class VendorAccountController {
 
     @ApiOperation({ summary: 'Login to a vendor account', description: '' })
     @UseGuards(JwtAuthGuard)
-    @Post('{vendor}/login')
-    async handleLogin(@Body() vendorAccountLoginDto: VendorAccountLoginDto, @Param('vendor') vendor: Vendors, user: User) {
+    @Post(':vendor/login')
+    async handleLogin(
+        @Body() vendorAccountLoginDto: VendorAccountLoginDto,
+        @Param('vendor') vendor: Vendors,
+        @UserAuthentication() user: User,
+    ) {
         const vendorAccount = await this.vendorAccountService.handleVendorAccountLogin(vendorAccountLoginDto, vendor, user);
         return { message: 'success' };
     }
