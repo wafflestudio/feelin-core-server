@@ -20,6 +20,12 @@ export class VendorAccountService {
     ) {
         this.encryptKey = Buffer.from(this.configService.getOrThrow<string>('ENCRYPT_KEY'), 'hex');
         dayjs.extend(duration);
+        this.expiresIn = {
+            melon: 0,
+            flo: 0,
+            spotify: 0,
+            applemusic: dayjs.duration(6, 'months').asSeconds(),
+        };
     }
 
     private readonly encryptKey: Buffer;
@@ -29,12 +35,7 @@ export class VendorAccountService {
         spotify: 'https://accounts.spotify.com/authorize',
         applemusic: 'http://ec2-52-78-109-189.ap-northeast-2.compute.amazonaws.com/apple-music-login.html',
     };
-    private readonly expiresIn: Record<Vendors, number> = {
-        melon: 0,
-        flo: 0,
-        spotify: 0,
-        applemusic: dayjs.duration(6, 'months').asSeconds(),
-    };
+    private readonly expiresIn: Record<Vendors, number>;
 
     async getLoginUrl(user: User, vendor: Vendors) {
         const loginUrl = this.loginUrls[vendor];
