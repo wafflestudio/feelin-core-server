@@ -19,6 +19,11 @@ export class VendorAccountRepository {
         return vendorAccount;
     }
 
+    async findByUserIdAndVendor(userId: string, vendor: string): Promise<VendorAccount> {
+        const vendorAccount = await this.prismaService.vendorAccount.findFirst({ where: { userId, vendor } });
+        return vendorAccount;
+    }
+
     create(data: Prisma.VendorAccountCreateInput, tx?: Prisma.TransactionClient): PrismaPromise<VendorAccount> {
         return (tx ?? this.prismaService).vendorAccount.create({ data });
     }

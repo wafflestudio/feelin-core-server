@@ -6,7 +6,7 @@ import { VendorAccountRepository } from '@/vendor-account/vendor-account.reposit
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { User, VendorAccount } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +40,10 @@ export class AuthService {
         if (vendorAccount.user.id !== user.id) {
             throw new ForbiddenException('Vendor account does not belong to user');
         }
+        return this.decryptVendorAccount(vendorAccount);
+    }
+
+    decryptVendorAccount(vendorAccount: VendorAccount): DecryptedVendorAccountDto {
         const accessToken = this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
         const refreshToken =
             vendorAccount.refreshToken === null

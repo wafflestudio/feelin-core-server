@@ -4,6 +4,7 @@ import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
 import { ArtistRepository } from '@/artist/artist.repository.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
 import { VendorArtistRepository } from '@/artist/vendor-artist.repository.js';
+import { AuthService } from '@/auth/auth.service.js';
 import { PlaylistScraperService } from '@/playlist-scraper/playlist-scraper.service.js';
 import { PrismaService } from '@/prisma.service.js';
 import { TrackDto } from '@/track/dto/track.dto.js';
@@ -13,8 +14,9 @@ import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { ITrack } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
+import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Album, Artist, Playlist, Prisma, Track } from '@prisma/client';
+import { Album, Artist, Playlist, Prisma, Track, User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
@@ -28,6 +30,7 @@ import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
 @Injectable()
 export class PlaylistService {
     constructor(
+        private readonly authService: AuthService,
         private readonly playlistScraperService: PlaylistScraperService,
         private readonly trackService: TrackService,
         private readonly trackMatcherService: TrackMatcherService,
@@ -36,6 +39,7 @@ export class PlaylistService {
         private readonly trackRepository: TrackRepository,
         private readonly artistRepository: ArtistRepository,
         private readonly albumRepository: AlbumRepository,
+        private readonly vendorAccountRepository: VendorAccountRepository,
         private readonly vendorPlaylistRepository: VendorPlaylistRepository,
         private readonly vendorTrackRepository: VendorTrackRepository,
         private readonly vendorArtistRepository: VendorArtistRepository,
@@ -65,7 +69,7 @@ export class PlaylistService {
         );
     }
 
-    async createPlaylist(createPlaylistDto: CreatePlaylistRequestDto): Promise<PlaylistDto> {
+    async createPlaylist(createPlaylistDto: CreatePlaylistRequestDto, user: User): Promise<PlaylistDto> {
         const { playlistUrl } = createPlaylistDto;
         const { vendor, playlistId } = await this.playlistScraperService.getStreamAndId(playlistUrl);
 
@@ -75,8 +79,11 @@ export class PlaylistService {
             return this.getPlaylist(vendorPlaylist.playlist.id);
         }
 
-        // TODO: Use user authdata if needed
-        const playlistData = await this.playlistScraperService.get(vendor).getPlaylist(playlistId, null);
+        const vendorAccount = await this.vendorAccountRepository.findByUserIdAndVendor(user.id, vendor);
+        const decryptedVendorAccount = this.authService.decryptVendorAccount(vendorAccount);
+        const playlistData = await this.playlistScraperService
+            .get(vendor)
+            .getPlaylist(playlistId, decryptedVendorAccount?.authdata);
         return this.saveAndGetPlaylistDto(playlistData);
     }
 
