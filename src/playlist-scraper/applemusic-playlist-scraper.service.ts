@@ -1,8 +1,8 @@
-import { IPlaylist } from '@/playlist/types/types.js';
+import { PlaylistInfo } from '@/playlist/types/types.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
-import { IAlbum, IArtist, ITrack } from '@feelin-types/types.js';
+import { AlbumInfo, ArtistInfo, TrackInfo } from '@feelin-types/types.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Track } from '@prisma/client';
 import axios from 'axios';
@@ -59,7 +59,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         );
     }
 
-    async getPlaylist(id: string, authdata: Authdata): Promise<IPlaylist> {
+    async getPlaylist(id: string, authdata: Authdata): Promise<PlaylistInfo> {
         const [type, playlistId] = id.split(':');
         if (type !== 'user' && type !== 'catalog') {
             throw new InternalServerErrorException('Invalid playlist id');
@@ -78,8 +78,8 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         );
         const playlistData = res?.data;
 
-        const tracks: ITrack[] = playlistData?.map((track) => {
-            const artists: IArtist[] = track?.relationships?.artists
+        const tracks: TrackInfo[] = playlistData?.map((track) => {
+            const artists: ArtistInfo[] = track?.relationships?.artists
                 ? track?.relationships?.artists?.data?.map((artist) => ({
                       vendor: 'applemusic',
                       id: artist?.id,
@@ -93,8 +93,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
                       },
                   ];
 
-            const album: IAlbum = {
-                vendor: 'applemusic',
+            const album: AlbumInfo = {
                 title: track?.attributes?.albumName,
                 id: track?.attributes?.name, //id not given. 임시로 노래 제목.
                 coverUrl: this.formatCoverUrl(
@@ -105,7 +104,6 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             };
 
             return {
-                vendor: 'applemusic',
                 title: track?.attributes?.name,
                 id: track?.attributes?.playParams?.catalogId,
                 artists: artists,
@@ -114,9 +112,9 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         });
 
         return {
-            vendor: 'applemusic',
             title: res?.data?.attributes?.name,
             id: playlistId,
+            coverUrl: '',
             tracks,
         };
     }

@@ -1,4 +1,4 @@
-import { IAlbum, IArtist, ITrack } from '@/types/types.js';
+import { AlbumInfo, ArtistInfo, TrackInfo } from '@/types/types.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
@@ -11,7 +11,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
 
     private readonly trackUrls = trackUrlsByVendor['applemusic'];
 
-    async searchTrack(track: ITrack, authdata: Authdata): Promise<ITrack[]> {
+    async searchTrack(track: TrackInfo, authdata: Authdata): Promise<TrackInfo[]> {
         const response = await axios.get(this.trackUrls.search, {
             params: {
                 term: track.title,
@@ -26,8 +26,8 @@ export class AppleMusicTrackScraper implements TrackScraper {
             },
         });
 
-        const trackList: ITrack[] = response.data?.map((track) => {
-            const artists: IArtist[] = track?.relationships?.artists
+        const trackList: TrackInfo[] = response.data?.map((track) => {
+            const artists: ArtistInfo[] = track?.relationships?.artists
                 ? track?.relationships?.artists?.data?.map((artist) => ({
                       vendor: 'applemusic',
                       id: artist?.id,
@@ -41,8 +41,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
                       },
                   ];
 
-            const album: IAlbum = {
-                vendor: 'applemusic',
+            const album: AlbumInfo = {
                 title: track?.attributes?.albumName,
                 id: track?.attributes?.name, //id not given. 임시로 노래 제목.
                 coverUrl: this.formatCoverUrl(
@@ -53,7 +52,6 @@ export class AppleMusicTrackScraper implements TrackScraper {
             };
 
             return {
-                vendor: 'applemusic',
                 title: track?.attributes?.name,
                 id: track?.id,
                 artists: artists,
@@ -64,7 +62,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
         return trackList;
     }
 
-    async getMyRecentTracks(authdata: Authdata): Promise<ITrack[]> {
+    async getMyRecentTracks(authdata: Authdata): Promise<TrackInfo[]> {
         const response = await axios.get(this.trackUrls.recentlyPlayed, {
             headers: {
                 Authorization: '',
@@ -73,23 +71,20 @@ export class AppleMusicTrackScraper implements TrackScraper {
             },
         });
 
-        const recentTrackList: ITrack[] = response.data?.map((track) => {
-            const artists: IArtist[] = track?.relationships?.artists
+        const recentTrackList: TrackInfo[] = response.data?.map((track) => {
+            const artists: ArtistInfo[] = track?.relationships?.artists
                 ? track?.relationships?.artists?.data?.map((artist) => ({
-                      vendor: 'applemusic',
                       id: artist?.id,
                       name: artist?.attributes?.name,
                   }))
                 : [
                       {
-                          vendor: 'applemusic',
                           id: track?.attributes?.id, //id를 바로 구해오지 못함. 전체 artists list를 불러와서 하나씩 대조해보는 방법말고는 방법이 없는듯.? 우선은 임시로 track의 id로
                           name: track?.attributes?.artistName,
                       },
                   ];
 
-            const album: IAlbum = {
-                vendor: 'applemusic',
+            const album: AlbumInfo = {
                 title: track?.attributes?.albumName,
                 id: track?.attributes?.name, //id not given. 임시로 노래 제목.
                 coverUrl: this.formatCoverUrl(
@@ -100,7 +95,6 @@ export class AppleMusicTrackScraper implements TrackScraper {
             };
 
             return {
-                vendor: 'applemusic',
                 title: track?.attributes?.name,
                 id: track?.id,
                 artists: artists,

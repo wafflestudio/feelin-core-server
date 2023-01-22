@@ -1,8 +1,8 @@
-import { IPlaylist } from '@/playlist/types/types.js';
+import { PlaylistInfo } from '@/playlist/types/types.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
-import { ITrack } from '@feelin-types/types.js';
+import { TrackInfo } from '@feelin-types/types.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Track } from '@prisma/client';
 import axios from 'axios';
@@ -15,7 +15,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
 
     private readonly playlistUrls = playlistUrlsByVendor['flo'];
 
-    async getPlaylist(playlistId: string, authdata: Authdata): Promise<IPlaylist> {
+    async getPlaylist(playlistId: string, authdata: Authdata): Promise<PlaylistInfo> {
         const [type, id] = playlistId.split(':');
         if (type != 'user' && type != 'catalog') {
             throw new InternalServerErrorException('Invalid playlist id');
@@ -30,7 +30,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
             trackList = playlistData?.trackList;
         }
 
-        const tracks: ITrack[] = trackList?.map(({ name, id, album, artistList }) => ({
+        const tracks: TrackInfo[] = trackList?.map(({ name, id, album, artistList }) => ({
             vendor: 'flo',
             title: name,
             id: String(id),
@@ -47,9 +47,9 @@ export class FloPlaylistScraper implements PlaylistScraper {
         }));
 
         return {
-            vendor: 'flo',
             title: playlistData?.name,
             id: playlistId,
+            coverUrl: '',
             tracks,
         };
     }

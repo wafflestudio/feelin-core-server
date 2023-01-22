@@ -1,8 +1,13 @@
-import { ITrack, Vendors } from '@/types/types.js';
+import { TrackInfo } from '@/types/types.js';
 
-export interface IPlaylist {
-    vendor: Vendors;
+export type PlaylistInfo = {
     title: string;
     id: string;
-    tracks: ITrack[];
-}
+    coverUrl: string;
+    tracks: TrackInfo[];
+};
+
+export type PlaylistInfoFirstPage = {
+    playlistInfo: PlaylistInfo;
+    offsets: number[];
+};

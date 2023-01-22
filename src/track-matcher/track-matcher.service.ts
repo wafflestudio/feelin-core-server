@@ -1,6 +1,6 @@
 import { TrackSearchResultDto } from '@/playlist/dto/track-search-result.dto.js';
 import { isExactMatch } from '@/types/helpers.js';
-import { ITrack } from '@/types/types.js';
+import { TrackInfo } from '@/types/types.js';
 import { SimilarityUtilService } from '@/utils/similarity-util/similarity-util.service.js';
 import { Injectable } from '@nestjs/common';
 
@@ -12,7 +12,7 @@ export class TrackMatcherService {
     readonly MIN_NGRAM = 1;
     readonly MAX_NGRAM = 4;
 
-    getMatchedVendorTrack(candidates: TrackSearchResultDto[], reference: ITrack): TrackSearchResultDto | null {
+    getMatchedVendorTrack(candidates: TrackSearchResultDto[], reference: TrackInfo): TrackSearchResultDto | null {
         if (candidates.length === 0) {
             return null;
         }

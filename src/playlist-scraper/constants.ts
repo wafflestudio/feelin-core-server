@@ -5,6 +5,9 @@ export const playlistUrlsByVendor: Record<Vendors, PlaylistUrl> = {
         createPlaylist: 'https://api.spotify.com/v1/users/{userId}/playlists',
         addTracksToPlaylist: 'https://api.spotify.com/v1/playlists/{playlistId}/tracks',
         getPlaylist: {
+            user: 'https://api.spotify.com/v1/playlists/{playlistId}',
+        },
+        getPlaylistPaged: {
             user: 'https://api.spotify.com/v1/playlists/{playlistId}/tracks',
         },
     },

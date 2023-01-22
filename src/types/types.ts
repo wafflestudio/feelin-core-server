@@ -1,33 +1,31 @@
 export const VendorEnum = [
+    'spotify',
+    'applemusic',
     'melon',
     'flo',
-    'spotify',
     // 'genie',
     // 'bugs',
     // 'vibe',
     // 'ytmusic',
-    'applemusic',
 ] as const;
 
 export type Vendors = typeof VendorEnum[number];
 
-export interface IAlbum {
-    vendor: Vendors;
+export type AlbumInfo = {
+    id: string;
+    title: string;
     coverUrl: string;
-    title: string;
-    id: string;
-}
+};
 
-export interface IArtist {
-    vendor: Vendors;
+export type ArtistInfo = {
+    id: string;
     name: string;
-    id: string;
-}
+};
 
-export interface ITrack {
-    vendor: Vendors;
-    title: string;
+export type TrackInfo = {
     id: string;
-    artists: IArtist[];
-    album: IAlbum;
-}
+    title: string;
+    duration: number;
+    artists: ArtistInfo[];
+    album: AlbumInfo;
+};
