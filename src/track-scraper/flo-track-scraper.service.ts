@@ -1,20 +1,19 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { FloAuthdata } from '@/authdata/types.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { trackUrlsByVendor } from './constants.js';
 import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class FloTrackScraper implements TrackScraper {
-    private readonly searchUrl = 'https://www.music-flo.com/api/search/v2/search';
-    private readonly recentTrackUrl = 'https://www.music-flo.com/api/personal/v1/tracks/recentlistened';
+    constructor() {}
 
-    constructor(protected readonly authdataService: AuthdataService) {}
+    private readonly trackUrls = trackUrlsByVendor['flo'];
 
     async searchTrack(track: ITrack): Promise<ITrack[]> {
         // Flo search API limits max 250 results at once
-        const response = await axios.get(this.searchUrl, {
+        const response = await axios.get(this.trackUrls.search, {
             params: {
                 keyword: track.title,
                 searchType: 'TRACK',
@@ -38,13 +37,12 @@ export class FloTrackScraper implements TrackScraper {
         return trackList;
     }
 
-    async getMyRecentTracks(floAuthdata: FloAuthdata) {
-        const res = await axios.get(this.recentTrackUrl, {
+    async getMyRecentTracks(authdata: Authdata) {
+        const res = await axios.get(this.trackUrls.recentlyPlayed, {
             headers: {
-                Cookie: this.authdataService.toString('flo', floAuthdata),
-                'x-gm-access-token': floAuthdata.accessToken,
+                Cookie: `access_token=${authdata.accessToken};refresh_token=${authdata.refreshToken};`,
+                'x-gm-access-token': authdata.accessToken,
             },
         });
-        console.log(res);
     }
 }

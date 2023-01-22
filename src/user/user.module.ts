@@ -1,5 +1,4 @@
 import { AuthModule } from '@/auth/auth.module.js';
-import { AuthdataService } from '@/authdata/authdata.service.js';
 import { PlaylistModule } from '@/playlist/playlist.module.js';
 import { PrismaService } from '@/prisma.service.js';
 import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
@@ -13,7 +12,7 @@ import { UserService } from './user.service.js';
 @Module({
     imports: [forwardRef(() => PlaylistModule), forwardRef(() => AuthModule), UserScraperModule],
     controllers: [UserController],
-    providers: [UserService, AuthdataService, CipherUtilService, PrismaService, UserRepository, VendorAccountRepository],
+    providers: [UserService, CipherUtilService, PrismaService, UserRepository, VendorAccountRepository],
     exports: [UserService, UserRepository],
 })
 export class UserModule {}

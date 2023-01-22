@@ -2,14 +2,18 @@ import { Vendors } from '@feelin-types/types.js';
 import { IsString } from 'class-validator';
 
 export class DecryptedVendorAccountDto {
-    @IsString()
-    authdata!: string;
+    authdata!: Authdata;
 
     @IsString()
     vendor!: Vendors;
 
-    constructor(authdata: string, vendor: Vendors) {
-        this.authdata = authdata;
+    constructor(accessToken: string, refreshToken: string | null, vendor: Vendors) {
+        this.authdata = { accessToken, refreshToken };
         this.vendor = vendor;
     }
 }
+
+export type Authdata = {
+    accessToken: string;
+    refreshToken: string | null;
+};

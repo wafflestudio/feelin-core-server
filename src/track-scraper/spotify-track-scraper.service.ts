@@ -1,20 +1,18 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata, SpotifyAuthdata } from '@/authdata/types.js';
 import { IAlbum, IArtist, ITrack } from '@/types/types.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { trackUrlsByVendor } from './constants.js';
 import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class SpotifyTrackScraper implements TrackScraper {
-    private readonly searchUrl = 'https://api.spotify.com/v1/search';
-    private readonly recentTrackUrl = 'https://api.spotify.com/v1/me/player/recently-played';
+    constructor() {}
 
-    constructor(private readonly authdataService: AuthdataService) {}
+    private readonly trackUrls = trackUrlsByVendor['spotify'];
 
-    async searchTrack(track: ITrack, authData: Authdata): Promise<ITrack[]> {
-        const spotifyAuthData = authData as SpotifyAuthdata;
-        const response = await axios.get(this.searchUrl, {
+    async searchTrack(track: ITrack, authdata: Authdata): Promise<ITrack[]> {
+        const response = await axios.get(this.trackUrls.search, {
             params: {
                 q: track.title,
                 type: 'track',
@@ -23,7 +21,7 @@ export class SpotifyTrackScraper implements TrackScraper {
                 offset: 0,
             },
             headers: {
-                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });
@@ -53,10 +51,10 @@ export class SpotifyTrackScraper implements TrackScraper {
         return trackList;
     }
 
-    async getMyRecentTracks(spotifyAuthdata: SpotifyAuthdata): Promise<ITrack[]> {
-        const response = await axios.get(this.recentTrackUrl, {
+    async getMyRecentTracks(authdata: Authdata): Promise<ITrack[]> {
+        const response = await axios.get(this.trackUrls.recentlyPlayed, {
             headers: {
-                Authorization: this.authdataService.toString('spotify', spotifyAuthdata),
+                Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });

@@ -4,7 +4,7 @@ import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
 import { ArtistRepository } from '@/artist/artist.repository.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
 import { VendorArtistRepository } from '@/artist/vendor-artist.repository.js';
-import { AuthdataService } from '@/authdata/authdata.service.js';
+import { AuthService } from '@/auth/auth.service.js';
 import { PlaylistScraperService } from '@/playlist-scraper/playlist-scraper.service.js';
 import { PrismaService } from '@/prisma.service.js';
 import { TrackDto } from '@/track/dto/track.dto.js';
@@ -14,8 +14,9 @@ import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { ITrack } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
+import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Album, Artist, Playlist, Prisma, Track } from '@prisma/client';
+import { Album, Artist, Playlist, Prisma, Track, User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
@@ -29,8 +30,8 @@ import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
 @Injectable()
 export class PlaylistService {
     constructor(
+        private readonly authService: AuthService,
         private readonly playlistScraperService: PlaylistScraperService,
-        private readonly authdataService: AuthdataService,
         private readonly trackService: TrackService,
         private readonly trackMatcherService: TrackMatcherService,
         private readonly prismaService: PrismaService,
@@ -38,6 +39,7 @@ export class PlaylistService {
         private readonly trackRepository: TrackRepository,
         private readonly artistRepository: ArtistRepository,
         private readonly albumRepository: AlbumRepository,
+        private readonly vendorAccountRepository: VendorAccountRepository,
         private readonly vendorPlaylistRepository: VendorPlaylistRepository,
         private readonly vendorTrackRepository: VendorTrackRepository,
         private readonly vendorArtistRepository: VendorArtistRepository,
@@ -67,7 +69,7 @@ export class PlaylistService {
         );
     }
 
-    async createPlaylist(createPlaylistDto: CreatePlaylistRequestDto): Promise<PlaylistDto> {
+    async createPlaylist(createPlaylistDto: CreatePlaylistRequestDto, user: User): Promise<PlaylistDto> {
         const { playlistUrl } = createPlaylistDto;
         const { vendor, playlistId } = await this.playlistScraperService.getStreamAndId(playlistUrl);
 
@@ -77,10 +79,13 @@ export class PlaylistService {
             return this.getPlaylist(vendorPlaylist.playlist.id);
         }
 
+        const vendorAccount = await this.vendorAccountRepository.findByUserIdAndVendor(user.id, vendor);
+        const decryptedVendorAccount = this.authService.decryptVendorAccount(vendorAccount);
         const playlistData = await this.playlistScraperService
             .get(vendor)
-            .getPlaylist(playlistId, this.authdataService.fromString(vendor, 'cookieString')); //cookieString should be filled somehow..:(
-        return this.saveAndGetPlaylistDto(playlistData);
+            .getPlaylist(playlistId, decryptedVendorAccount?.authdata);
+        const playlist = await this.saveAndGetPlaylistDto(playlistData);
+        return this.getPlaylist(playlist.id);
     }
 
     async savePlaylistToAccount(
@@ -136,11 +141,10 @@ export class PlaylistService {
             }
         }
 
-        const authdataInterface = this.authdataService.fromString(vendor, authdata);
-        await this.playlistScraperService.get(vendor).savePlaylist(request, tracks, authdataInterface);
+        await this.playlistScraperService.get(vendor).savePlaylist(request, tracks, authdata);
     }
 
-    private async saveAndGetPlaylistDto(playlistData: IPlaylist): Promise<PlaylistDto> {
+    private async saveAndGetPlaylistDto(playlistData: IPlaylist): Promise<Playlist> {
         const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
             playlistData.vendor,
             playlistData.tracks.map(({ id }) => id),
@@ -159,26 +163,9 @@ export class PlaylistService {
         );
         const albumByVendorId = new Map(vendorAlbums.map((vendorAlbum) => [vendorAlbum.vendorId, vendorAlbum.album]));
 
-        const playlist = await this.prismaService.$transaction(
+        return await this.prismaService.$transaction(
             async (tx) => this.savePlaylist(tx, playlistData, trackByVendorId, artistByVendorId, albumByVendorId),
-            {
-                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-            },
-        );
-
-        return new PlaylistDto(
-            playlist.id,
-            playlistData.title,
-            playlistData.tracks.map(
-                ({ id, title, artists, album }) =>
-                    new TrackDto(
-                        trackByVendorId.get(id).id,
-                        title,
-                        artists.map(({ id, name }) => new ArtistDto(artistByVendorId.get(id).id, name)),
-                        new AlbumDto(albumByVendorId.get(album.id).id, album.title, album.coverUrl),
-                    ),
-            ),
-            new PlaylistPreviewDto(playlist.id, playlistData.tracks[0].album.coverUrl),
+            { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
         );
     }
 

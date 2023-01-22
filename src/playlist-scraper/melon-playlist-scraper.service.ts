@@ -1,38 +1,29 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata } from '@/authdata/types.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { MelonTrackScraper } from '@/track-scraper/melon-track-scraper.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
+import { ITrack } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
-import { ITrack } from '@feelin-types/types.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
 import { Track } from '@prisma/client';
 import axios from 'axios';
 import cheerio from 'cheerio';
+import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
 
 @Injectable()
 export class MelonPlaylistScraper implements PlaylistScraper {
-    private readonly playlistUrl = {
-        dj: 'https://www.melon.com/mymusic/dj/mymusicdjplaylistview_inform.htm',
-        user: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_listSong.htm',
-    };
-    private readonly playlistPagingUrl = {
-        dj: 'https://www.melon.com/dj/playlist/djplaylist_listsong.htm',
-        user: 'https://www.melon.com/mymusic/playlist/mymusicplaylistview_listPagingSong.htm',
-    };
-    private readonly createPlaylistUrl = 'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insertAction.json';
-    private readonly pageSize = 50;
-
     constructor(
-        protected readonly authdataService: AuthdataService,
         protected readonly melonTrackScraper: MelonTrackScraper,
         protected readonly vendorTrackRepository: VendorTrackRepository,
     ) {}
 
+    private readonly pageSize = 50;
+    private readonly playlistUrls = playlistUrlsByVendor['melon'];
+
     async getPlaylist(playlistId: string): Promise<IPlaylist> {
         const [type, id] = playlistId.split(':');
-        if (type != 'user' && type != 'dj') {
+        if (type != 'user' && type != 'catalog') {
             // FIXME: Better error message
             throw new Error('unsupported playlist type');
         }
@@ -40,14 +31,14 @@ export class MelonPlaylistScraper implements PlaylistScraper {
         const { title, count, trackData } = await this.getFirstPlaylistTracks(type, id);
 
         const requestArr = [...Array(Math.ceil(count / this.pageSize) - 1).keys()].map((i) =>
-            axios.get(this.playlistPagingUrl[type], {
+            axios.get(this.playlistUrls.getPlaylistPaged[type], {
                 params: {
                     plylstSeq: id,
                     startIndex: (i + 1) * this.pageSize + 1,
                     pageSize: this.pageSize,
                 },
                 headers: {
-                    Referer: `${this.playlistUrl[type]}?plylstSeq=${id}`,
+                    Referer: `${this.playlistUrls.getPlaylist[type]}?plylstSeq=${id}`,
                 },
             }),
         );
@@ -63,7 +54,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
         return { vendor: 'melon', title: title.trim(), id: playlistId, tracks: trackData.filter((x) => x) };
     }
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], melonAuthData: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
         const params = {
             plylstTitle: request.title,
             // FIXME: description should come from post
@@ -83,9 +74,9 @@ export class MelonPlaylistScraper implements PlaylistScraper {
             }
         });
 
-        const response = await axios.post(this.createPlaylistUrl, data, {
+        const response = await axios.post(this.playlistUrls.createPlaylist, data, {
             headers: {
-                Cookie: this.authdataService.toString('melon', melonAuthData),
+                Cookie: authdata.accessToken,
                 Referer: 'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insert.htm',
                 'X-Requested-With': 'XMLHttpRequest',
             },
@@ -94,14 +85,14 @@ export class MelonPlaylistScraper implements PlaylistScraper {
     }
 
     async getFirstPlaylistTracks(
-        type: 'user' | 'dj',
+        type: 'user' | 'catalog',
         playlistId: string,
     ): Promise<{
         title: string;
         count: number;
         trackData: ITrack[];
     }> {
-        const response = await axios.get(this.playlistUrl[type], {
+        const response = await axios.get(this.playlistUrls.getPlaylist[type], {
             params: { plylstSeq: playlistId },
         });
 

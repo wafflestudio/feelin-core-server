@@ -1,45 +1,37 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata, SpotifyAuthdata } from '@/authdata/types.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { IAlbum, IArtist, ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { Track } from '@prisma/client';
 import axios from 'axios';
+import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
 
 @Injectable()
 export class SpotifyPlaylistScraper implements PlaylistScraper {
-    private readonly playlistUrl = {
-        user: 'https://api.spotify.com/v1/me/playlist',
-    };
+    constructor(private readonly vendorTrackRepository: VendorTrackRepository) {}
 
-    userUrl: 'https://api.spotify.com/v1/me';
+    private readonly userUrl: 'https://api.spotify.com/v1/me';
+    private readonly playlistUrls = playlistUrlsByVendor['spotify'];
 
-    constructor(
-        private readonly authdataService: AuthdataService,
-        private readonly vendorTrackRepository: VendorTrackRepository,
-    ) {}
-
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authData: Authdata) {
-        const spotifyAuthData = authData as SpotifyAuthdata;
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
         const userData: any = await axios.get(this.userUrl, {
             headers: {
-                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });
-        const createPlaylistUrl = `https://api.spotify.com/v1/users/${userData.id}/playlists`;
         const createResponse = await axios.post(
-            createPlaylistUrl,
+            this.playlistUrls.createPlaylist.replace('{userId}', userData.id),
             {
                 name: request.title,
                 description: request.description,
             },
             {
                 headers: {
-                    Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                    Authorization: authdata.accessToken,
                     'Content-Type': 'application/json',
                 },
             },
@@ -53,24 +45,21 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         );
 
         const trackIds = tracks.map(({ id }) => vendorTracks[id]?.vendorId).filter((id) => !!id);
-        const addTracksToPlaylistUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-        await axios.post(addTracksToPlaylistUrl, null, {
+        await axios.post(this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId), null, {
             params: {
                 uris: '' + trackIds.map((id) => 'spotify:track:' + id),
             },
             headers: {
-                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });
     }
 
-    async getPlaylist(playlistId: string, authData: Authdata): Promise<IPlaylist> {
-        const spotifyAuthData = authData as SpotifyAuthdata;
-        const playlistItemsUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-        const res = await axios.get(playlistItemsUrl, {
+    async getPlaylist(playlistId: string, authdata: Authdata): Promise<IPlaylist> {
+        const res = await axios.get(this.playlistUrls.getPlaylist['user'].replace('{playlistId}', playlistId), {
             headers: {
-                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });
@@ -87,7 +76,6 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
                 title: item?.track?.album?.name,
                 id: item?.track?.album?.id,
                 coverUrl: item?.track.album?.images[0]?.url,
-                //coverUrl -> flo playlist response json 구조를 알아야 할 것 같음. 우선은 가장 큰 사이즈의 앨범커버 url으로
             };
 
             return {

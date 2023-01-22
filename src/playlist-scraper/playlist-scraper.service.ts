@@ -62,7 +62,7 @@ export class PlaylistScraperService {
                 }
 
                 if (url.searchParams.get('type') === 'djc') {
-                    playlistId += 'dj:';
+                    playlistId += 'catalog:';
                 } else if (url.searchParams.get('type') === 'ply') {
                     playlistId += 'user:';
                 } else {
@@ -84,7 +84,7 @@ export class PlaylistScraperService {
                 if (/^\/mymusic\/playlist\/mymusicplaylistview_inform.htm[^\/]*/.test(path)) {
                     playlistId += 'user:';
                 } else if (/^\/mymusic\/dj\/mymusicdjplaylistview_inform.htm[^\/]*/.test(path)) {
-                    playlistId += 'dj:';
+                    playlistId += 'catalog:';
                 } else {
                     throw new Error('Melon url malformed');
                 }
@@ -104,7 +104,7 @@ export class PlaylistScraperService {
                 const playlistIdMatch = url.pathname.match(/^\/s\/([rd])\.([a-zA-Z0-9]+)/);
                 if (playlistIdMatch) {
                     const id = playlistIdMatch.pop();
-                    const type = playlistIdMatch.pop() === 'r' ? 'user' : 'dj';
+                    const type = playlistIdMatch.pop() === 'r' ? 'user' : 'catalog';
                     playlistId = `${type}:${shareId2ApiId(id)}`;
                 } else {
                     throw new Error('Flo url malformed');
@@ -117,7 +117,7 @@ export class PlaylistScraperService {
                 vendor = 'flo';
                 const playlistIdMatch = url.pathname.match(/^\/detail\/channel\/([danielzohy]+)/);
                 if (playlistIdMatch) {
-                    playlistId = `dj:${detailId2ApiId(playlistIdMatch.pop())}`;
+                    playlistId = `catalog:${detailId2ApiId(playlistIdMatch.pop())}`;
                 } else {
                     throw new Error('Flo url malformed');
                 }

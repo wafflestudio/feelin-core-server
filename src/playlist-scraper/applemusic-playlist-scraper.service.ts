@@ -1,30 +1,23 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata, ApplemusicAuthdata } from '@/authdata/types.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { IAlbum, IArtist, ITrack } from '@feelin-types/types.js';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Track } from '@prisma/client';
 import axios from 'axios';
+import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
 
 @Injectable()
 export class AppleMusicPlaylistScraper implements PlaylistScraper {
-    private readonly playlistUrl = {
-        user: 'https://api.music.apple.com/v1/me/library/playlists',
-    };
+    constructor(private readonly vendorTrackRepository: VendorTrackRepository) {}
 
-    constructor(
-        private readonly authdataService: AuthdataService,
-        private readonly vendorTrackRepository: VendorTrackRepository,
-    ) {}
+    private readonly playlistUrls = playlistUrlsByVendor['applemusic'];
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authData: Authdata) {
-        const applemusicAuthdata = authData as ApplemusicAuthdata;
-        const createPlaylistUrl = `https://api.music.apple.com/v1/me/library/playlists`;
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
         const createResponse = await axios.post(
-            createPlaylistUrl,
+            this.playlistUrls.createPlaylist,
             {
                 attributes: {
                     name: request.title,
@@ -34,7 +27,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             {
                 headers: {
                     Authorization: '',
-                    'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthdata),
+                    'Music-User-Token': authdata.accessToken,
                     'Content-Type': 'application/json',
                 },
             },
@@ -51,37 +44,38 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             .map(({ id }) => vendorTracks[id]?.vendorId)
             .filter((id) => !!id)
             .map((item) => ({ ...item, type: 'songs' }));
-        const addTracksToPlaylistUrl = `https://api.music.apple.com/v1/me/library/playlists/${playlistId}/tracks`;
         await axios.post(
-            addTracksToPlaylistUrl,
+            this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId),
             {
                 addTracks,
             },
             {
                 headers: {
                     Authorization: '',
-                    'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthdata),
+                    'Music-User-Token': authdata.accessToken,
                     'Content-Type': 'application/json',
                 },
             },
         );
     }
 
-    async getPlaylist(playlistId: string, authData: Authdata): Promise<IPlaylist> {
-        const applemusicAuthdata = authData as ApplemusicAuthdata;
-        const type = playlistId.split('.')[0];
-        const playlistItemsUrl =
-            type == 'pl'
-                ? `https://api.music.apple.com/v1/catalog/kr/playlists/${playlistId}/tracks`
-                : `https://api.music.apple.com/v1/me/library/playlists/${playlistId}/tracks`;
+    async getPlaylist(id: string, authdata: Authdata): Promise<IPlaylist> {
+        const [type, playlistId] = id.split(':');
+        if (type !== 'user' && type !== 'catalog') {
+            throw new InternalServerErrorException('Invalid playlist id');
+        }
 
-        const res = await axios.get(playlistItemsUrl, {
-            headers: {
-                Authorization: '',
-                'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthdata),
-                'Content-Type': 'application/json',
+        // TODO: Change country code
+        const res = await axios.get(
+            this.playlistUrls.getPlaylist[type].replace('{playlistId}', playlistId).replace('{countryCode}', 'kr'),
+            {
+                headers: {
+                    Authorization: '',
+                    'Music-User-Token': authdata.accessToken,
+                    'Content-Type': 'application/json',
+                },
             },
-        });
+        );
         const playlistData = res?.data;
 
         const tracks: ITrack[] = playlistData?.map((track) => {
