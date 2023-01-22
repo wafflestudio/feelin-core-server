@@ -13,7 +13,7 @@ export class JwtAuthGuard implements CanActivate {
             return false;
         }
 
-        const userToken = authHeader.split(' ')[1];
+        const userToken = authHeader.replace('Bearer ', '');
 
         const user = await this.authService.validateUserToken(userToken);
         request.user = user;

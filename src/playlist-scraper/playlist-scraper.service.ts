@@ -117,7 +117,7 @@ export class PlaylistScraperService {
                 vendor = 'flo';
                 const playlistIdMatch = url.pathname.match(/^\/detail\/channel\/([danielzohy]+)/);
                 if (playlistIdMatch) {
-                    playlistId = `dj:${detailId2ApiId(playlistIdMatch.pop())}`;
+                    playlistId = `catalog:${detailId2ApiId(playlistIdMatch.pop())}`;
                 } else {
                     throw new Error('Flo url malformed');
                 }

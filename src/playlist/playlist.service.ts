@@ -84,7 +84,8 @@ export class PlaylistService {
         const playlistData = await this.playlistScraperService
             .get(vendor)
             .getPlaylist(playlistId, decryptedVendorAccount?.authdata);
-        return this.saveAndGetPlaylistDto(playlistData);
+        const playlist = await this.saveAndGetPlaylistDto(playlistData);
+        return this.getPlaylist(playlist.id);
     }
 
     async savePlaylistToAccount(
@@ -143,7 +144,7 @@ export class PlaylistService {
         await this.playlistScraperService.get(vendor).savePlaylist(request, tracks, authdata);
     }
 
-    private async saveAndGetPlaylistDto(playlistData: IPlaylist): Promise<PlaylistDto> {
+    private async saveAndGetPlaylistDto(playlistData: IPlaylist): Promise<Playlist> {
         const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
             playlistData.vendor,
             playlistData.tracks.map(({ id }) => id),
@@ -162,26 +163,9 @@ export class PlaylistService {
         );
         const albumByVendorId = new Map(vendorAlbums.map((vendorAlbum) => [vendorAlbum.vendorId, vendorAlbum.album]));
 
-        const playlist = await this.prismaService.$transaction(
+        return await this.prismaService.$transaction(
             async (tx) => this.savePlaylist(tx, playlistData, trackByVendorId, artistByVendorId, albumByVendorId),
-            {
-                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-            },
-        );
-
-        return new PlaylistDto(
-            playlist.id,
-            playlistData.title,
-            playlistData.tracks.map(
-                ({ id, title, artists, album }) =>
-                    new TrackDto(
-                        trackByVendorId.get(id).id,
-                        title,
-                        artists.map(({ id, name }) => new ArtistDto(artistByVendorId.get(id).id, name)),
-                        new AlbumDto(albumByVendorId.get(album.id).id, album.title, album.coverUrl),
-                    ),
-            ),
-            new PlaylistPreviewDto(playlist.id, playlistData.tracks[0].album.coverUrl),
+            { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
         );
     }
 

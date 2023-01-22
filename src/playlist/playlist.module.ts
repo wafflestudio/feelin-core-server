@@ -6,6 +6,7 @@ import { AuthModule } from '@/auth/auth.module.js';
 import { PlaylistScraperModule } from '@/playlist-scraper/playlist-scraper.module.js';
 import { PrismaService } from '@/prisma.service.js';
 import { TrackModule } from '@/track/track.module.js';
+import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { forwardRef, Module } from '@nestjs/common';
 import { TrackMatcherModule } from './../track-matcher/track-matcher.module.js';
 import { PlaylistController } from './playlist.controller.js';
@@ -25,6 +26,7 @@ import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
         VendorPlaylistRepository,
         VendorArtistRepository,
         VendorAlbumRepository,
+        VendorAccountRepository,
     ],
     exports: [PlaylistService, PlaylistRepository, VendorPlaylistRepository],
 })

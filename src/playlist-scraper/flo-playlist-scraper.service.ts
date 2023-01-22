@@ -15,12 +15,12 @@ export class FloPlaylistScraper implements PlaylistScraper {
 
     private readonly playlistUrls = playlistUrlsByVendor['flo'];
 
-    async getPlaylist(playlistId: string): Promise<IPlaylist> {
+    async getPlaylist(playlistId: string, authdata: Authdata): Promise<IPlaylist> {
         const [type, id] = playlistId.split(':');
         if (type != 'user' && type != 'catalog') {
             throw new InternalServerErrorException('Invalid playlist id');
         }
-        const res = await axios.get(this.playlistUrls.getPlaylist[type] + id);
+        const res = await axios.get(`${this.playlistUrls.getPlaylist[type]}/${id}`);
         const playlistData = res.data?.data;
 
         let trackList;

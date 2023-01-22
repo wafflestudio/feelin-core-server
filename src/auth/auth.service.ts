@@ -44,6 +44,9 @@ export class AuthService {
     }
 
     decryptVendorAccount(vendorAccount: VendorAccount): DecryptedVendorAccountDto {
+        if (vendorAccount === null) {
+            return null;
+        }
         const accessToken = this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
         const refreshToken =
             vendorAccount.refreshToken === null
