@@ -1,11 +1,13 @@
 import { Vendors } from '@/types/types.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration.js';
 import { v4 as uuidv4 } from 'uuid';
+import { VendorAccountLoginDto } from './dto/vendor-account-login.dto.js';
 import { SpotifyTokenResponse } from './types.js';
 import { VendorAccountRepository } from './vendor-account.repository.js';
 
@@ -16,15 +18,26 @@ export class VendorAccountService {
         private readonly cipherUtilService: CipherUtilService,
         private readonly configService: ConfigService,
     ) {
+        dayjs.extend(duration);
+
         this.encryptKey = Buffer.from(this.configService.getOrThrow<string>('ENCRYPT_KEY'), 'hex');
+        this.loginUrls = {
+            melon: '',
+            flo: '',
+            spotify: configService.getOrThrow('SPOTIFY_LOGIN_URL'),
+            applemusic: configService.getOrThrow('APPLEMUSIC_LOGIN_URL'),
+        };
+        this.expiresIn = {
+            melon: 0,
+            flo: 0,
+            spotify: 0,
+            applemusic: dayjs.duration(6, 'months').asSeconds(),
+        };
     }
 
     private readonly encryptKey: Buffer;
-    private readonly loginUrls: Record<Vendors, string> = {
-        melon: '',
-        flo: '',
-        spotify: 'https://accounts.spotify.com/authorize?',
-    };
+    private readonly loginUrls: Record<Vendors, string>;
+    private readonly expiresIn: Record<Vendors, number>;
 
     async getLoginUrl(user: User, vendor: Vendors) {
         const loginUrl = this.loginUrls[vendor];
@@ -42,6 +55,7 @@ export class VendorAccountService {
             case 'spotify':
                 return (
                     loginUrl +
+                    '?' +
                     new URLSearchParams({
                         client_id: this.configService.getOrThrow('SPOTIFY_CLIENT_ID'),
                         response_type: 'code',
@@ -50,6 +64,8 @@ export class VendorAccountService {
                         state: vendorAccount.id,
                     }).toString()
                 );
+            case 'applemusic':
+                return loginUrl + '?' + new URLSearchParams({ id: vendorAccount.id }).toString();
             default:
                 break;
         }
@@ -82,6 +98,26 @@ export class VendorAccountService {
                 accessToken: this.cipherUtilService.encryptWithKey(data.access_token, this.encryptKey),
                 refreshToken: this.cipherUtilService.encryptWithKey(data.refresh_token, this.encryptKey),
                 expiresAt: dayjs().add(data.expires_in, 'second').toDate(),
+            },
+        });
+    }
+
+    async handleVendorAccountLogin(request: VendorAccountLoginDto, vendor: Vendors, user: User) {
+        const { id, accessToken, refreshToken } = request;
+        const vendorAccount = await this.vendorAccountRepository.findById(id);
+        if (!vendorAccount) {
+            throw new NotFoundException('Vendor account does not exist');
+        }
+        if (vendorAccount.userId !== user.id) {
+            throw new ForbiddenException('Vendor account does not belong to user');
+        }
+
+        return await this.vendorAccountRepository.update({
+            where: { id },
+            data: {
+                accessToken: this.cipherUtilService.encryptWithKey(accessToken, this.encryptKey),
+                refreshToken: refreshToken === null ? null : this.cipherUtilService.encryptWithKey(refreshToken, this.encryptKey),
+                expiresAt: dayjs().add(this.expiresIn[vendor], 'second').toDate(),
             },
         });
     }

@@ -6,6 +6,11 @@ import { Prisma, PrismaPromise, User, VendorAccount } from '@prisma/client';
 export class VendorAccountRepository {
     constructor(private readonly prismaService: PrismaService) {}
 
+    async findById(id: string): Promise<VendorAccount> {
+        const vendorAccount = await this.prismaService.vendorAccount.findUnique({ where: { id } });
+        return vendorAccount;
+    }
+
     async findByIdWithUser(id: string): Promise<VendorAccount & { user: User }> {
         const vendorAccount = await this.prismaService.vendorAccount.findUnique({
             where: { id },

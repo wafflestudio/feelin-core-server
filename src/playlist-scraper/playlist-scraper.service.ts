@@ -2,6 +2,7 @@ import { detailId2ApiId, shareId2ApiId } from '@/utils/flo-utils.js';
 import { Vendors } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { URL } from 'url';
+import { AppleMusicPlaylistScraper } from './applemusic-playlist-scraper.service.js';
 import { FloPlaylistScraper } from './flo-playlist-scraper.service.js';
 import { MelonPlaylistScraper } from './melon-playlist-scraper.service.js';
 import { PlaylistScraper } from './playlist-scraper.js';
@@ -15,11 +16,13 @@ export class PlaylistScraperService {
         private readonly melonPlaylistScraper: MelonPlaylistScraper,
         private readonly floPlaylistScraper: FloPlaylistScraper,
         private readonly spotifyPlaylistScraper: SpotifyPlaylistScraper,
+        private readonly appleMusicPlaylistScraper: AppleMusicPlaylistScraper,
     ) {
         this.playlistScrapers = {
             melon: melonPlaylistScraper,
             flo: floPlaylistScraper,
             spotify: spotifyPlaylistScraper,
+            applemusic: appleMusicPlaylistScraper,
         };
     }
 

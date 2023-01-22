@@ -3,7 +3,7 @@ import { UserRepository } from '@/user/user.repository.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
@@ -38,7 +38,7 @@ export class AuthService {
             throw new UnauthorizedException('unauthorized vendor account');
         });
         if (vendorAccount.user.id !== user.id) {
-            throw new BadRequestException('vendor account does not belong to user');
+            throw new ForbiddenException('Vendor account does not belong to user');
         }
         const authData = this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
         return new DecryptedVendorAccountDto(authData, vendorAccount.vendor as Vendors);
