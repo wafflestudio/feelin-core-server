@@ -1,8 +1,7 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata, FloAuthdata } from '@/authdata/types.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { Track } from '@prisma/client';
@@ -17,10 +16,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
     };
     private readonly createPlaylistUrl = 'https://www.music-flo.com/api/personal/v1/myplaylist';
 
-    constructor(
-        private readonly authdataService: AuthdataService,
-        private readonly vendorTrackRepository: VendorTrackRepository,
-    ) {}
+    constructor(private readonly vendorTrackRepository: VendorTrackRepository) {}
 
     async getPlaylist(playlistId: string): Promise<IPlaylist> {
         const [type, id] = playlistId.split(':');
@@ -62,8 +58,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
         };
     }
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authData: Authdata) {
-        const floAuthData = authData as FloAuthdata;
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
         const createResponse = await axios.post(
             this.createPlaylistUrl,
             {
@@ -71,8 +66,8 @@ export class FloPlaylistScraper implements PlaylistScraper {
             },
             {
                 headers: {
-                    Cookie: this.authdataService.toString('flo', floAuthData),
-                    'x-gm-access-token': floAuthData.accessToken,
+                    Cookie: this.getCookieString(authdata),
+                    'x-gm-access-token': authdata.accessToken,
                 },
             },
         );
@@ -95,8 +90,8 @@ export class FloPlaylistScraper implements PlaylistScraper {
             },
             {
                 headers: {
-                    Cookie: this.authdataService.toString('flo', floAuthData),
-                    'x-gm-access-token': floAuthData.accessToken,
+                    Cookie: this.getCookieString(authdata),
+                    'x-gm-access-token': authdata.accessToken,
                 },
             },
         );
@@ -105,7 +100,11 @@ export class FloPlaylistScraper implements PlaylistScraper {
         }
     }
 
-    protected formatCoverUrl(coverUrlFormat: string, size: number): string {
+    private getCookieString(authdata: Authdata) {
+        return `access_token=${authdata.accessToken};refresh_token=${authdata.refreshToken}`;
+    }
+
+    private formatCoverUrl(coverUrlFormat: string, size: number): string {
         return coverUrlFormat.replace(/{size}/, `${size}x${size}`);
     }
 }

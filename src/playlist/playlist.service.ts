@@ -4,7 +4,6 @@ import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
 import { ArtistRepository } from '@/artist/artist.repository.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
 import { VendorArtistRepository } from '@/artist/vendor-artist.repository.js';
-import { AuthdataService } from '@/authdata/authdata.service.js';
 import { PlaylistScraperService } from '@/playlist-scraper/playlist-scraper.service.js';
 import { PrismaService } from '@/prisma.service.js';
 import { TrackDto } from '@/track/dto/track.dto.js';
@@ -30,7 +29,6 @@ import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
 export class PlaylistService {
     constructor(
         private readonly playlistScraperService: PlaylistScraperService,
-        private readonly authdataService: AuthdataService,
         private readonly trackService: TrackService,
         private readonly trackMatcherService: TrackMatcherService,
         private readonly prismaService: PrismaService,
@@ -77,9 +75,8 @@ export class PlaylistService {
             return this.getPlaylist(vendorPlaylist.playlist.id);
         }
 
-        const playlistData = await this.playlistScraperService
-            .get(vendor)
-            .getPlaylist(playlistId, this.authdataService.fromString(vendor, 'cookieString')); //cookieString should be filled somehow..:(
+        // TODO: Use user authdata if needed
+        const playlistData = await this.playlistScraperService.get(vendor).getPlaylist(playlistId, null);
         return this.saveAndGetPlaylistDto(playlistData);
     }
 
@@ -136,8 +133,7 @@ export class PlaylistService {
             }
         }
 
-        const authdataInterface = this.authdataService.fromString(vendor, authdata);
-        await this.playlistScraperService.get(vendor).savePlaylist(request, tracks, authdataInterface);
+        await this.playlistScraperService.get(vendor).savePlaylist(request, tracks, authdata);
     }
 
     private async saveAndGetPlaylistDto(playlistData: IPlaylist): Promise<PlaylistDto> {

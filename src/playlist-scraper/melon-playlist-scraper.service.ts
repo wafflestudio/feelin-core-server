@@ -1,9 +1,8 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata } from '@/authdata/types.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { MelonTrackScraper } from '@/track-scraper/melon-track-scraper.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { Track } from '@prisma/client';
@@ -25,7 +24,6 @@ export class MelonPlaylistScraper implements PlaylistScraper {
     private readonly pageSize = 50;
 
     constructor(
-        protected readonly authdataService: AuthdataService,
         protected readonly melonTrackScraper: MelonTrackScraper,
         protected readonly vendorTrackRepository: VendorTrackRepository,
     ) {}
@@ -63,7 +61,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
         return { vendor: 'melon', title: title.trim(), id: playlistId, tracks: trackData.filter((x) => x) };
     }
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], melonAuthData: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
         const params = {
             plylstTitle: request.title,
             // FIXME: description should come from post
@@ -85,7 +83,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
 
         const response = await axios.post(this.createPlaylistUrl, data, {
             headers: {
-                Cookie: this.authdataService.toString('melon', melonAuthData),
+                Cookie: authdata.accessToken,
                 Referer: 'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insert.htm',
                 'X-Requested-With': 'XMLHttpRequest',
             },

@@ -1,6 +1,5 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata, ApplemusicAuthdata } from '@/authdata/types.js';
 import { IAlbum, IArtist, ITrack } from '@/types/types.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { TrackScraper } from './track-scraper.js';
@@ -10,10 +9,9 @@ export class AppleMusicTrackScraper implements TrackScraper {
     private readonly searchUrl = 'https://api.music.apple.com/v1/catalog/kr/search';
     private readonly recentTrackUrl = 'https://api.music.apple.com/v1/me/recent/played/tracks';
 
-    constructor(private readonly authdataService: AuthdataService) {}
+    constructor() {}
 
-    async searchTrack(track: ITrack, authData: Authdata): Promise<ITrack[]> {
-        const applemusicAuthData = authData as ApplemusicAuthdata;
+    async searchTrack(track: ITrack, authdata: Authdata): Promise<ITrack[]> {
         const response = await axios.get(this.searchUrl, {
             params: {
                 term: track.title,
@@ -23,7 +21,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
             },
             headers: {
                 Authorization: '',
-                'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthData),
+                'Music-User-Token': authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });
@@ -66,11 +64,11 @@ export class AppleMusicTrackScraper implements TrackScraper {
         return trackList;
     }
 
-    async getMyRecentTracks(applemusicAuthData: ApplemusicAuthdata): Promise<ITrack[]> {
+    async getMyRecentTracks(authdata: Authdata): Promise<ITrack[]> {
         const response = await axios.get(this.recentTrackUrl, {
             headers: {
                 Authorization: '',
-                'Music-User-Token': this.authdataService.toString('applemusic', applemusicAuthData),
+                'Music-User-Token': authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });

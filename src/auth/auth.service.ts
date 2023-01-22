@@ -40,7 +40,11 @@ export class AuthService {
         if (vendorAccount.user.id !== user.id) {
             throw new ForbiddenException('Vendor account does not belong to user');
         }
-        const authData = this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
-        return new DecryptedVendorAccountDto(authData, vendorAccount.vendor as Vendors);
+        const accessToken = this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
+        const refreshToken =
+            vendorAccount.refreshToken === null
+                ? null
+                : this.cipherUtilService.decrypt(vendorAccount.refreshToken, this.encryptKey);
+        return new DecryptedVendorAccountDto(accessToken, refreshToken, vendorAccount.vendor as Vendors);
     }
 }

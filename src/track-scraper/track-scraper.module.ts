@@ -1,4 +1,4 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
+import { CookieUtilService } from '@/utils/cookie-util/cookie-util.service.js';
 import { Module } from '@nestjs/common';
 import { AppleMusicTrackScraper } from './applemusic-track-scraper.service.js';
 import { FloTrackScraper } from './flo-track-scraper.service.js';
@@ -14,7 +14,7 @@ import { TrackScraperService } from './track-scraper.service.js';
         SpotifyTrackScraper,
         TrackScraperService,
         AppleMusicTrackScraper,
-        AuthdataService,
+        CookieUtilService,
     ],
     exports: [TrackScraperService, MelonTrackScraper, FloTrackScraper, SpotifyTrackScraper, AppleMusicTrackScraper],
 })

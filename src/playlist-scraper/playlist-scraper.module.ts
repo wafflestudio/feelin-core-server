@@ -1,4 +1,3 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
 import { VendorPlaylistRepository } from '@/playlist/vendor-playlist.repository.js';
 import { PrismaService } from '@/prisma.service.js';
 import { TrackScraperModule } from '@/track-scraper/track-scraper.module.js';
@@ -19,7 +18,6 @@ import { SpotifyPlaylistScraper } from './spotify-playlist-scraper.service.js';
         SpotifyPlaylistScraper,
         AppleMusicPlaylistScraper,
         PlaylistScraperService,
-        AuthdataService,
         PrismaService,
         VendorPlaylistRepository,
     ],

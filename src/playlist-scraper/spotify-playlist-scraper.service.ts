@@ -1,8 +1,7 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
-import { Authdata, SpotifyAuthdata } from '@/authdata/types.js';
 import { IPlaylist } from '@/playlist/types/types.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { IAlbum, IArtist, ITrack } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import { Track } from '@prisma/client';
@@ -17,16 +16,12 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
 
     userUrl: 'https://api.spotify.com/v1/me';
 
-    constructor(
-        private readonly authdataService: AuthdataService,
-        private readonly vendorTrackRepository: VendorTrackRepository,
-    ) {}
+    constructor(private readonly vendorTrackRepository: VendorTrackRepository) {}
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authData: Authdata) {
-        const spotifyAuthData = authData as SpotifyAuthdata;
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
         const userData: any = await axios.get(this.userUrl, {
             headers: {
-                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });
@@ -39,7 +34,7 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
             },
             {
                 headers: {
-                    Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                    Authorization: authdata.accessToken,
                     'Content-Type': 'application/json',
                 },
             },
@@ -59,18 +54,17 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
                 uris: '' + trackIds.map((id) => 'spotify:track:' + id),
             },
             headers: {
-                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });
     }
 
-    async getPlaylist(playlistId: string, authData: Authdata): Promise<IPlaylist> {
-        const spotifyAuthData = authData as SpotifyAuthdata;
+    async getPlaylist(playlistId: string, authdata: Authdata): Promise<IPlaylist> {
         const playlistItemsUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
         const res = await axios.get(playlistItemsUrl, {
             headers: {
-                Authorization: this.authdataService.toString('spotify', spotifyAuthData),
+                Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',
             },
         });
