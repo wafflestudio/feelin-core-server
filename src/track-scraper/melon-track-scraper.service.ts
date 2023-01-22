@@ -5,24 +5,22 @@ import { Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
 import randomUseragent from 'random-useragent';
+import { trackUrlsByVendor } from './constants.js';
 import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class MelonTrackScraper implements TrackScraper {
-    private readonly recentTrackUrl = 'https://www.melon.com/mymusic/recent/mymusicrecentsong_list.htm';
-    private readonly recentTrackListUrl = 'https://www.melon.com/mymusic/recent/mymusicrecentsong_listPaging.htm';
-    private readonly melonURL = 'https://www.melon.com/search/song/index.htm';
+    constructor(private readonly cookieUtilService: CookieUtilService) {}
+
     private readonly melonCoverUrl = (id: string, origId: string, size: number) =>
         `https://cdnimg.melon.co.kr/cm/album/images/${id.slice(0, 3)}/${id.slice(3, 5)}/${id.slice(5)}` +
         `/${origId}_500.jpg/melon/resize/${size}/quality/80/optimize`;
-
     private readonly pageSize = 50;
-
-    constructor(private readonly cookieUtilService: CookieUtilService) {}
+    private readonly trackUrls = trackUrlsByVendor['melon'];
 
     async searchTrack(track: ITrack): Promise<ITrack[]> {
         // Melon search API limits max 50 results at once
-        const response = await axios.get(this.melonURL, {
+        const response = await axios.get(this.trackUrls.search, {
             params: {
                 startIndex: 1,
                 pageSize: 50,
@@ -97,7 +95,7 @@ export class MelonTrackScraper implements TrackScraper {
         const requestArr: Promise<AxiosResponse<any, any>>[] = [];
         for (let i = 1; i < Math.ceil(count / this.pageSize); i++) {
             requestArr.push(
-                axios.get(this.recentTrackListUrl, {
+                axios.get(this.trackUrls.recentlyPlayed, {
                     params: {
                         startIndex: i * this.pageSize + 1,
                         pageSize: this.pageSize,
@@ -105,7 +103,7 @@ export class MelonTrackScraper implements TrackScraper {
                     },
                     headers: {
                         Cookie: authdata.accessToken,
-                        Referer: `${this.recentTrackUrl}?memberKey=${this.cookieUtilService.getValue(
+                        Referer: `${this.trackUrls.recentlyPlayedPaged}?memberKey=${this.cookieUtilService.getValue(
                             authdata.accessToken,
                             'keyCookie',
                         )}`,
@@ -129,7 +127,7 @@ export class MelonTrackScraper implements TrackScraper {
         count: number;
         recentTracks: ITrack[];
     }> {
-        const response = await axios.get(this.recentTrackUrl, {
+        const response = await axios.get(this.trackUrls.recentlyPlayed, {
             params: {
                 memberKey: this.cookieUtilService.getValue(authdata.accessToken, 'keyCookie'),
             },

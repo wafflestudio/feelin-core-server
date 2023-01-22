@@ -2,17 +2,17 @@ import { IAlbum, IArtist, ITrack } from '@/types/types.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { trackUrlsByVendor } from './constants.js';
 import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class SpotifyTrackScraper implements TrackScraper {
-    private readonly searchUrl = 'https://api.spotify.com/v1/search';
-    private readonly recentTrackUrl = 'https://api.spotify.com/v1/me/player/recently-played';
-
     constructor() {}
 
+    private readonly trackUrls = trackUrlsByVendor['spotify'];
+
     async searchTrack(track: ITrack, authdata: Authdata): Promise<ITrack[]> {
-        const response = await axios.get(this.searchUrl, {
+        const response = await axios.get(this.trackUrls.search, {
             params: {
                 q: track.title,
                 type: 'track',
@@ -52,7 +52,7 @@ export class SpotifyTrackScraper implements TrackScraper {
     }
 
     async getMyRecentTracks(authdata: Authdata): Promise<ITrack[]> {
-        const response = await axios.get(this.recentTrackUrl, {
+        const response = await axios.get(this.trackUrls.recentlyPlayed, {
             headers: {
                 Authorization: authdata.accessToken,
                 'Content-Type': 'application/json',

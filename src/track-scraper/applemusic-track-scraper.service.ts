@@ -2,17 +2,17 @@ import { IAlbum, IArtist, ITrack } from '@/types/types.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { trackUrlsByVendor } from './constants.js';
 import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class AppleMusicTrackScraper implements TrackScraper {
-    private readonly searchUrl = 'https://api.music.apple.com/v1/catalog/kr/search';
-    private readonly recentTrackUrl = 'https://api.music.apple.com/v1/me/recent/played/tracks';
-
     constructor() {}
 
+    private readonly trackUrls = trackUrlsByVendor['applemusic'];
+
     async searchTrack(track: ITrack, authdata: Authdata): Promise<ITrack[]> {
-        const response = await axios.get(this.searchUrl, {
+        const response = await axios.get(this.trackUrls.search, {
             params: {
                 term: track.title,
                 types: 'songs',
@@ -65,7 +65,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
     }
 
     async getMyRecentTracks(authdata: Authdata): Promise<ITrack[]> {
-        const response = await axios.get(this.recentTrackUrl, {
+        const response = await axios.get(this.trackUrls.recentlyPlayed, {
             headers: {
                 Authorization: '',
                 'Music-User-Token': authdata.accessToken,

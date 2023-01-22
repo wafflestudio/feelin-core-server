@@ -3,34 +3,30 @@ import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { ITrack } from '@feelin-types/types.js';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Track } from '@prisma/client';
 import axios from 'axios';
+import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
 
 @Injectable()
 export class FloPlaylistScraper implements PlaylistScraper {
-    private readonly playlistUrl = {
-        user: 'https://api.music-flo.com/personal/v1/playlist/',
-        dj: 'https://api.music-flo.com/meta/v1/channel/',
-    };
-    private readonly createPlaylistUrl = 'https://www.music-flo.com/api/personal/v1/myplaylist';
-
     constructor(private readonly vendorTrackRepository: VendorTrackRepository) {}
+
+    private readonly playlistUrls = playlistUrlsByVendor['flo'];
 
     async getPlaylist(playlistId: string): Promise<IPlaylist> {
         const [type, id] = playlistId.split(':');
-        if (type != 'user' && type != 'dj') {
-            // FIXME: Better error message
-            throw new Error('Not supported playlist type');
+        if (type != 'user' && type != 'catalog') {
+            throw new InternalServerErrorException('Invalid playlist id');
         }
-        const res = await axios.get(this.playlistUrl[type] + id);
+        const res = await axios.get(this.playlistUrls.getPlaylist[type] + id);
         const playlistData = res.data?.data;
 
         let trackList;
         if (type == 'user') {
             trackList = playlistData?.track?.list;
-        } else if (type == 'dj') {
+        } else if (type == 'catalog') {
             trackList = playlistData?.trackList;
         }
 
@@ -60,7 +56,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
 
     public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
         const createResponse = await axios.post(
-            this.createPlaylistUrl,
+            this.playlistUrls.createPlaylist,
             {
                 memberChannelName: request.title,
             },
@@ -84,7 +80,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
         const trackIds = tracks.map(({ id }) => vendorTracks[id]?.vendorId).filter((id) => !!id);
 
         const addResponse = await axios.post(
-            this.createPlaylistUrl + `/${playlistId}/tracks`,
+            this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId),
             {
                 trackIdList: trackIds,
             },
