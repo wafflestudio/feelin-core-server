@@ -11,7 +11,7 @@ import { TrackDto } from '@/track/dto/track.dto.js';
 import { TrackRepository } from '@/track/track.repository.js';
 import { TrackService } from '@/track/track.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
-import { TrackInfo, Vendors } from '@/types/types.js';
+import { Vendors } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
@@ -108,14 +108,7 @@ export class PlaylistService {
 
             const vendorTracksToSave = tracksToSave
                 .map((track) => {
-                    const reference: TrackInfo = {
-                        title: track.title,
-                        id: '',
-                        duration: track.duration,
-                        artists: track.artists.map(({ artist: { name } }) => ({ name, id: '' })),
-                        album: { title: track.album.title, id: '', coverUrl: track.album.coverUrl },
-                    };
-
+                    const reference = this.trackService.toTrackInfo(track);
                     const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(request.searchResults, reference);
                     if (!!matchedVendorTrack) {
                         return this.vendorTrackRepository.create({

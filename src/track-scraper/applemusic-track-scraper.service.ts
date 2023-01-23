@@ -1,3 +1,4 @@
+import { SearchResults } from '@/track/types/types.js';
 import { AlbumInfo, ArtistInfo, TrackInfo } from '@/types/types.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
@@ -12,19 +13,19 @@ export class AppleMusicTrackScraper implements TrackScraper {
     private readonly trackUrls = trackUrlsByVendor['applemusic'];
     private readonly albumCoverSize = 300;
 
-    async searchTrack(track: TrackInfo, authdata: Authdata): Promise<TrackInfo[]> {
+    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
         const response = await axios.get(this.trackUrls.search, {
             params: {
-                term: track.title,
+                term: `${track.title}-${track.artists[0].name}`,
                 types: 'songs',
                 limit: 25,
                 offset: 0,
             },
-            headers: { Authorization: '', 'Content-Type': 'application/json' },
+            headers: { Authorization: authToken, 'Content-Type': 'application/json' },
         });
 
         const trackList = response.data?.map((track) => this.convertToTrackInfo(track, this.albumCoverSize));
-        return trackList;
+        return { isDetailed: false, results: trackList };
     }
 
     async getMyRecentTracks(authdata: Authdata): Promise<TrackInfo[]> {
@@ -42,13 +43,13 @@ export class AppleMusicTrackScraper implements TrackScraper {
     }
 
     convertToTrackInfo(track: any, albumCoverSize: number): TrackInfo {
-        const artists: ArtistInfo[] = track.relationships.artists.data.map((artist) => ({
+        const artists: ArtistInfo[] = track?.relationships?.artists?.data?.map((artist) => ({
             id: artist.id,
             name: artist.attributes.name, // TODO: Artist name is concatenated
         }));
 
         const album: AlbumInfo = {
-            id: track.relationships.albums.attributes.data[0].id,
+            id: track?.relationships?.albums?.attributes?.data?.[0]?.id,
             title: track.attributes.albumName,
             coverUrl: this.formatCoverUrl(track.attributes.artwork.url, albumCoverSize),
         };
@@ -58,7 +59,9 @@ export class AppleMusicTrackScraper implements TrackScraper {
             title: track.attributes.name,
             duration: track.attributes.durationInMillis,
             artists: artists,
+            artistNames: track.attributes.artistName,
             album: album,
+            albumTitle: track.attributes.albumName,
         };
     }
 

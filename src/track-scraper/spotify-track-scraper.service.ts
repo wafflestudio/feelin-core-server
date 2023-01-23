@@ -1,3 +1,4 @@
+import { SearchResults } from '@/track/types/types.js';
 import { AlbumInfo, ArtistInfo, TrackInfo } from '@/types/types.js';
 import { ImagePickerUtilService } from '@/utils/image-picker-util/image-picker-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
@@ -13,7 +14,7 @@ export class SpotifyTrackScraper implements TrackScraper {
     private readonly trackUrls = trackUrlsByVendor['spotify'];
     private readonly albumCoverSize = 300;
 
-    async searchTrack(track: TrackInfo, authdata: Authdata): Promise<TrackInfo[]> {
+    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
         const response = await axios.get(this.trackUrls.search, {
             params: {
                 q: track.title,
@@ -22,14 +23,11 @@ export class SpotifyTrackScraper implements TrackScraper {
                 limit: 50,
                 offset: 0,
             },
-            headers: {
-                Authorization: authdata.accessToken,
-                'Content-Type': 'application/json',
-            },
+            headers: { Authorization: authToken, 'Content-Type': 'application/json' },
         });
 
         const trackList = response.data.tracks.items.map((track) => this.covertToTrackInfo(track, this.albumCoverSize));
-        return trackList;
+        return { isDetailed: true, results: trackList };
     }
 
     async getMyRecentTracks(authdata: Authdata): Promise<TrackInfo[]> {
@@ -59,7 +57,9 @@ export class SpotifyTrackScraper implements TrackScraper {
             id: track.id,
             duration: track.duration_ms,
             artists: artists,
+            artistNames: track.artists.map((artist) => artist.name).join(', '),
             album: album,
+            albumTitle: album.title,
         };
     }
 }

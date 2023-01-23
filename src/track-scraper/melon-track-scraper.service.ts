@@ -1,3 +1,4 @@
+import { SearchResults } from '@/track/types/types.js';
 import { CookieUtilService } from '@/utils/cookie-util/cookie-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { AlbumInfo, ArtistInfo, TrackInfo } from '@feelin-types/types.js';
@@ -18,7 +19,7 @@ export class MelonTrackScraper implements TrackScraper {
     private readonly pageSize = 50;
     private readonly trackUrls = trackUrlsByVendor['melon'];
 
-    async searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
+    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
         // Melon search API limits max 50 results at once
         const response = await axios.get(this.trackUrls.search, {
             params: {
@@ -38,7 +39,7 @@ export class MelonTrackScraper implements TrackScraper {
             trackList.push(this.scrapeTrack($, el));
         });
 
-        return trackList;
+        return { isDetailed: true, results: trackList };
     }
 
     scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackInfo {
@@ -86,7 +87,7 @@ export class MelonTrackScraper implements TrackScraper {
             coverUrl: this.melonCoverUrl(albumId.padStart(8, '0'), albumId, 240),
         };
 
-        return { title, id, duration: 0, artists, album };
+        return { title, id, duration: 0, artists, artistNames: '', album, albumTitle: '' };
     }
 
     async getMyRecentTracks(authdata: Authdata) {

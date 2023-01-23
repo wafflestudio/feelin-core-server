@@ -1,3 +1,4 @@
+import { SearchResults } from '@/track/types/types.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { TrackInfo } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
@@ -11,7 +12,7 @@ export class FloTrackScraper implements TrackScraper {
 
     private readonly trackUrls = trackUrlsByVendor['flo'];
 
-    async searchTrack(track: TrackInfo): Promise<TrackInfo[]> {
+    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
         // Flo search API limits max 250 results at once
         const response = await axios.get(this.trackUrls.search, {
             params: {
@@ -34,7 +35,7 @@ export class FloTrackScraper implements TrackScraper {
                 album: album.title,
             };
         });
-        return trackList;
+        return { isDetailed: true, results: trackList };
     }
 
     async getMyRecentTracks(authdata: Authdata) {

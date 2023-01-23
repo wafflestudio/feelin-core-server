@@ -27,5 +27,7 @@ export type TrackInfo = {
     title: string;
     duration: number;
     artists: ArtistInfo[];
+    artistNames: string;
     album: AlbumInfo;
+    albumTitle: string;
 };
