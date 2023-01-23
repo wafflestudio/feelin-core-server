@@ -1,18 +1,37 @@
 import { AlbumDto } from '@/album/dto/album.dto.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
-import { TrackScraperService } from '@/track-scraper/track-scraper.service.js';
-import { TrackInfo } from '@/types/types.js';
+import { TrackInfo, Vendors } from '@/types/types.js';
 import { Injectable } from '@nestjs/common';
+import { PrismaPromise, VendorTrack } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
 import { TrackDto } from './dto/track.dto.js';
-import { TrackWithArtistAndAlbum } from './track.repository.js';
-import { VendorTrackRepository } from './vendor-track.repository.js';
+import { TrackWithArtistAndAlbum, TrackWithArtistAndAlbumAndVendorTrack } from './track.repository.js';
+import { VendorTrackRepository, VendorTrackWithTrack } from './vendor-track.repository.js';
 
 @Injectable()
 export class TrackService {
-    constructor(
-        private readonly trackScraperService: TrackScraperService,
-        private readonly vendorTrackRepository: VendorTrackRepository,
-    ) {}
+    constructor(private readonly vendorTrackRepository: VendorTrackRepository) {}
+
+    mergeOrCreateTrack(
+        track: TrackWithArtistAndAlbumAndVendorTrack,
+        matchedVendorTrack: TrackInfo,
+        vendor: Vendors,
+        existingVendorTrack: VendorTrackWithTrack,
+    ): PrismaPromise<VendorTrack> {
+        // TODO: Need to merge artists and album too
+        if (existingVendorTrack) {
+            return this.vendorTrackRepository.update({ track: { connect: { id: track.id } } }, { id: existingVendorTrack.id });
+        }
+
+        return this.vendorTrackRepository.create({
+            id: uuidv4(),
+            vendor: vendor,
+            vendorId: matchedVendorTrack.id,
+            track: {
+                connect: { id: track.id },
+            },
+        });
+    }
 
     toTrackDto(track: TrackWithArtistAndAlbum): TrackDto {
         return new TrackDto(

@@ -11,6 +11,10 @@ export class VendorTrackRepository {
         return this.prismaService.vendorTrack.create({ data });
     }
 
+    update(data: Prisma.VendorTrackUpdateInput, where: Prisma.VendorTrackWhereUniqueInput): PrismaPromise<VendorTrack> {
+        return this.prismaService.vendorTrack.update({ data, where });
+    }
+
     async findAllWithTrackByIdAndVendor(vendor: Vendors, ids: string[]): Promise<VendorTrackWithTrack[]> {
         return this.prismaService.vendorTrack.findMany({
             where: {

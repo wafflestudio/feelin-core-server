@@ -7,6 +7,7 @@ import { VendorArtistRepository } from '@/artist/vendor-artist.repository.js';
 import { AuthService } from '@/auth/auth.service.js';
 import { PlaylistScraperService } from '@/playlist-scraper/playlist-scraper.service.js';
 import { PrismaService } from '@/prisma.service.js';
+import { TrackScraperService } from '@/track-scraper/track-scraper.service.js';
 import { TrackDto } from '@/track/dto/track.dto.js';
 import { TrackRepository } from '@/track/track.repository.js';
 import { TrackService } from '@/track/track.service.js';
@@ -16,13 +17,12 @@ import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js'
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Album, Artist, Playlist, Prisma, Track, User } from '@prisma/client';
+import { Album, Artist, Playlist, Prisma, Track, User, VendorTrack } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
 import { PlaylistPreviewDto } from './dto/playlist-preview.dto.js';
 import { PlaylistDto } from './dto/playlist.dto.js';
-import { SavePlaylistResponseDto } from './dto/save-playlist-response.dto.js';
 import { PlaylistRepository } from './playlist.repository.js';
 import { PlaylistInfo } from './types/types.js';
 import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
@@ -33,6 +33,7 @@ export class PlaylistService {
         private readonly authService: AuthService,
         private readonly playlistScraperService: PlaylistScraperService,
         private readonly trackService: TrackService,
+        private readonly trackScraperService: TrackScraperService,
         private readonly trackMatcherService: TrackMatcherService,
         private readonly prismaService: PrismaService,
         private readonly playlistRepository: PlaylistRepository,
@@ -92,49 +93,69 @@ export class PlaylistService {
         vendorAccount: DecryptedVendorAccountDto,
         playlistId: string,
         request: SavePlaylistRequestDto,
-    ): Promise<SavePlaylistResponseDto> {
+    ): Promise<string> {
         const playlist = this.playlistRepository.findById(playlistId);
         if (!playlist) {
             throw new NotFoundException('not found', `playlist with id ${playlistId} not found`);
         }
-        const tracks = await this.trackRepository.findAllWithArtistAndAlbumByPlaylistId(playlistId);
-        const trackIds = tracks.map((track) => track.id);
-        const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(vendorAccount.vendor, trackIds);
-        const vendorTrackMapById = new Map(vendorTracks.map((vendorTrack) => [vendorTrack.track.id, vendorTrack]));
         const { vendor, authdata } = vendorAccount;
+        await this.convertPlaylist(playlistId, vendor);
 
-        if (!!request.searchResults) {
-            const tracksToSave = tracks.filter((track) => !vendorTrackMapById.has(track.id));
+        const tracks = await this.trackRepository.findAllWithArtistAndAlbumAndVendorTrackByPlaylistId(playlistId, vendor);
+        const vendorTracks = tracks.map((track) => track.vendorTracks?.[0]).filter((track) => track);
+        const playlistUrl = await this.playlistScraperService.get(vendor).savePlaylist(request, vendorTracks, authdata);
+        return playlistUrl;
+    }
 
-            const vendorTracksToSave = tracksToSave
-                .map((track) => {
-                    const reference = this.trackService.toTrackInfo(track);
-                    const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(request.searchResults, reference);
-                    if (!!matchedVendorTrack) {
-                        return this.vendorTrackRepository.create({
-                            id: uuidv4(),
-                            vendor,
-                            vendorId: matchedVendorTrack.id,
-                            track: { connect: { id: track.id } },
-                        });
-                    }
-                    return null;
-                })
-                .filter((vendorTrack) => !!vendorTrack);
-
-            await this.prismaService.$transaction(vendorTracksToSave);
-        } else {
-            const missingTracks = tracks.filter((track) => !vendorTrackMapById.get(track.id));
-            if (!missingTracks) {
-                // FIXME: throw error and return with body
-                return new SavePlaylistResponseDto(
-                    false,
-                    missingTracks.map((track) => this.trackService.toTrackDto(track)),
-                );
-            }
+    async convertPlaylist(playlistId: string, vendor: Vendors): Promise<VendorTrack[]> {
+        const tracks = await this.trackRepository.findAllWithArtistAndAlbumAndVendorTrackByPlaylistId(playlistId, vendor);
+        const promiseList = tracks
+            .filter((track) => track.vendorTracks.length === 0)
+            .map(async (track) => {
+                const searchResult = await this.trackScraperService
+                    .get(vendor)
+                    .searchTrack(this.trackService.toTrackInfo(track), 'authToken');
+                return { track, searchResult };
+            });
+        const searchResults = await Promise.all(promiseList);
+        const matchResults = searchResults.map(({ track, searchResult }) => {
+            const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(
+                searchResult,
+                this.trackService.toTrackInfo(track),
+            );
+            return { track, matchedVendorTrack };
+        });
+        // TODO: get detailed track info if artist and album need to be merged
+        /* 
+        if (!searchResults[0].searchResult.isDetailed) {
+            const detailedTrackInfo = await this.trackScraperService.get(vendor).getTracksByIds(
+                matchResults.map(({ matchedVendorTrack }) => matchedVendorTrack.id),
+                'authToken',
+            );
+            const detailedTrackById = new Map(detailedTrackInfo.map((track) => [track.id, track]));
+            matchResults = matchResults.map(({ track, matchedVendorTrack }) => {
+                const detailedTrack = detailedTrackById.get(matchedVendorTrack.id);
+                if (detailedTrack) {
+                    return { track, matchedVendorTrack: detailedTrack };
+                }
+                return { track, matchedVendorTrack };
+            });
         }
-
-        await this.playlistScraperService.get(vendor).savePlaylist(request, tracks, authdata);
+        */
+        const existingVendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
+            vendor,
+            matchResults.map(({ matchedVendorTrack }) => matchedVendorTrack.id),
+        );
+        const existingVendorTracksById = new Map(existingVendorTracks.map((vendorTrack) => [vendorTrack.vendorId, vendorTrack]));
+        const vendorTrackPromiseList = matchResults.map(({ track, matchedVendorTrack }) =>
+            this.trackService.mergeOrCreateTrack(
+                track,
+                matchedVendorTrack,
+                vendor,
+                existingVendorTracksById.get(matchedVendorTrack.id),
+            ),
+        );
+        return await this.prismaService.$transaction(vendorTrackPromiseList);
     }
 
     private async saveAndGetPlaylistDto(playlistData: PlaylistInfo, vendor: Vendors): Promise<Playlist> {
