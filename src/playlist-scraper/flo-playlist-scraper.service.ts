@@ -4,7 +4,7 @@ import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js'
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { TrackInfo } from '@feelin-types/types.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Track } from '@prisma/client';
+import { VendorTrack } from '@prisma/client';
 import axios from 'axios';
 import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
@@ -54,7 +54,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
         };
     }
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata) {
         const createResponse = await axios.post(
             this.playlistUrls.createPlaylist,
             {

@@ -5,7 +5,7 @@ import { TrackInfo } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
-import { Track } from '@prisma/client';
+import { VendorTrack } from '@prisma/client';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { playlistUrlsByVendor } from './constants.js';
@@ -54,7 +54,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
         return { title: title.trim(), id: playlistId, coverUrl: '', tracks: trackData.filter((x) => x) };
     }
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata) {
         const params = {
             plylstTitle: request.title,
             // FIXME: description should come from post

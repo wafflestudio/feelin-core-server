@@ -5,7 +5,7 @@ import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js'
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { TrackInfo } from '@feelin-types/types.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Track } from '@prisma/client';
+import { VendorTrack } from '@prisma/client';
 import axios from 'axios';
 import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
@@ -20,7 +20,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
     private readonly playlistUrls = playlistUrlsByVendor['applemusic'];
     private readonly albumCoverSize = 300;
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata): Promise<string> {
         const createResponse = await axios.post(
             this.playlistUrls.createPlaylist,
             {
@@ -38,20 +38,11 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             },
         );
 
-        const playlistId = createResponse.data[0]?.id;
-
-        const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
-            'applemusic',
-            tracks.map(({ id }) => id),
-        );
-
-        const addTracks = tracks
-            .map(({ id }) => vendorTracks[id]?.vendorId)
-            .filter((id) => !!id)
-            .map((item) => ({ ...item, type: 'songs' }));
+        const playlistId = createResponse.data[0].id;
+        const addTracksBody = tracks.map((track) => ({ id: track.vendorId, type: 'songs' }));
         await axios.post(
             this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId),
-            { addTracks },
+            { data: addTracksBody },
             {
                 headers: {
                     Authorization: 'authToken',
@@ -60,6 +51,8 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
                 },
             },
         );
+
+        return `https://music.apple.com/playlist/${playlistId}`;
     }
 
     async getPlaylist(id: string, authdata: Authdata): Promise<PlaylistInfo> {

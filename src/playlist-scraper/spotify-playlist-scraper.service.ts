@@ -1,30 +1,28 @@
 import { PlaylistInfo, PlaylistInfoFirstPage } from '@/playlist/types/types.js';
 import { SpotifyTrackScraper } from '@/track-scraper/spotify-track-scraper.service.js';
-import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { TrackInfo } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { ImagePickerUtilService } from '@/utils/image-picker-util/image-picker-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
-import { Track } from '@prisma/client';
+import { VendorTrack } from '@prisma/client';
 import axios from 'axios';
+import { chunk } from 'lodash-es';
 import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
 
 @Injectable()
 export class SpotifyPlaylistScraper implements PlaylistScraper {
-    constructor(
-        private readonly spotifyTrackScraper: SpotifyTrackScraper,
-        private readonly vendorTrackRepository: VendorTrackRepository,
-    ) {}
+    constructor(private readonly spotifyTrackScraper: SpotifyTrackScraper) {}
 
     private readonly userUrl: 'https://api.spotify.com/v1/me';
     private readonly playlistUrls = playlistUrlsByVendor['spotify'];
     private readonly pageLimit = 50;
+    private readonly savePageLimit = 100;
     private readonly playlistCoverSize = 640;
     private readonly albumCoverSize = 300;
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata): Promise<string> {
         const userData: any = await axios.get(this.userUrl, {
             headers: {
                 Authorization: authdata.accessToken,
@@ -36,19 +34,19 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
             { name: request.title, description: request.description },
             { headers: { Authorization: authdata.accessToken, 'Content-Type': 'application/json' } },
         );
+        const playlistId = createResponse.data.id;
 
-        const playlistId = createResponse.data?.id;
-
-        const vendorTracks = await this.vendorTrackRepository.findAllWithTrackByIdAndVendor(
-            'spotify',
-            tracks.map(({ id }) => id),
+        const trackIds = tracks.map(({ id }) => id);
+        const trackIdsToRequest = chunk(trackIds, this.savePageLimit);
+        const promiseList = trackIdsToRequest.map((trackIds) =>
+            axios.post(this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId), null, {
+                params: { uris: trackIds.map((id) => `spotify:track:${id}`) },
+                headers: { Authorization: authdata.accessToken, 'Content-Type': 'application/json' },
+            }),
         );
+        await Promise.all(promiseList);
 
-        const trackIds = tracks.map(({ id }) => vendorTracks[id]?.vendorId).filter((id) => !!id);
-        await axios.post(this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId), null, {
-            params: { uris: '' + trackIds.map((id) => 'spotify:track:' + id) },
-            headers: { Authorization: authdata.accessToken, 'Content-Type': 'application/json' },
-        });
+        return createResponse.data.external_urls.spotify;
     }
 
     async getPlaylist(playlistId: string, authdata: Authdata): Promise<PlaylistInfo> {
