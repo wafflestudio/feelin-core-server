@@ -1,5 +1,6 @@
 import { SearchResults } from '@/track/types/types.js';
 import { AlbumInfo, ArtistInfo, TrackInfo } from '@/types/types.js';
+import { SpotifyUserScraper } from '@/user-scraper/spotify-user-scraper.service.js';
 import { ImagePickerUtilService } from '@/utils/image-picker-util/image-picker-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
@@ -9,12 +10,13 @@ import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class SpotifyTrackScraper implements TrackScraper {
-    constructor() {}
+    constructor(private readonly spotifyUserScraper: SpotifyUserScraper) {}
 
     private readonly trackUrls = trackUrlsByVendor['spotify'];
     private readonly albumCoverSize = 300;
 
-    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
+    async searchTrack(track: TrackInfo): Promise<SearchResults> {
+        const authToken = await this.spotifyUserScraper.getAdminToken();
         const response = await axios.get(this.trackUrls.search, {
             params: {
                 q: track.title,
@@ -23,7 +25,7 @@ export class SpotifyTrackScraper implements TrackScraper {
                 limit: 50,
                 offset: 0,
             },
-            headers: { Authorization: authToken, 'Content-Type': 'application/json' },
+            headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
         });
 
         const trackList = response.data.tracks.items.map((track) => this.covertToTrackInfo(track, this.albumCoverSize));
@@ -33,7 +35,7 @@ export class SpotifyTrackScraper implements TrackScraper {
     async getMyRecentTracks(authdata: Authdata): Promise<TrackInfo[]> {
         const response = await axios.get(this.trackUrls.recentlyPlayed, {
             headers: {
-                Authorization: authdata.accessToken,
+                Authorization: `Bearer ${authdata.accessToken}`,
                 'Content-Type': 'application/json',
             },
         });

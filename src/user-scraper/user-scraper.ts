@@ -1,5 +1,5 @@
-import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
-
 export interface UserScraper {
-    login(id: string, password: string): Promise<Authdata | null>;
+    getAdminToken(): Promise<string>;
 }
+
+export const TOKEN_ADMIN_USER_ID = 'TOKEN_ADMIN';

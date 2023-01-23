@@ -1,6 +1,7 @@
 import { ApplemusicArtistScraper } from '@/artist-scraper/applemusic-artist-scraper.service.js';
 import { SearchResults } from '@/track/types/types.js';
 import { AlbumInfo, ArtistInfo, TrackInfo } from '@/types/types.js';
+import { ApplemusicUserScraper } from '@/user-scraper/applemusic-user-scraper.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
@@ -10,13 +11,17 @@ import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class AppleMusicTrackScraper implements TrackScraper {
-    constructor(private readonly applemusicArtistScraper: ApplemusicArtistScraper) {}
+    constructor(
+        private readonly applemusicArtistScraper: ApplemusicArtistScraper,
+        private readonly applemusicUserScraper: ApplemusicUserScraper,
+    ) {}
 
     private readonly trackUrls = trackUrlsByVendor['applemusic'];
     private readonly albumCoverSize = 300;
     private readonly pageSize = 300;
 
-    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
+    async searchTrack(track: TrackInfo): Promise<SearchResults> {
+        const authToken = await this.applemusicUserScraper.getAdminToken();
         const response = await axios.get(this.trackUrls.search, {
             params: {
                 term: `${track.title}-${track.artists[0].name}`,
@@ -24,7 +29,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
                 limit: 25,
                 offset: 0,
             },
-            headers: { Authorization: authToken, 'Content-Type': 'application/json' },
+            headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
         });
 
         const trackList = response.data?.map((track) => this.convertToTrackInfo(track, this.albumCoverSize));
@@ -32,9 +37,10 @@ export class AppleMusicTrackScraper implements TrackScraper {
     }
 
     async getMyRecentTracks(authdata: Authdata): Promise<TrackInfo[]> {
+        const authToken = await this.applemusicUserScraper.getAdminToken();
         const response = await axios.get(this.trackUrls.recentlyPlayed, {
             headers: {
-                Authorization: '',
+                Authorization: `Bearer ${authToken}`,
                 'Music-User-Token': authdata.accessToken,
                 'Content-Type': 'application/json',
             },
@@ -45,12 +51,13 @@ export class AppleMusicTrackScraper implements TrackScraper {
         return recentTrackList;
     }
 
-    async getTracksByIds(trackIds: string[], authToken: string): Promise<TrackInfo[]> {
+    async getTracksByIds(trackIds: string[]): Promise<TrackInfo[]> {
+        const authToken = await this.applemusicUserScraper.getAdminToken();
         const trackIdsToRequest = chunk(trackIds, this.pageSize);
         const promiseList = trackIdsToRequest.map((trackIds) =>
             axios.get(this.trackUrls.getTracksByIds, {
                 params: { ids: trackIds.join(',') },
-                headers: { Authorization: authToken, 'Content-Type': 'application/json' },
+                headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             }),
         );
         const response = (await Promise.all(promiseList)).flatMap((response) => response.data.data);

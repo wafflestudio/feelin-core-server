@@ -112,9 +112,7 @@ export class PlaylistService {
         const promiseList = tracks
             .filter((track) => track.vendorTracks.length === 0)
             .map(async (track) => {
-                const searchResult = await this.trackScraperService
-                    .get(vendor)
-                    .searchTrack(this.trackService.toTrackInfo(track), 'authToken');
+                const searchResult = await this.trackScraperService.get(vendor).searchTrack(this.trackService.toTrackInfo(track));
                 return { track, searchResult };
             });
         const searchResults = await Promise.all(promiseList);
