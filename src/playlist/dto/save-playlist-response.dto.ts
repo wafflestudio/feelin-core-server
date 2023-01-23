@@ -1,12 +1,10 @@
-import { TrackDto } from '@/track/dto/track.dto.js';
+import { IsUrl } from 'class-validator';
 
 export class SavePlaylistResponseDto {
-    success!: boolean;
+    @IsUrl()
+    url!: string;
 
-    missingTracks?: TrackDto[];
-
-    constructor(success: boolean, missingTracks?: TrackDto[]) {
-        this.success = success;
-        this.missingTracks = missingTracks;
+    constructor(url: string) {
+        this.url = url;
     }
 }

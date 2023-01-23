@@ -5,6 +5,9 @@ export const playlistUrlsByVendor: Record<Vendors, PlaylistUrl> = {
         createPlaylist: 'https://api.spotify.com/v1/users/{userId}/playlists',
         addTracksToPlaylist: 'https://api.spotify.com/v1/playlists/{playlistId}/tracks',
         getPlaylist: {
+            user: 'https://api.spotify.com/v1/playlists/{playlistId}',
+        },
+        getPlaylistPaged: {
             user: 'https://api.spotify.com/v1/playlists/{playlistId}/tracks',
         },
     },
@@ -12,6 +15,10 @@ export const playlistUrlsByVendor: Record<Vendors, PlaylistUrl> = {
         createPlaylist: 'https://api.music.apple.com/v1/me/library/playlists',
         addTracksToPlaylist: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}/tracks',
         getPlaylist: {
+            user: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}/tracks',
+            catalog: 'https://api.music.apple.com/v1/catalog/{countryCode}/playlists/{playlistId}/tracks',
+        },
+        getPlaylistPaged: {
             user: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}/tracks',
             catalog: 'https://api.music.apple.com/v1/catalog/{countryCode}/playlists/{playlistId}/tracks',
         },

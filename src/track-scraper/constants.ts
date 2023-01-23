@@ -8,6 +8,7 @@ export const trackUrlsByVendor: Record<Vendors, TrackUrl> = {
     applemusic: {
         search: 'https://api.music.apple.com/v1/catalog/{countryCode}/search',
         recentlyPlayed: 'https://api.music.apple.com/v1/me/recent/played/tracks',
+        getTracksByIds: 'https://api.music.apple.com/v1/catalog/{countryCode}/songs',
     },
     melon: {
         search: 'https://www.melon.com/search/song/index.htm',
@@ -23,5 +24,6 @@ export const trackUrlsByVendor: Record<Vendors, TrackUrl> = {
 type TrackUrl = {
     search: string;
     recentlyPlayed: string;
+    getTracksByIds?: string;
     recentlyPlayedPaged?: string;
 };

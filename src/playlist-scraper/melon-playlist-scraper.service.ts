@@ -1,11 +1,11 @@
-import { IPlaylist } from '@/playlist/types/types.js';
+import { PlaylistInfo } from '@/playlist/types/types.js';
 import { MelonTrackScraper } from '@/track-scraper/melon-track-scraper.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
-import { ITrack } from '@/types/types.js';
+import { TrackInfo } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
-import { Track } from '@prisma/client';
+import { VendorTrack } from '@prisma/client';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { playlistUrlsByVendor } from './constants.js';
@@ -21,7 +21,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
     private readonly pageSize = 50;
     private readonly playlistUrls = playlistUrlsByVendor['melon'];
 
-    async getPlaylist(playlistId: string): Promise<IPlaylist> {
+    async getPlaylist(playlistId: string): Promise<PlaylistInfo> {
         const [type, id] = playlistId.split(':');
         if (type != 'user' && type != 'catalog') {
             // FIXME: Better error message
@@ -51,10 +51,10 @@ export class MelonPlaylistScraper implements PlaylistScraper {
             });
         });
 
-        return { vendor: 'melon', title: title.trim(), id: playlistId, tracks: trackData.filter((x) => x) };
+        return { title: title.trim(), id: playlistId, coverUrl: '', tracks: trackData.filter((x) => x) };
     }
 
-    public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
+    public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata) {
         const params = {
             plylstTitle: request.title,
             // FIXME: description should come from post
@@ -90,7 +90,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
     ): Promise<{
         title: string;
         count: number;
-        trackData: ITrack[];
+        trackData: TrackInfo[];
     }> {
         const response = await axios.get(this.playlistUrls.getPlaylist[type], {
             params: { plylstSeq: playlistId },
@@ -110,7 +110,7 @@ export class MelonPlaylistScraper implements PlaylistScraper {
             ?.pop();
         const title = $('div.ellipsis.song_name').text();
 
-        const trackData: ITrack[] = [];
+        const trackData: TrackInfo[] = [];
         $('table > tbody > tr').each((_, el) => {
             trackData.push(this.melonTrackScraper.scrapeTrack($, el));
         });

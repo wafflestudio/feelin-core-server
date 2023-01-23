@@ -1,8 +1,9 @@
-import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
-import { ITrack } from '@feelin-types/types.js';
+import { SearchResults } from '@/track/types/types.js';
+import { TrackInfo } from '@feelin-types/types.js';
 
 export interface TrackScraper {
-    searchTrack(track: ITrack, authdata: Authdata): Promise<ITrack[]>;
+    searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults>;
+    getTracksByIds?(trackIds: string[], authToken: string): Promise<TrackInfo[]>;
 
-    getMyRecentTracks(authToken: Authdata);
+    // getMyRecentTracks(authdata: Authdata);
 }

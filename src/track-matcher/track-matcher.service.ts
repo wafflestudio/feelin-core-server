@@ -1,6 +1,6 @@
-import { TrackSearchResultDto } from '@/playlist/dto/track-search-result.dto.js';
+import { SearchResults } from '@/track/types/types.js';
 import { isExactMatch } from '@/types/helpers.js';
-import { ITrack } from '@/types/types.js';
+import { TrackInfo } from '@/types/types.js';
 import { SimilarityUtilService } from '@/utils/similarity-util/similarity-util.service.js';
 import { Injectable } from '@nestjs/common';
 
@@ -12,12 +12,13 @@ export class TrackMatcherService {
     readonly MIN_NGRAM = 1;
     readonly MAX_NGRAM = 4;
 
-    getMatchedVendorTrack(candidates: TrackSearchResultDto[], reference: ITrack): TrackSearchResultDto | null {
+    getMatchedVendorTrack(result: SearchResults, reference: TrackInfo): TrackInfo | null {
+        const candidates = result.results;
         if (candidates.length === 0) {
             return null;
         }
 
-        const exactMatches = candidates.filter((track) => isExactMatch(reference, track));
+        const exactMatches = candidates.filter((track) => isExactMatch(reference, track, result.isDetailed));
         if (!!exactMatches) {
             return exactMatches[0];
         }
@@ -25,7 +26,7 @@ export class TrackMatcherService {
         const { title: referenceTitle, artists: referenceArtists, album: referenceAlbum } = reference;
 
         const candidatesWithScores = candidates.map((trackInfo) => {
-            const { title, artists, album } = trackInfo;
+            const { title, artists, album, artistNames } = trackInfo;
 
             const titleScore = this.similarityUtilService.nGramJaccardSimilarity(
                 referenceTitle,
@@ -34,25 +35,40 @@ export class TrackMatcherService {
                 this.MAX_NGRAM,
             );
 
-            const artistsScore = referenceArtists.reduce((score, referenceArtist) => {
-                return (
-                    score *
-                    Math.max(
-                        ...artists.map((artistName) =>
-                            this.similarityUtilService.nGramJaccardSimilarity(
-                                referenceArtist.name,
-                                artistName,
-                                this.MIN_NGRAM,
-                                this.MAX_NGRAM,
+            let artistsScore = 1.0;
+            if (result.isDetailed) {
+                artistsScore = referenceArtists.reduce((score, referenceArtist) => {
+                    return (
+                        score *
+                        Math.max(
+                            ...artists.map(({ name }) =>
+                                this.similarityUtilService.nGramJaccardSimilarity(
+                                    referenceArtist.name,
+                                    name,
+                                    this.MIN_NGRAM,
+                                    this.MAX_NGRAM,
+                                ),
                             ),
-                        ),
-                    )
-                );
-            }, 1.0);
+                        )
+                    );
+                }, 1.0);
+            } else {
+                artistsScore = referenceArtists.reduce((score, referenceArtist) => {
+                    return (
+                        score *
+                        this.similarityUtilService.nGramJaccardSimilarity(
+                            referenceArtist.name,
+                            artistNames,
+                            this.MIN_NGRAM,
+                            this.MAX_NGRAM,
+                        )
+                    );
+                }, 1.0);
+            }
 
             const albumScore = this.similarityUtilService.nGramJaccardSimilarity(
                 referenceAlbum.title,
-                album,
+                album.title,
                 this.MIN_NGRAM,
                 this.MAX_NGRAM,
             );

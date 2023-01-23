@@ -1,6 +1,7 @@
 import { PrismaService } from '@/prisma.service.js';
+import { Vendors } from '@/types/types.js';
 import { Injectable } from '@nestjs/common';
-import { Album, Artist, ArtistOnTrack, Prisma, PrismaPromise, Track } from '@prisma/client';
+import { Album, Artist, ArtistOnTrack, Prisma, PrismaPromise, Track, VendorTrack } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -112,9 +113,41 @@ export class TrackRepository {
 
         return trackOnPlaylists.map(({ track }) => track);
     }
+
+    async findAllWithArtistAndAlbumAndVendorTrackByPlaylistId(
+        playlistId: string,
+        vendor: Vendors,
+    ): Promise<TrackWithArtistAndAlbumAndVendorTrack[]> {
+        const trackOnPlaylists = await this.prismaService.trackOnPlaylist.findMany({
+            where: { playlistId },
+            include: {
+                track: {
+                    include: {
+                        artists: {
+                            include: { artist: true },
+                            orderBy: { artistSequence: 'asc' },
+                        },
+                        album: true,
+                        vendorTracks: {
+                            where: { vendor },
+                        },
+                    },
+                },
+            },
+            orderBy: { trackSequence: 'asc' },
+        });
+
+        return trackOnPlaylists.map(({ track }) => track);
+    }
 }
 
 export type TrackWithArtistAndAlbum = Track & {
     artists: (ArtistOnTrack & { artist: Artist })[];
     album: Album;
+};
+
+export type TrackWithArtistAndAlbumAndVendorTrack = Track & {
+    artists: (ArtistOnTrack & { artist: Artist })[];
+    album: Album;
+    vendorTracks: VendorTrack[];
 };

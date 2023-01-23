@@ -1,6 +1,7 @@
+import { SearchResults } from '@/track/types/types.js';
 import { CookieUtilService } from '@/utils/cookie-util/cookie-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
-import { IAlbum, IArtist, ITrack } from '@feelin-types/types.js';
+import { AlbumInfo, ArtistInfo, TrackInfo } from '@feelin-types/types.js';
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
@@ -18,7 +19,7 @@ export class MelonTrackScraper implements TrackScraper {
     private readonly pageSize = 50;
     private readonly trackUrls = trackUrlsByVendor['melon'];
 
-    async searchTrack(track: ITrack): Promise<ITrack[]> {
+    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
         // Melon search API limits max 50 results at once
         const response = await axios.get(this.trackUrls.search, {
             params: {
@@ -33,15 +34,15 @@ export class MelonTrackScraper implements TrackScraper {
             },
         });
         const $ = cheerio.load(response.data);
-        const trackList: ITrack[] = [];
+        const trackList: TrackInfo[] = [];
         $('table > tbody > tr').each((_, el) => {
             trackList.push(this.scrapeTrack($, el));
         });
 
-        return trackList;
+        return { isDetailed: true, results: trackList };
     }
 
-    scrapeTrack($: cheerio.Root, el: cheerio.Element): ITrack {
+    scrapeTrack($: cheerio.Root, el: cheerio.Element): TrackInfo {
         const trackInfoNodes = $(el).find('div.ellipsis');
 
         const trackNode = trackInfoNodes
@@ -68,7 +69,7 @@ export class MelonTrackScraper implements TrackScraper {
             .attr('href')
             .match(/\(\'.*\',(.*)\)/)
             .pop();
-        const artists: IArtist[] = artistNodes.map((node) => ({
+        const artists: ArtistInfo[] = artistNodes.map((node) => ({
             vendor: 'melon',
             name: $(node).text(),
             id: $(node)
@@ -80,14 +81,13 @@ export class MelonTrackScraper implements TrackScraper {
             .attr('href')
             .match(/\(\'(.*)\'\)/)
             .pop();
-        const album: IAlbum = {
-            vendor: 'melon',
+        const album: AlbumInfo = {
             title: $(albumNode).text(),
             id: albumId,
             coverUrl: this.melonCoverUrl(albumId.padStart(8, '0'), albumId, 240),
         };
 
-        return { vendor: 'melon', title, id, artists, album };
+        return { title, id, duration: 0, artists, artistNames: '', album, albumTitle: '' };
     }
 
     async getMyRecentTracks(authdata: Authdata) {
@@ -125,7 +125,7 @@ export class MelonTrackScraper implements TrackScraper {
 
     async getFirstRecentTracks(authdata: Authdata): Promise<{
         count: number;
-        recentTracks: ITrack[];
+        recentTracks: TrackInfo[];
     }> {
         const response = await axios.get(this.trackUrls.recentlyPlayed, {
             params: {
@@ -136,7 +136,7 @@ export class MelonTrackScraper implements TrackScraper {
         const $ = cheerio.load(response.data);
         const count = $('#conts > div.wrab_list_info > div > span > span').text();
 
-        const recentTracks: ITrack[] = [];
+        const recentTracks: TrackInfo[] = [];
         $('table > tbody > tr').each((_, el) => recentTracks.push(this.scrapeTrack($, el)));
 
         return { count: parseInt(count, 10), recentTracks };
