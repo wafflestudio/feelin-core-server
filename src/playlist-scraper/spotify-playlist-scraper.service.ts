@@ -86,7 +86,7 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         );
 
         const offsets = [];
-        for (let i = 0; i < Math.ceil(data.tracks.total / data.tracks.limit) - 1; i++) {
+        for (let i = 0; i < Math.ceil((data.tracks.total - data.tracks.limit) / this.pageLimit) - 1; i++) {
             offsets.push(i * this.pageLimit + data.tracks.limit);
         }
 

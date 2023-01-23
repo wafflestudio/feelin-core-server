@@ -1,4 +1,4 @@
-import { PlaylistInfo, PlaylistType } from '@/playlist/types/types.js';
+import { PlaylistInfo, PlaylistInfoFirstPage, PlaylistType } from '@/playlist/types/types.js';
 import { AppleMusicTrackScraper } from '@/track-scraper/applemusic-track-scraper.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
@@ -29,7 +29,13 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
                     description: request.description,
                 },
             },
-            { headers: { Authorization: '', 'Music-User-Token': authdata.accessToken, 'Content-Type': 'application/json' } },
+            {
+                headers: {
+                    Authorization: 'authToken',
+                    'Music-User-Token': authdata.accessToken,
+                    'Content-Type': 'application/json',
+                },
+            },
         );
 
         const playlistId = createResponse.data[0]?.id;
@@ -46,30 +52,95 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         await axios.post(
             this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId),
             { addTracks },
-            { headers: { Authorization: '', 'Music-User-Token': authdata.accessToken, 'Content-Type': 'application/json' } },
+            {
+                headers: {
+                    Authorization: 'authToken',
+                    'Music-User-Token': authdata.accessToken,
+                    'Content-Type': 'application/json',
+                },
+            },
         );
     }
 
     async getPlaylist(id: string, authdata: Authdata): Promise<PlaylistInfo> {
         const { type, playlistId } = this.getAppleMusicId(id);
-        const headers = { Authorization: '', 'Content-Type': 'application/json' };
+        const headers = { Authorization: 'authToken', 'Content-Type': 'application/json' };
         if (type === 'user') {
             headers['Music-User-Token'] = authdata.accessToken;
         }
 
-        const res = await axios.get(
+        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(playlistId, authdata);
+        while (offsets.length > 0) {
+            const { tracks, offset } = await this.getPlaylistPage(playlistId, offsets[offsets.length - 1], authdata);
+            playlistInfo.tracks.push(...tracks);
+            if (offset) {
+                offsets.push(offset);
+            } else {
+                break;
+            }
+        }
+
+        const tracks = await this.applemusicTrackScraper.getTracksByIds(
+            playlistInfo.tracks.map(({ id }) => id),
+            'authToken',
+        );
+        playlistInfo.tracks = tracks;
+        return playlistInfo;
+    }
+
+    private async getPlaylistFirstPage(id: string, authdata: Authdata): Promise<PlaylistInfoFirstPage> {
+        const { type, playlistId } = this.getAppleMusicId(id);
+        const headers = { Authorization: 'authToken', 'Content-Type': 'application/json' };
+        if (type === 'user') {
+            headers['Music-User-Token'] = authdata.accessToken;
+        }
+
+        const response = await axios.get(
             this.playlistUrls.getPlaylist[type].replace('{playlistId}', playlistId).replace('{countryCode}', 'us'),
             { headers },
         );
-        const tracks: TrackInfo[] = res.data.data.map((track) =>
+        const tracks = response.data.data[0].map((track) =>
             this.applemusicTrackScraper.convertToTrackInfo(track, this.albumCoverSize),
         );
 
+        const offsets = [];
+        if (response.data.data[0].relationships.tracks.next) {
+            offsets.push(tracks.length);
+        }
+
         return {
-            title: res?.data?.attributes?.name,
-            id: playlistId,
-            coverUrl: '',
+            playlistInfo: {
+                title: response.data.data[0].attributes.name,
+                id: playlistId,
+                coverUrl: this.formatCoverUrl(response.data.data[0].attributes.artwork.url, this.albumCoverSize),
+                tracks,
+            },
+            offsets,
+        };
+    }
+
+    private async getPlaylistPage(
+        id: string,
+        offset: number,
+        authdata: Authdata,
+    ): Promise<{ tracks: TrackInfo[]; offset: number | null }> {
+        const { type, playlistId } = this.getAppleMusicId(id);
+        const headers = { Authorization: 'authToken', 'Content-Type': 'application/json' };
+        if (type === 'user') {
+            headers['Music-User-Token'] = authdata.accessToken;
+        }
+
+        const response = await axios.get(
+            this.playlistUrls.getPlaylistPaged[type].replace('{playlistId}', playlistId).replace('{countryCode}', 'us'),
+            { params: { offset }, headers },
+        );
+
+        const tracks = response.data.data.map((track) =>
+            this.applemusicTrackScraper.convertToTrackInfo(track, this.albumCoverSize),
+        );
+        return {
             tracks,
+            offset: response.data.next ? offset + tracks.length : null,
         };
     }
 
@@ -84,7 +155,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         throw new InternalServerErrorException('Invalid playlist id');
     }
 
-    private formatCoverUrl(coverUrlFormat: string, width: number, height: number): string {
-        return coverUrlFormat.replace('{w}x{h}', `${width}x${height}`);
+    private formatCoverUrl(coverUrlFormat: string, size: number): string {
+        return coverUrlFormat.replace('{w}x{h}', `${size}x${size}`);
     }
 }

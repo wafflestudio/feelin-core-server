@@ -18,6 +18,10 @@ export const playlistUrlsByVendor: Record<Vendors, PlaylistUrl> = {
             user: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}/tracks',
             catalog: 'https://api.music.apple.com/v1/catalog/{countryCode}/playlists/{playlistId}/tracks',
         },
+        getPlaylistPaged: {
+            user: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}/tracks',
+            catalog: 'https://api.music.apple.com/v1/catalog/{countryCode}/playlists/{playlistId}/tracks',
+        },
     },
     melon: {
         createPlaylist: 'https://www.melon.com/mymusic/playlist/mymusicplaylistinsert_insertAction.json',

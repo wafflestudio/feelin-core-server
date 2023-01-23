@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AlbumModule } from './album/album.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { ArtistScraperService } from './artist-scraper/artist-scraper.service.js';
 import { ArtistModule } from './artist/artist.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { AuthService } from './auth/auth.service.js';
@@ -52,6 +53,7 @@ import { VendorAccountModule } from './vendor-account/vendor-account.module.js';
         SimilarityUtilService,
         CookieUtilService,
         ImagePickerUtilService,
+        ArtistScraperService,
     ],
 })
 export class AppModule {}

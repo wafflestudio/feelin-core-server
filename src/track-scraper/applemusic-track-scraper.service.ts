@@ -1,17 +1,20 @@
+import { ApplemusicArtistScraper } from '@/artist-scraper/applemusic-artist-scraper.service.js';
 import { SearchResults } from '@/track/types/types.js';
 import { AlbumInfo, ArtistInfo, TrackInfo } from '@/types/types.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { chunk } from 'lodash-es';
 import { trackUrlsByVendor } from './constants.js';
 import { TrackScraper } from './track-scraper.js';
 
 @Injectable()
 export class AppleMusicTrackScraper implements TrackScraper {
-    constructor() {}
+    constructor(private readonly applemusicArtistScraper: ApplemusicArtistScraper) {}
 
     private readonly trackUrls = trackUrlsByVendor['applemusic'];
     private readonly albumCoverSize = 300;
+    private readonly pageSize = 300;
 
     async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
         const response = await axios.get(this.trackUrls.search, {
@@ -42,10 +45,34 @@ export class AppleMusicTrackScraper implements TrackScraper {
         return recentTrackList;
     }
 
-    convertToTrackInfo(track: any, albumCoverSize: number): TrackInfo {
+    async getTracksByIds(trackIds: string[], authToken: string): Promise<TrackInfo[]> {
+        const trackIdsToRequest = chunk(trackIds, this.pageSize);
+        const promiseList = trackIdsToRequest.map((trackIds) =>
+            axios.get(this.trackUrls.getTracksByIds, {
+                params: { ids: trackIds.join(',') },
+                headers: { Authorization: authToken, 'Content-Type': 'application/json' },
+            }),
+        );
+        const response = (await Promise.all(promiseList)).flatMap((response) => response.data.data);
+
+        const artistIds = response.flatMap((track) => {
+            const artistsData = track.relationships.artists.data;
+            if (artistsData.length > 1) {
+                artistsData.map((artist) => artist.id);
+            }
+            return [];
+        });
+        const artistsInfo = await this.applemusicArtistScraper.getArtistsById(artistIds, authToken);
+        const artistsNameById = new Map<string, string>(artistsInfo.map((artist) => [artist.id, artist.name]));
+
+        const trackList = response.map((track) => this.convertToTrackInfo(track, this.albumCoverSize, artistsNameById));
+        return trackList;
+    }
+
+    convertToTrackInfo(track: any, albumCoverSize: number, artistsNameById?: Map<string, string>): TrackInfo {
         const artists: ArtistInfo[] = track?.relationships?.artists?.data?.map((artist) => ({
             id: artist.id,
-            name: artist.attributes.name, // TODO: Artist name is concatenated
+            name: artistsNameById.get(artist.id) ?? artist.attributes.name,
         }));
 
         const album: AlbumInfo = {
