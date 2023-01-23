@@ -10,6 +10,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
     constructor() {}
 
     private readonly trackUrls = trackUrlsByVendor['applemusic'];
+    private readonly albumCoverSize = 300;
 
     async searchTrack(track: TrackInfo, authdata: Authdata): Promise<TrackInfo[]> {
         const response = await axios.get(this.trackUrls.search, {
@@ -19,46 +20,10 @@ export class AppleMusicTrackScraper implements TrackScraper {
                 limit: 25,
                 offset: 0,
             },
-            headers: {
-                Authorization: '',
-                'Music-User-Token': authdata.accessToken,
-                'Content-Type': 'application/json',
-            },
+            headers: { Authorization: '', 'Content-Type': 'application/json' },
         });
 
-        const trackList: TrackInfo[] = response.data?.map((track) => {
-            const artists: ArtistInfo[] = track?.relationships?.artists
-                ? track?.relationships?.artists?.data?.map((artist) => ({
-                      vendor: 'applemusic',
-                      id: artist?.id,
-                      name: artist?.attributes?.name,
-                  }))
-                : [
-                      {
-                          vendor: 'applemusic',
-                          id: track?.attributes?.name, //id를 바로 구해오지 못함. 전체 artists list를 불러와서 하나씩 대조해보는 방법말고는 방법이 없는듯.?
-                          name: track?.attributes?.artistName,
-                      },
-                  ];
-
-            const album: AlbumInfo = {
-                title: track?.attributes?.albumName,
-                id: track?.attributes?.name, //id not given. 임시로 노래 제목.
-                coverUrl: this.formatCoverUrl(
-                    track?.attributes?.artwork?.url,
-                    track?.attributes?.artwork?.width,
-                    track?.attributes?.artwork?.height,
-                ),
-            };
-
-            return {
-                title: track?.attributes?.name,
-                id: track?.id,
-                artists: artists,
-                album: album,
-            };
-        });
-
+        const trackList = response.data?.map((track) => this.convertToTrackInfo(track, this.albumCoverSize));
         return trackList;
     }
 
@@ -71,41 +36,33 @@ export class AppleMusicTrackScraper implements TrackScraper {
             },
         });
 
-        const recentTrackList: TrackInfo[] = response.data?.map((track) => {
-            const artists: ArtistInfo[] = track?.relationships?.artists
-                ? track?.relationships?.artists?.data?.map((artist) => ({
-                      id: artist?.id,
-                      name: artist?.attributes?.name,
-                  }))
-                : [
-                      {
-                          id: track?.attributes?.id, //id를 바로 구해오지 못함. 전체 artists list를 불러와서 하나씩 대조해보는 방법말고는 방법이 없는듯.? 우선은 임시로 track의 id로
-                          name: track?.attributes?.artistName,
-                      },
-                  ];
-
-            const album: AlbumInfo = {
-                title: track?.attributes?.albumName,
-                id: track?.attributes?.name, //id not given. 임시로 노래 제목.
-                coverUrl: this.formatCoverUrl(
-                    track?.attributes?.artwork?.url,
-                    track?.attributes?.artwork?.width,
-                    track?.attributes?.artwork?.height,
-                ),
-            };
-
-            return {
-                title: track?.attributes?.name,
-                id: track?.id,
-                artists: artists,
-                album: album,
-            };
-        });
-
+        // TODO: Check if the response is valid
+        const recentTrackList = response.data.map((track) => this.convertToTrackInfo(track, this.albumCoverSize));
         return recentTrackList;
     }
 
-    protected formatCoverUrl(coverUrlFormat: string, width: number, height: number): string {
-        return coverUrlFormat.replace('{w}x{h}', `${width}x${height}`);
+    convertToTrackInfo(track: any, albumCoverSize: number): TrackInfo {
+        const artists: ArtistInfo[] = track.relationships.artists.data.map((artist) => ({
+            id: artist.id,
+            name: artist.attributes.name, // TODO: Artist name is concatenated
+        }));
+
+        const album: AlbumInfo = {
+            id: track.relationships.albums.attributes.data[0].id,
+            title: track.attributes.albumName,
+            coverUrl: this.formatCoverUrl(track.attributes.artwork.url, albumCoverSize),
+        };
+
+        return {
+            id: track.id,
+            title: track.attributes.name,
+            duration: track.attributes.durationInMillis,
+            artists: artists,
+            album: album,
+        };
+    }
+
+    private formatCoverUrl(coverUrlFormat: string, size: number): string {
+        return coverUrlFormat.replace('{w}x{h}', `${size}x${size}`);
     }
 }

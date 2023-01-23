@@ -11,6 +11,7 @@ export class SpotifyTrackScraper implements TrackScraper {
     constructor() {}
 
     private readonly trackUrls = trackUrlsByVendor['spotify'];
+    private readonly albumCoverSize = 300;
 
     async searchTrack(track: TrackInfo, authdata: Authdata): Promise<TrackInfo[]> {
         const response = await axios.get(this.trackUrls.search, {
@@ -27,25 +28,7 @@ export class SpotifyTrackScraper implements TrackScraper {
             },
         });
 
-        const trackList: TrackInfo[] = response.data?.tracks?.items?.map((track) => {
-            const artists: ArtistInfo[] = track?.artists?.map((artist) => ({
-                id: artist?.id,
-                name: artist?.name,
-            }));
-            const album: AlbumInfo = {
-                title: track?.album?.name,
-                id: track?.album?.id,
-                coverUrl: track?.album?.images[0]?.url,
-            };
-
-            return {
-                title: track?.name,
-                id: track?.id,
-                artists: artists,
-                album: album,
-            };
-        });
-
+        const trackList = response.data.tracks.items.map((track) => this.covertToTrackInfo(track, this.albumCoverSize));
         return trackList;
     }
 
@@ -57,25 +40,7 @@ export class SpotifyTrackScraper implements TrackScraper {
             },
         });
 
-        const recentTrackList: TrackInfo[] = response.data?.items?.map((track) => {
-            const artists: ArtistInfo[] = track?.track?.artists?.map((artist) => ({
-                id: artist?.id,
-                name: artist?.name,
-            }));
-            const album: AlbumInfo = {
-                id: track?.track?.album?.id,
-                title: track?.track?.album?.name,
-                coverUrl: track?.track?.album?.images[0]?.url,
-            };
-
-            return {
-                title: track?.track?.name,
-                id: track?.track?.id,
-                artists: artists,
-                album: album,
-            };
-        });
-
+        const recentTrackList = response.data.items.map((track) => this.covertToTrackInfo(track, this.albumCoverSize));
         return recentTrackList;
     }
 

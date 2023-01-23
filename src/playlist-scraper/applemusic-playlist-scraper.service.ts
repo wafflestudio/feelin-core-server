@@ -1,8 +1,9 @@
-import { PlaylistInfo } from '@/playlist/types/types.js';
+import { PlaylistInfo, PlaylistType } from '@/playlist/types/types.js';
+import { AppleMusicTrackScraper } from '@/track-scraper/applemusic-track-scraper.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
-import { AlbumInfo, ArtistInfo, TrackInfo } from '@feelin-types/types.js';
+import { TrackInfo } from '@feelin-types/types.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Track } from '@prisma/client';
 import axios from 'axios';
@@ -11,9 +12,13 @@ import { PlaylistScraper } from './playlist-scraper.js';
 
 @Injectable()
 export class AppleMusicPlaylistScraper implements PlaylistScraper {
-    constructor(private readonly vendorTrackRepository: VendorTrackRepository) {}
+    constructor(
+        private readonly applemusicTrackScraper: AppleMusicTrackScraper,
+        private readonly vendorTrackRepository: VendorTrackRepository,
+    ) {}
 
     private readonly playlistUrls = playlistUrlsByVendor['applemusic'];
+    private readonly albumCoverSize = 300;
 
     public async savePlaylist(request: SavePlaylistRequestDto, tracks: Track[], authdata: Authdata) {
         const createResponse = await axios.post(
@@ -24,13 +29,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
                     description: request.description,
                 },
             },
-            {
-                headers: {
-                    Authorization: '',
-                    'Music-User-Token': authdata.accessToken,
-                    'Content-Type': 'application/json',
-                },
-            },
+            { headers: { Authorization: '', 'Music-User-Token': authdata.accessToken, 'Content-Type': 'application/json' } },
         );
 
         const playlistId = createResponse.data[0]?.id;
@@ -46,70 +45,25 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             .map((item) => ({ ...item, type: 'songs' }));
         await axios.post(
             this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId),
-            {
-                addTracks,
-            },
-            {
-                headers: {
-                    Authorization: '',
-                    'Music-User-Token': authdata.accessToken,
-                    'Content-Type': 'application/json',
-                },
-            },
+            { addTracks },
+            { headers: { Authorization: '', 'Music-User-Token': authdata.accessToken, 'Content-Type': 'application/json' } },
         );
     }
 
     async getPlaylist(id: string, authdata: Authdata): Promise<PlaylistInfo> {
-        const [type, playlistId] = id.split(':');
-        if (type !== 'user' && type !== 'catalog') {
-            throw new InternalServerErrorException('Invalid playlist id');
+        const { type, playlistId } = this.getAppleMusicId(id);
+        const headers = { Authorization: '', 'Content-Type': 'application/json' };
+        if (type === 'user') {
+            headers['Music-User-Token'] = authdata.accessToken;
         }
 
-        // TODO: Change country code
         const res = await axios.get(
-            this.playlistUrls.getPlaylist[type].replace('{playlistId}', playlistId).replace('{countryCode}', 'kr'),
-            {
-                headers: {
-                    Authorization: '',
-                    'Music-User-Token': authdata.accessToken,
-                    'Content-Type': 'application/json',
-                },
-            },
+            this.playlistUrls.getPlaylist[type].replace('{playlistId}', playlistId).replace('{countryCode}', 'us'),
+            { headers },
         );
-        const playlistData = res?.data;
-
-        const tracks: TrackInfo[] = playlistData?.map((track) => {
-            const artists: ArtistInfo[] = track?.relationships?.artists
-                ? track?.relationships?.artists?.data?.map((artist) => ({
-                      vendor: 'applemusic',
-                      id: artist?.id,
-                      name: artist?.attributes?.name,
-                  }))
-                : [
-                      {
-                          vendor: 'applemusic',
-                          id: track?.attributes?.name, //id를 바로 구해오지 못함. 전체 artists list를 불러와서 하나씩 대조해보는 방법말고는 방법이 없는듯.?
-                          name: track?.attributes?.artistName,
-                      },
-                  ];
-
-            const album: AlbumInfo = {
-                title: track?.attributes?.albumName,
-                id: track?.attributes?.name, //id not given. 임시로 노래 제목.
-                coverUrl: this.formatCoverUrl(
-                    track?.attributes?.artwork?.url,
-                    track?.attributes?.artwork?.width,
-                    track?.attributes?.artwork?.height,
-                ),
-            };
-
-            return {
-                title: track?.attributes?.name,
-                id: track?.attributes?.playParams?.catalogId,
-                artists: artists,
-                album: album,
-            };
-        });
+        const tracks: TrackInfo[] = res.data.data.map((track) =>
+            this.applemusicTrackScraper.convertToTrackInfo(track, this.albumCoverSize),
+        );
 
         return {
             title: res?.data?.attributes?.name,
@@ -119,7 +73,18 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         };
     }
 
-    protected formatCoverUrl(coverUrlFormat: string, width: number, height: number): string {
+    private getAppleMusicId(id: string): { type: PlaylistType; playlistId: string } {
+        const [type, playlistId] = id.split(':');
+
+        if (type === 'user') {
+            return { type: 'user', playlistId: `p.${playlistId}` };
+        } else if (type === 'catalog') {
+            return { type: 'catalog', playlistId: `pl.${playlistId}` };
+        }
+        throw new InternalServerErrorException('Invalid playlist id');
+    }
+
+    private formatCoverUrl(coverUrlFormat: string, width: number, height: number): string {
         return coverUrlFormat.replace('{w}x{h}', `${width}x${height}`);
     }
 }

@@ -11,3 +11,5 @@ export type PlaylistInfoFirstPage = {
     playlistInfo: PlaylistInfo;
     offsets: number[];
 };
+
+export type PlaylistType = 'user' | 'catalog';
