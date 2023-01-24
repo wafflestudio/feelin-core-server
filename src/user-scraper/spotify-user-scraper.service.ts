@@ -60,13 +60,13 @@ export class SpotifyUserScraper implements UserScraper {
             return this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
         }
 
-        const { accessToken, expiresIn } = await this.createAdminToken();
+        const { accessToken, expiresAt } = await this.createAdminToken();
         if (vendorAccount) {
             await this.vendorAccountRepository.update({
                 where: { id: vendorAccount.id },
                 data: {
                     accessToken: this.cipherUtilService.encryptWithKey(accessToken, this.encryptKey),
-                    expiresAt: dayjs().add(expiresIn, 'second').toDate(),
+                    expiresAt: expiresAt.toDate(),
                 },
             });
         } else {
@@ -75,14 +75,14 @@ export class SpotifyUserScraper implements UserScraper {
                 user: { connect: { id: TOKEN_ADMIN_USER_ID } },
                 vendor: 'spotify',
                 accessToken: this.cipherUtilService.encryptWithKey(accessToken, this.encryptKey),
-                expiresAt: dayjs().add(expiresIn, 'second').toDate(),
+                expiresAt: expiresAt.toDate(),
             });
         }
 
         return accessToken;
     }
 
-    async createAdminToken(): Promise<{ accessToken: string; expiresIn: number }> {
+    async createAdminToken(): Promise<{ accessToken: string; expiresAt: dayjs.Dayjs }> {
         const response = await axios.post(
             'https://accounts.spotify.com/api/token',
             new URLSearchParams({
@@ -99,6 +99,6 @@ export class SpotifyUserScraper implements UserScraper {
                 },
             },
         );
-        return { accessToken: response.data.access_token, expiresIn: response.data.expires_in };
+        return { accessToken: response.data.access_token, expiresAt: dayjs().add(response.data.expires_in, 'second') };
     }
 }

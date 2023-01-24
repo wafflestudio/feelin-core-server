@@ -38,8 +38,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
                 },
             },
         );
-
-        const playlistId = createResponse.data[0].id;
+        const playlistId = createResponse.data.data[0].id;
         const addTracksBody = tracks.map((track) => ({ id: track.vendorId, type: 'songs' }));
         await axios.post(
             this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId),

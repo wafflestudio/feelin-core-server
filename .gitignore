@@ -3,6 +3,8 @@ src/test/setupEnvVars.ts
 .env.*.local
 scribble
 
+AuthKey.p8
+
 # compiled output
 /dist
 /node_modules

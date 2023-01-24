@@ -22,9 +22,9 @@ export class AppleMusicTrackScraper implements TrackScraper {
 
     async searchTrack(track: TrackInfo): Promise<SearchResults> {
         const authToken = await this.applemusicUserScraper.getAdminToken();
-        const response = await axios.get(this.trackUrls.search, {
+        const response = await axios.get(this.trackUrls.search.replace('{countryCode}', 'us'), {
             params: {
-                term: `${track.title}-${track.artists[0].name}`,
+                term: `${track.title}-${track.artistNames}`,
                 types: 'songs',
                 limit: 25,
                 offset: 0,
@@ -32,7 +32,8 @@ export class AppleMusicTrackScraper implements TrackScraper {
             headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
         });
 
-        const trackList = response.data?.map((track) => this.convertToTrackInfo(track, this.albumCoverSize));
+        const trackList =
+            response.data.results?.songs?.data?.map((track) => this.convertToTrackInfo(track, this.albumCoverSize)) ?? [];
         return { isDetailed: false, results: trackList };
     }
 
@@ -55,7 +56,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
         const authToken = await this.applemusicUserScraper.getAdminToken();
         const trackIdsToRequest = chunk(trackIds, this.pageSize);
         const promiseList = trackIdsToRequest.map((trackIds) =>
-            axios.get(this.trackUrls.getTracksByIds, {
+            axios.get(this.trackUrls.getTracksByIds.replace('{countryCode}', 'us'), {
                 params: { ids: trackIds.join(',') },
                 headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             }),
