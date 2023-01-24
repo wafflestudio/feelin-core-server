@@ -17,7 +17,6 @@ export class VendorAuthGuard implements CanActivate {
         if (!vendorAccount) {
             return false;
         }
-        request.vendorAccount = vendorAccount;
 
         return true;
     }

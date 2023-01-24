@@ -1,7 +1,7 @@
-import { AuthService } from '@/auth/auth.service.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
+import { VendorAccountService } from '@/vendor-account/vendor-account.service.js';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { VendorAccount } from '@prisma/client';
@@ -14,7 +14,7 @@ import { TOKEN_ADMIN_USER_ID, UserScraper } from './user-scraper.js';
 @Injectable()
 export class ApplemusicUserScraper implements UserScraper {
     constructor(
-        private readonly authService: AuthService,
+        private readonly vendorAccountService: VendorAccountService,
         private readonly vendorAccountRepository: VendorAccountRepository,
         private readonly cipherUtilService: CipherUtilService,
         private readonly configService: ConfigService,
@@ -28,11 +28,10 @@ export class ApplemusicUserScraper implements UserScraper {
     private readonly algorithm = 'ES256';
     private readonly expiresIn = 90;
 
-    async getUsableToken(vendorAccount: VendorAccount): Promise<Authdata> {
-        return this.authService.decryptVendorAccount(vendorAccount).authdata;
-    }
-
-    refresh(vendorAccount: VendorAccount): Promise<Authdata> {
+    async decryptAndRefreshToken(vendorAccount: VendorAccount): Promise<Authdata> {
+        if (dayjs().add(5, 'minutes').isBefore(dayjs(vendorAccount.expiresAt))) {
+            return this.vendorAccountService.decryptVendorAccount(vendorAccount);
+        }
         throw new BadRequestException('Refresh is not supported for Apple Music');
     }
 

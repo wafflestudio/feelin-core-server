@@ -2,11 +2,12 @@ import { Vendors } from '@/types/types.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@prisma/client';
+import { User, VendorAccount } from '@prisma/client';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
 import { v4 as uuidv4 } from 'uuid';
+import { Authdata } from './dto/decrypted-vendor-account.dto.js';
 import { VendorAccountLoginDto } from './dto/vendor-account-login.dto.js';
 import { VendorAccountDto } from './dto/vendor-account.dto.js';
 import { SpotifyTokenResponse } from './types.js';
@@ -75,6 +76,18 @@ export class VendorAccountService {
     async getVendorAccounts(user: User): Promise<VendorAccountDto[]> {
         const vendorAccounts = await this.vendorAccountRepository.findByUserId(user.id);
         return vendorAccounts.map(({ id, vendor }) => new VendorAccountDto(id, vendor as Vendors));
+    }
+
+    decryptVendorAccount(vendorAccount: VendorAccount): Authdata {
+        if (vendorAccount === null) {
+            return null;
+        }
+        const accessToken = this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
+        const refreshToken =
+            vendorAccount.refreshToken === null
+                ? null
+                : this.cipherUtilService.decrypt(vendorAccount.refreshToken, this.encryptKey);
+        return { accessToken, refreshToken };
     }
 
     async handleSpotifyLogin(code: string, state: string) {
