@@ -1,4 +1,3 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
 import { TrackModule } from '@/track/track.module.js';
 import { UserModule } from '@/user/user.module.js';
 import { createTestingModule } from '@/utils/test-utils.js';
@@ -12,7 +11,7 @@ describe('PlaylistService', () => {
     beforeEach(async () => {
         const module: TestingModule = await createTestingModule({
             imports: [PlaylistModule, TrackModule, UserModule],
-            providers: [AuthdataService],
+            providers: [],
         });
 
         service = module.get<PlaylistService>(PlaylistService);

@@ -1,4 +1,3 @@
-import { AuthdataService } from '@/authdata/authdata.service.js';
 import { TrackModule } from '@/track/track.module.js';
 import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
@@ -13,7 +12,7 @@ describe('UserService', () => {
     beforeEach(async () => {
         const module: TestingModule = await createTestingModule({
             imports: [UserScraperModule, TrackModule, UserModule],
-            providers: [AuthdataService, CipherUtilService],
+            providers: [CipherUtilService],
         });
 
         service = module.get<UserService>(UserService);

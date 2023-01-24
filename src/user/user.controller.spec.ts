@@ -1,5 +1,4 @@
 import { AuthModule } from '@/auth/auth.module.js';
-import { AuthdataService } from '@/authdata/authdata.service.js';
 import { PlaylistModule } from '@/playlist/playlist.module.js';
 import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
 import { createTestingModule } from '@/utils/test-utils.js';
@@ -13,7 +12,7 @@ describe('UserController', () => {
     beforeEach(async () => {
         const module: TestingModule = await createTestingModule({
             imports: [UserModule, PlaylistModule, UserScraperModule, AuthModule],
-            providers: [AuthdataService],
+            providers: [],
             controllers: [UserController],
         });
 
