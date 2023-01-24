@@ -22,6 +22,7 @@ import { CookieUtilService } from './utils/cookie-util/cookie-util.service.js';
 import { getEnvFile } from './utils/get-env-file.js';
 import { ImagePickerUtilService } from './utils/image-picker-util/image-picker-util.service.js';
 import { SimilarityUtilService } from './utils/similarity-util/similarity-util.service.js';
+import { VendorAccountAuthTokenInterceptor } from './vendor-account/vendor-account.interceptor.js';
 import { VendorAccountModule } from './vendor-account/vendor-account.module.js';
 
 @Module({
@@ -46,6 +47,10 @@ import { VendorAccountModule } from './vendor-account/vendor-account.module.js';
     ],
     controllers: [AppController],
     providers: [
+        {
+            provide: 'APP_INTERCEPTOR',
+            useClass: VendorAccountAuthTokenInterceptor,
+        },
         AppService,
         PrismaService,
         AuthService,

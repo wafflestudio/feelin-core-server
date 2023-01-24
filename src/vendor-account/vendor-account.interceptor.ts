@@ -11,7 +11,7 @@ export class VendorAccountAuthTokenInterceptor implements NestInterceptor {
 
     async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
         const request = context.switchToHttp().getRequest();
-        const vendorAccountId = request.header['Vendor-Authorization'];
+        const vendorAccountId = request.headers['vendor-authorization'];
 
         if (!vendorAccountId) {
             return next.handle();
