@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
 import { v4 as uuidv4 } from 'uuid';
 import { VendorAccountLoginDto } from './dto/vendor-account-login.dto.js';
+import { VendorAccountDto } from './dto/vendor-account.dto.js';
 import { SpotifyTokenResponse } from './types.js';
 import { VendorAccountRepository } from './vendor-account.repository.js';
 
@@ -69,6 +70,11 @@ export class VendorAccountService {
             default:
                 break;
         }
+    }
+
+    async getVendorAccounts(user: User): Promise<VendorAccountDto[]> {
+        const vendorAccounts = await this.vendorAccountRepository.findByUserId(user.id);
+        return vendorAccounts.map(({ id, vendor }) => new VendorAccountDto(id, vendor as Vendors));
     }
 
     async handleSpotifyLogin(code: string, state: string) {

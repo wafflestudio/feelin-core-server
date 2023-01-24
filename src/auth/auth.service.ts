@@ -34,10 +34,10 @@ export class AuthService {
     }
 
     async validateVendorAccountId(vendorAccountId: string, user: User): Promise<DecryptedVendorAccountDto> {
-        const vendorAccount = await this.vendorAccountRepository.findByIdWithUser(vendorAccountId).catch(() => {
+        const vendorAccount = await this.vendorAccountRepository.findById(vendorAccountId).catch(() => {
             throw new UnauthorizedException('unauthorized vendor account');
         });
-        if (vendorAccount.user.id !== user.id) {
+        if (vendorAccount.userId !== user.id) {
             throw new ForbiddenException('Vendor account does not belong to user');
         }
         return this.decryptVendorAccount(vendorAccount);

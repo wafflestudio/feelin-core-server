@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { Prisma, PrismaPromise, User, VendorAccount } from '@prisma/client';
+import { Prisma, PrismaPromise, VendorAccount } from '@prisma/client';
 
 @Injectable()
 export class VendorAccountRepository {
@@ -11,12 +11,9 @@ export class VendorAccountRepository {
         return vendorAccount;
     }
 
-    async findByIdWithUser(id: string): Promise<VendorAccount & { user: User }> {
-        const vendorAccount = await this.prismaService.vendorAccount.findUnique({
-            where: { id },
-            include: { user: true },
-        });
-        return vendorAccount;
+    async findByUserId(userId: string): Promise<VendorAccount[]> {
+        const vendorAccounts = await this.prismaService.vendorAccount.findMany({ where: { userId } });
+        return vendorAccounts;
     }
 
     async findByUserIdAndVendor(userId: string, vendor: string): Promise<VendorAccount> {

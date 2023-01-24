@@ -22,10 +22,10 @@ export class UserService {
     }
 
     async unlinkStreamAccount(user: User, accountId: string): Promise<void> {
-        const vendorAccount = await this.vendorAccountRepository.findByIdWithUser(accountId).catch(() => {
+        const vendorAccount = await this.vendorAccountRepository.findById(accountId).catch(() => {
             throw new NotFoundException('Not Found', 'vendor account not found');
         });
-        if (vendorAccount.user.id !== user.id) {
+        if (vendorAccount.userId !== user.id) {
             throw new UnauthorizedException('Unauthorized', 'vendor account does not belong to user');
         }
 
