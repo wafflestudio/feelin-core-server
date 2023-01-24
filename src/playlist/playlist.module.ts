@@ -7,6 +7,7 @@ import { PlaylistScraperModule } from '@/playlist-scraper/playlist-scraper.modul
 import { PrismaService } from '@/prisma.service.js';
 import { TrackScraperModule } from '@/track-scraper/track-scraper.module.js';
 import { TrackModule } from '@/track/track.module.js';
+import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { forwardRef, Module } from '@nestjs/common';
 import { TrackMatcherModule } from './../track-matcher/track-matcher.module.js';
@@ -20,6 +21,7 @@ import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
         PlaylistScraperModule,
         TrackScraperModule,
         TrackMatcherModule,
+        UserScraperModule,
         forwardRef(() => TrackModule),
         forwardRef(() => AuthModule),
     ],

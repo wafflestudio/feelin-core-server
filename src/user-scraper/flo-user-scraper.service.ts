@@ -1,9 +1,15 @@
+import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
+import { VendorAccount } from '@prisma/client';
 import { UserScraper } from './user-scraper.js';
 
 @Injectable()
 export class FloUserScraper implements UserScraper {
-    async login(id: string, password: string) {
-        return null;
+    getUsableToken(vendorAccount: VendorAccount): Promise<Authdata> {
+        throw new Error('Method not implemented.');
+    }
+
+    getAdminToken(): Promise<string> {
+        throw new Error('Method not implemented.');
     }
 }

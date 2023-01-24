@@ -1,6 +1,6 @@
 import { PlaylistInfo, PlaylistInfoFirstPage, PlaylistType } from '@/playlist/types/types.js';
 import { AppleMusicTrackScraper } from '@/track-scraper/applemusic-track-scraper.service.js';
-import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
+import { ApplemusicUserScraper } from '@/user-scraper/applemusic-user-scraper.service.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { TrackInfo } from '@feelin-types/types.js';
@@ -14,13 +14,14 @@ import { PlaylistScraper } from './playlist-scraper.js';
 export class AppleMusicPlaylistScraper implements PlaylistScraper {
     constructor(
         private readonly applemusicTrackScraper: AppleMusicTrackScraper,
-        private readonly vendorTrackRepository: VendorTrackRepository,
+        private readonly applemusicUserScraper: ApplemusicUserScraper,
     ) {}
 
     private readonly playlistUrls = playlistUrlsByVendor['applemusic'];
     private readonly albumCoverSize = 300;
 
     public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata): Promise<string> {
+        const authToken = await this.applemusicUserScraper.getAdminToken();
         const createResponse = await axios.post(
             this.playlistUrls.createPlaylist,
             {
@@ -31,21 +32,20 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             },
             {
                 headers: {
-                    Authorization: 'authToken',
+                    Authorization: `Bearer ${authToken}`,
                     'Music-User-Token': authdata.accessToken,
                     'Content-Type': 'application/json',
                 },
             },
         );
-
-        const playlistId = createResponse.data[0].id;
+        const playlistId = createResponse.data.data[0].id;
         const addTracksBody = tracks.map((track) => ({ id: track.vendorId, type: 'songs' }));
         await axios.post(
             this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId),
             { data: addTracksBody },
             {
                 headers: {
-                    Authorization: 'authToken',
+                    Authorization: `Bearer ${authToken}`,
                     'Music-User-Token': authdata.accessToken,
                     'Content-Type': 'application/json',
                 },
@@ -56,15 +56,11 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
     }
 
     async getPlaylist(id: string, authdata: Authdata): Promise<PlaylistInfo> {
-        const { type, playlistId } = this.getAppleMusicId(id);
-        const headers = { Authorization: 'authToken', 'Content-Type': 'application/json' };
-        if (type === 'user') {
-            headers['Music-User-Token'] = authdata.accessToken;
-        }
+        const authToken = await this.applemusicUserScraper.getAdminToken();
 
-        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(playlistId, authdata);
+        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(id, authdata);
         while (offsets.length > 0) {
-            const { tracks, offset } = await this.getPlaylistPage(playlistId, offsets[offsets.length - 1], authdata);
+            const { tracks, offset } = await this.getPlaylistPage(id, offsets[offsets.length - 1], authdata);
             playlistInfo.tracks.push(...tracks);
             if (offset) {
                 offsets.push(offset);
@@ -73,17 +69,15 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             }
         }
 
-        const tracks = await this.applemusicTrackScraper.getTracksByIds(
-            playlistInfo.tracks.map(({ id }) => id),
-            'authToken',
-        );
+        const tracks = await this.applemusicTrackScraper.getTracksByIds(playlistInfo.tracks.map(({ id }) => id));
         playlistInfo.tracks = tracks;
         return playlistInfo;
     }
 
     private async getPlaylistFirstPage(id: string, authdata: Authdata): Promise<PlaylistInfoFirstPage> {
+        const authToken = await this.applemusicUserScraper.getAdminToken();
         const { type, playlistId } = this.getAppleMusicId(id);
-        const headers = { Authorization: 'authToken', 'Content-Type': 'application/json' };
+        const headers = { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' };
         if (type === 'user') {
             headers['Music-User-Token'] = authdata.accessToken;
         }
@@ -92,7 +86,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             this.playlistUrls.getPlaylist[type].replace('{playlistId}', playlistId).replace('{countryCode}', 'us'),
             { headers },
         );
-        const tracks = response.data.data[0].map((track) =>
+        const tracks = response.data.data[0].relationships.tracks.data.map((track) =>
             this.applemusicTrackScraper.convertToTrackInfo(track, this.albumCoverSize),
         );
 
@@ -118,7 +112,8 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         authdata: Authdata,
     ): Promise<{ tracks: TrackInfo[]; offset: number | null }> {
         const { type, playlistId } = this.getAppleMusicId(id);
-        const headers = { Authorization: 'authToken', 'Content-Type': 'application/json' };
+        const authToken = await this.applemusicUserScraper.getAdminToken();
+        const headers = { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' };
         if (type === 'user') {
             headers['Music-User-Token'] = authdata.accessToken;
         }
@@ -145,7 +140,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         } else if (type === 'catalog') {
             return { type: 'catalog', playlistId: `pl.${playlistId}` };
         }
-        throw new InternalServerErrorException('Invalid playlist id');
+        throw new InternalServerErrorException('Error parsing playlist id');
     }
 
     private formatCoverUrl(coverUrlFormat: string, size: number): string {

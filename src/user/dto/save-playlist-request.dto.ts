@@ -6,6 +6,4 @@ export class SavePlaylistRequestDto {
 
     @IsString()
     description!: string;
-
-    searchResults: [];
 }

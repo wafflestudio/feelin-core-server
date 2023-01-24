@@ -3,12 +3,13 @@ import { isExactMatch } from '@/types/helpers.js';
 import { TrackInfo } from '@/types/types.js';
 import { SimilarityUtilService } from '@/utils/similarity-util/similarity-util.service.js';
 import { Injectable } from '@nestjs/common';
+import { maxBy } from 'lodash-es';
 
 @Injectable()
 export class TrackMatcherService {
     constructor(private readonly similarityUtilService: SimilarityUtilService) {}
 
-    readonly THRESHOLD = 0.1;
+    readonly THRESHOLD = 0.0;
     readonly MIN_NGRAM = 1;
     readonly MAX_NGRAM = 4;
 
@@ -19,7 +20,7 @@ export class TrackMatcherService {
         }
 
         const exactMatches = candidates.filter((track) => isExactMatch(reference, track, result.isDetailed));
-        if (!!exactMatches) {
+        if (exactMatches.length > 0) {
             return exactMatches[0];
         }
 
@@ -79,13 +80,7 @@ export class TrackMatcherService {
             };
         });
 
-        const bestMatch = candidatesWithScores.reduce(
-            (bestMatch, candidate) => {
-                return candidate.score > bestMatch.score ? candidate : bestMatch;
-            },
-            { trackInfo: null, score: -1 },
-        );
-
+        const bestMatch = maxBy(candidatesWithScores, 'score');
         if (bestMatch.score >= this.THRESHOLD) {
             return bestMatch.trackInfo;
         }

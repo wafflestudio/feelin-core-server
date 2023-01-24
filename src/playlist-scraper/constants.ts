@@ -15,8 +15,8 @@ export const playlistUrlsByVendor: Record<Vendors, PlaylistUrl> = {
         createPlaylist: 'https://api.music.apple.com/v1/me/library/playlists',
         addTracksToPlaylist: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}/tracks',
         getPlaylist: {
-            user: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}/tracks',
-            catalog: 'https://api.music.apple.com/v1/catalog/{countryCode}/playlists/{playlistId}/tracks',
+            user: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}',
+            catalog: 'https://api.music.apple.com/v1/catalog/{countryCode}/playlists/{playlistId}',
         },
         getPlaylistPaged: {
             user: 'https://api.music.apple.com/v1/me/library/playlists/{playlistId}/tracks',

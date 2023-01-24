@@ -12,7 +12,7 @@ export class FloTrackScraper implements TrackScraper {
 
     private readonly trackUrls = trackUrlsByVendor['flo'];
 
-    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
+    async searchTrack(track: TrackInfo): Promise<SearchResults> {
         // Flo search API limits max 250 results at once
         const response = await axios.get(this.trackUrls.search, {
             params: {

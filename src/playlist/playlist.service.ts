@@ -13,6 +13,7 @@ import { TrackRepository } from '@/track/track.repository.js';
 import { TrackService } from '@/track/track.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { Vendors } from '@/types/types.js';
+import { UserScraperService } from '@/user-scraper/user-scraper.service.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
@@ -32,6 +33,7 @@ export class PlaylistService {
     constructor(
         private readonly authService: AuthService,
         private readonly playlistScraperService: PlaylistScraperService,
+        private readonly userScraperService: UserScraperService,
         private readonly trackService: TrackService,
         private readonly trackScraperService: TrackScraperService,
         private readonly trackMatcherService: TrackMatcherService,
@@ -66,7 +68,7 @@ export class PlaylistService {
                         new AlbumDto(track.album.id, track.album.title, track.album.coverUrl),
                     ),
             ),
-            new PlaylistPreviewDto(playlistId, tracks[0].album.coverUrl),
+            new PlaylistPreviewDto(playlistId, playlist.coverUrl),
         );
     }
 
@@ -81,10 +83,8 @@ export class PlaylistService {
         }
 
         const vendorAccount = await this.vendorAccountRepository.findByUserIdAndVendor(user.id, vendor);
-        const decryptedVendorAccount = this.authService.decryptVendorAccount(vendorAccount);
-        const playlistData = await this.playlistScraperService
-            .get(vendor)
-            .getPlaylist(playlistId, decryptedVendorAccount?.authdata);
+        const authdata = vendorAccount === null ? null : await this.userScraperService.get(vendor).getUsableToken(vendorAccount);
+        const playlistData = await this.playlistScraperService.get(vendor).getPlaylist(playlistId, authdata);
         const playlist = await this.saveAndGetPlaylistDto(playlistData, vendor);
         return this.getPlaylist(playlist.id);
     }
@@ -112,9 +112,7 @@ export class PlaylistService {
         const promiseList = tracks
             .filter((track) => track.vendorTracks.length === 0)
             .map(async (track) => {
-                const searchResult = await this.trackScraperService
-                    .get(vendor)
-                    .searchTrack(this.trackService.toTrackInfo(track), 'authToken');
+                const searchResult = await this.trackScraperService.get(vendor).searchTrack(this.trackService.toTrackInfo(track));
                 return { track, searchResult };
             });
         const searchResults = await Promise.all(promiseList);
@@ -179,7 +177,7 @@ export class PlaylistService {
 
         return await this.prismaService.$transaction(
             async (tx) => this.savePlaylist(tx, playlistData, vendor, trackByVendorId, artistByVendorId, albumByVendorId),
-            { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
+            { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, timeout: 10000 },
         );
     }
 
@@ -193,11 +191,20 @@ export class PlaylistService {
     ): Promise<Playlist> {
         const { id, title, tracks: tracksData } = playlistData;
 
-        const playlist = await this.playlistRepository.createWithVendorPlaylist({
-            data: { id: uuidv4(), title },
-            vendorPlaylist: { vendor, id },
+        const playlist = await this.playlistRepository.create(
+            {
+                id: uuidv4(),
+                title,
+                vendorPlaylist: {
+                    connectOrCreate: {
+                        where: { vendorId_vendor: { vendorId: id, vendor } },
+                        create: { id: uuidv4(), vendor, vendorId: id },
+                    },
+                },
+                coverUrl: playlistData.coverUrl,
+            },
             tx,
-        });
+        );
 
         const createTracksAndArtistsAndAlbums = tracksData.map(async (trackData, idx) => {
             const { title, id, album: albumData, artists: artistsData } = trackData;

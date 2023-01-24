@@ -19,7 +19,7 @@ export class MelonTrackScraper implements TrackScraper {
     private readonly pageSize = 50;
     private readonly trackUrls = trackUrlsByVendor['melon'];
 
-    async searchTrack(track: TrackInfo, authToken: string): Promise<SearchResults> {
+    async searchTrack(track: TrackInfo): Promise<SearchResults> {
         // Melon search API limits max 50 results at once
         const response = await axios.get(this.trackUrls.search, {
             params: {

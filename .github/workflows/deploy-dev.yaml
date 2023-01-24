@@ -25,6 +25,12 @@ jobs:
         env:
           FEELIN_CORE_ENV: ${{ secrets.FEELIN_CORE_DEV_ENV }}
 
+      - name: Copy Apple private key
+        run: echo "$APPLE_PRIVATE_KEY" > AuthKey.p8
+        shell: bash
+        env:
+          APPLE_PRIVATE_KEY: ${{ secrets.APPLE_PRIVATE_KEY }}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

@@ -38,6 +38,7 @@ COPY --from=build /app/yarn.lock ./yarn.lock
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/.env ./.env
+COPY --from=build /app/AuthKey.p8 ./AuthKey.p8 
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 
 RUN yarn install --production
