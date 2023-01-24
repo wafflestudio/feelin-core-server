@@ -1,4 +1,5 @@
 import { ApplemusicArtistScraper } from '@/artist-scraper/applemusic-artist-scraper.service.js';
+import { UserScraperModule } from '@/user-scraper/user-scraper.module.js';
 import { CookieUtilService } from '@/utils/cookie-util/cookie-util.service.js';
 import { Module } from '@nestjs/common';
 import { AppleMusicTrackScraper } from './applemusic-track-scraper.service.js';
@@ -9,6 +10,7 @@ import { TrackScraperService } from './track-scraper.service.js';
 
 @Module({
     controllers: [],
+    imports: [UserScraperModule],
     providers: [
         MelonTrackScraper,
         FloTrackScraper,

@@ -23,25 +23,25 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
     private readonly albumCoverSize = 300;
 
     public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata): Promise<string> {
-        const userData: any = await axios.get(this.userUrl, {
+        const userData = await axios.get('https://api.spotify.com/v1/me', {
             headers: {
-                Authorization: authdata.accessToken,
+                Authorization: `Bearer ${authdata.accessToken}`,
                 'Content-Type': 'application/json',
             },
         });
         const createResponse = await axios.post(
-            this.playlistUrls.createPlaylist.replace('{userId}', userData.id),
+            this.playlistUrls.createPlaylist.replace('{userId}', userData.data.id),
             { name: request.title, description: request.description },
-            { headers: { Authorization: authdata.accessToken, 'Content-Type': 'application/json' } },
+            { headers: { Authorization: `Bearer ${authdata.accessToken}`, 'Content-Type': 'application/json' } },
         );
         const playlistId = createResponse.data.id;
 
-        const trackIds = tracks.map(({ id }) => id);
+        const trackIds = tracks.map(({ vendorId }) => vendorId);
         const trackIdsToRequest = chunk(trackIds, this.savePageLimit);
         const promiseList = trackIdsToRequest.map((trackIds) =>
             axios.post(this.playlistUrls.addTracksToPlaylist.replace('{playlistId}', playlistId), null, {
-                params: { uris: trackIds.map((id) => `spotify:track:${id}`) },
-                headers: { Authorization: authdata.accessToken, 'Content-Type': 'application/json' },
+                params: { uris: trackIds.map((id) => `spotify:track:${id}`).join(',') },
+                headers: { Authorization: `Bearer ${authdata.accessToken}`, 'Content-Type': 'application/json' },
             }),
         );
         await Promise.all(promiseList);
@@ -65,7 +65,7 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
                 offset: offset,
                 limit: this.pageLimit,
             },
-            headers: { Authorization: authdata.accessToken, 'Content-Type': 'application/json' },
+            headers: { Authorization: `Bearer ${authdata.accessToken}`, 'Content-Type': 'application/json' },
         });
         const data = response.data;
         return data.tracks.items.map(({ track }) => this.spotifyTrackScraper.covertToTrackInfo(track, this.albumCoverSize));
@@ -76,7 +76,7 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
             params: {
                 fields: 'id,name,images,tracks(items(track(id,name,album(id,name,images),artists(id,name))),total,limit)',
             },
-            headers: { Authorization: authdata.accessToken, 'Content-Type': 'application/json' },
+            headers: { Authorization: `Bearer ${authdata.accessToken}`, 'Content-Type': 'application/json' },
         });
         const data = response.data;
         const tracks = data.tracks.items.map(({ track }) =>

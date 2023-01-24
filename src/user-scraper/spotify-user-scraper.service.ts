@@ -22,11 +22,12 @@ export class SpotifyUserScraper implements UserScraper {
     private readonly encryptKey: Buffer;
 
     async refresh(vendorAccount: VendorAccount): Promise<Authdata> {
+        const refreshToken = this.cipherUtilService.decrypt(vendorAccount.refreshToken, this.encryptKey);
         const response = await axios.post(
             'https://accounts.spotify.com/api/token',
             new URLSearchParams({
                 grant_type: 'refresh_token',
-                refresh_token: this.cipherUtilService.decrypt(vendorAccount.refreshToken, this.encryptKey),
+                refresh_token: refreshToken,
             }).toString(),
             {
                 headers: {
@@ -39,13 +40,18 @@ export class SpotifyUserScraper implements UserScraper {
                 },
             },
         );
-        return await this.vendorAccountRepository.update({
+        await this.vendorAccountRepository.update({
             where: { id: vendorAccount.id },
             data: {
                 accessToken: this.cipherUtilService.encryptWithKey(response.data.access_token, this.encryptKey),
                 expiresAt: dayjs().add(response.data.expires_in, 'second').toDate(),
             },
         });
+
+        return {
+            accessToken: response.data.access_token,
+            refreshToken: refreshToken,
+        };
     }
 
     async getAdminToken(): Promise<string> {
@@ -55,21 +61,21 @@ export class SpotifyUserScraper implements UserScraper {
         }
 
         const { accessToken, expiresIn } = await this.createAdminToken();
-        if (!vendorAccount) {
-            await this.vendorAccountRepository.create({
-                id: uuidv4(),
-                user: { connect: { id: TOKEN_ADMIN_USER_ID } },
-                vendor: 'spotify',
-                accessToken: this.cipherUtilService.encryptWithKey(accessToken, this.encryptKey),
-                expiresAt: dayjs().add(expiresIn, 'second').toDate(),
-            });
-        } else {
+        if (vendorAccount) {
             await this.vendorAccountRepository.update({
                 where: { id: vendorAccount.id },
                 data: {
                     accessToken: this.cipherUtilService.encryptWithKey(accessToken, this.encryptKey),
                     expiresAt: dayjs().add(expiresIn, 'second').toDate(),
                 },
+            });
+        } else {
+            await this.vendorAccountRepository.create({
+                id: uuidv4(),
+                user: { connect: { id: TOKEN_ADMIN_USER_ID } },
+                vendor: 'spotify',
+                accessToken: this.cipherUtilService.encryptWithKey(accessToken, this.encryptKey),
+                expiresAt: dayjs().add(expiresIn, 'second').toDate(),
             });
         }
 

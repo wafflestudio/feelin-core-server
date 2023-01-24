@@ -19,7 +19,7 @@ export class SpotifyTrackScraper implements TrackScraper {
         const authToken = await this.spotifyUserScraper.getAdminToken();
         const response = await axios.get(this.trackUrls.search, {
             params: {
-                q: track.title,
+                q: `${track.title}-${track.artistNames}`,
                 type: 'track',
                 include_external: 'audio',
                 limit: 50,
