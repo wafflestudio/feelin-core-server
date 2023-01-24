@@ -7,7 +7,7 @@ export class VendorAuthGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
-        const vendorAccountId = request.header['Vendor-Authorization'];
+        const vendorAccountId = request.headers['vendor-authorization'];
 
         if (!vendorAccountId) {
             return false;
@@ -17,7 +17,6 @@ export class VendorAuthGuard implements CanActivate {
         if (!vendorAccount) {
             return false;
         }
-        request.vendorAccount = vendorAccount;
 
         return true;
     }

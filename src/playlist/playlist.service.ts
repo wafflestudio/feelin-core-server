@@ -83,7 +83,8 @@ export class PlaylistService {
         }
 
         const vendorAccount = await this.vendorAccountRepository.findByUserIdAndVendor(user.id, vendor);
-        const authdata = vendorAccount === null ? null : await this.userScraperService.get(vendor).getUsableToken(vendorAccount);
+        const authdata =
+            vendorAccount === null ? null : await this.userScraperService.get(vendor).decryptAndRefreshToken(vendorAccount);
         const playlistData = await this.playlistScraperService.get(vendor).getPlaylist(playlistId, authdata);
         const playlist = await this.saveAndGetPlaylistDto(playlistData, vendor);
         return this.getPlaylist(playlist.id);

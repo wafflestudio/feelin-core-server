@@ -5,7 +5,7 @@ import { UserScraper } from './user-scraper.js';
 
 @Injectable()
 export class FloUserScraper implements UserScraper {
-    getUsableToken(vendorAccount: VendorAccount): Promise<Authdata> {
+    decryptAndRefreshToken(vendorAccount: VendorAccount): Promise<Authdata> {
         throw new Error('Method not implemented.');
     }
 

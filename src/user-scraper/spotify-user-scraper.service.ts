@@ -1,7 +1,7 @@
-import { AuthService } from '@/auth/auth.service.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
+import { VendorAccountService } from '@/vendor-account/vendor-account.service.js';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { VendorAccount } from '@prisma/client';
@@ -13,7 +13,7 @@ import { TOKEN_ADMIN_USER_ID, UserScraper } from './user-scraper.js';
 @Injectable()
 export class SpotifyUserScraper implements UserScraper {
     constructor(
-        private readonly authService: AuthService,
+        private readonly vendorAccountService: VendorAccountService,
         private readonly vendorAccountRepository: VendorAccountRepository,
         private readonly cipherUtilService: CipherUtilService,
         private readonly configService: ConfigService,
@@ -23,9 +23,9 @@ export class SpotifyUserScraper implements UserScraper {
 
     private readonly encryptKey: Buffer;
 
-    async getUsableToken(vendorAccount: VendorAccount): Promise<Authdata> {
-        const authdata = this.authService.decryptVendorAccount(vendorAccount).authdata;
-        if (dayjs().isBefore(dayjs(vendorAccount.expiresAt))) {
+    async decryptAndRefreshToken(vendorAccount: VendorAccount): Promise<Authdata> {
+        const authdata = await this.vendorAccountService.decryptVendorAccount(vendorAccount);
+        if (dayjs().add(5, 'minutes').isBefore(dayjs(vendorAccount.expiresAt))) {
             return authdata;
         }
         const { accessToken, expiresAt } = await this.refresh(authdata.refreshToken);
@@ -36,6 +36,7 @@ export class SpotifyUserScraper implements UserScraper {
                 expiresAt: expiresAt.toDate(),
             },
         });
+        return { accessToken, refreshToken: authdata.refreshToken };
     }
 
     async refresh(refreshToken: string): Promise<{ accessToken: string; expiresAt: dayjs.Dayjs }> {
