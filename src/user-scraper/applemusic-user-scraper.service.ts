@@ -1,3 +1,4 @@
+import { AuthService } from '@/auth/auth.service.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
@@ -13,6 +14,7 @@ import { TOKEN_ADMIN_USER_ID, UserScraper } from './user-scraper.js';
 @Injectable()
 export class ApplemusicUserScraper implements UserScraper {
     constructor(
+        private readonly authService: AuthService,
         private readonly vendorAccountRepository: VendorAccountRepository,
         private readonly cipherUtilService: CipherUtilService,
         private readonly configService: ConfigService,
@@ -25,6 +27,10 @@ export class ApplemusicUserScraper implements UserScraper {
     private readonly privateKey: string;
     private readonly algorithm = 'ES256';
     private readonly expiresIn = 90;
+
+    async getUsableToken(vendorAccount: VendorAccount): Promise<Authdata> {
+        return this.authService.decryptVendorAccount(vendorAccount).authdata;
+    }
 
     refresh(vendorAccount: VendorAccount): Promise<Authdata> {
         throw new BadRequestException('Refresh is not supported for Apple Music');

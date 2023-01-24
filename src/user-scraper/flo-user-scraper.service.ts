@@ -5,9 +5,10 @@ import { UserScraper } from './user-scraper.js';
 
 @Injectable()
 export class FloUserScraper implements UserScraper {
-    refresh(vendorAccount: VendorAccount): Promise<Authdata> {
+    getUsableToken(vendorAccount: VendorAccount): Promise<Authdata> {
         throw new Error('Method not implemented.');
     }
+
     getAdminToken(): Promise<string> {
         throw new Error('Method not implemented.');
     }

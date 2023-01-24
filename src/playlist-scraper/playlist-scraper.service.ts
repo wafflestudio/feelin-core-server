@@ -28,7 +28,7 @@ export class PlaylistScraperService {
 
     private readonly SPOTIFY_PLAYLIST_URL_REGEX = /^https:\/\/open\.spotify\.com\/playlist\/([A-Za-z0-9]+)$/;
     private readonly APPLE_MUSIC_PLAYLIST_URL_REGEX =
-        /^https:\/\/music\.apple\.com\/[a-zA-Z]{2}\/playlist\/([\w\-]+)\/((pl|p)\.([0-9a-f]+))$/;
+        /^https:\/\/music\.apple\.com\/[a-zA-Z]{2}\/playlist\/([\w\-]+)\/((pl|p)\.([\w\-]+))$/;
     private readonly MELON_PLAYLIST_SHORT_URL_REGEX = /^https:\/\/kko\.to\/([a-zA-Z0-9]+)$/;
     private readonly MELON_PLAYLIST_REDIRECT_URL_REGEX = /^https:\/\/m2\.melon\.com\/pda\/msvc\/snsGatePage\.jsp$/;
     private readonly MELON_PLAYLIST_URL_REGEX =

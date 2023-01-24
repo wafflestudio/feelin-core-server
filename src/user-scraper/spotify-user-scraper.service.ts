@@ -1,3 +1,4 @@
+import { AuthService } from '@/auth/auth.service.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
@@ -12,6 +13,7 @@ import { TOKEN_ADMIN_USER_ID, UserScraper } from './user-scraper.js';
 @Injectable()
 export class SpotifyUserScraper implements UserScraper {
     constructor(
+        private readonly authService: AuthService,
         private readonly vendorAccountRepository: VendorAccountRepository,
         private readonly cipherUtilService: CipherUtilService,
         private readonly configService: ConfigService,
@@ -21,8 +23,22 @@ export class SpotifyUserScraper implements UserScraper {
 
     private readonly encryptKey: Buffer;
 
-    async refresh(vendorAccount: VendorAccount): Promise<Authdata> {
-        const refreshToken = this.cipherUtilService.decrypt(vendorAccount.refreshToken, this.encryptKey);
+    async getUsableToken(vendorAccount: VendorAccount): Promise<Authdata> {
+        const authdata = this.authService.decryptVendorAccount(vendorAccount).authdata;
+        if (dayjs().isBefore(dayjs(vendorAccount.expiresAt))) {
+            return authdata;
+        }
+        const { accessToken, expiresAt } = await this.refresh(authdata.refreshToken);
+        await this.vendorAccountRepository.update({
+            where: { id: vendorAccount.id },
+            data: {
+                accessToken: this.cipherUtilService.encryptWithKey(accessToken, this.encryptKey),
+                expiresAt: expiresAt.toDate(),
+            },
+        });
+    }
+
+    async refresh(refreshToken: string): Promise<{ accessToken: string; expiresAt: dayjs.Dayjs }> {
         const response = await axios.post(
             'https://accounts.spotify.com/api/token',
             new URLSearchParams({
@@ -40,17 +56,10 @@ export class SpotifyUserScraper implements UserScraper {
                 },
             },
         );
-        await this.vendorAccountRepository.update({
-            where: { id: vendorAccount.id },
-            data: {
-                accessToken: this.cipherUtilService.encryptWithKey(response.data.access_token, this.encryptKey),
-                expiresAt: dayjs().add(response.data.expires_in, 'second').toDate(),
-            },
-        });
 
         return {
             accessToken: response.data.access_token,
-            refreshToken: refreshToken,
+            expiresAt: dayjs().add(response.data.expires_in, 'second'),
         };
     }
 

@@ -66,7 +66,7 @@ export class AppleMusicTrackScraper implements TrackScraper {
         const artistIds = response.flatMap((track) => {
             const artistsData = track.relationships.artists.data;
             if (artistsData.length > 1) {
-                artistsData.map((artist) => artist.id);
+                return artistsData.map((artist) => artist.id);
             }
             return [];
         });
@@ -80,11 +80,11 @@ export class AppleMusicTrackScraper implements TrackScraper {
     convertToTrackInfo(track: any, albumCoverSize: number, artistsNameById?: Map<string, string>): TrackInfo {
         const artists: ArtistInfo[] = track?.relationships?.artists?.data?.map((artist) => ({
             id: artist.id,
-            name: artistsNameById.get(artist.id) ?? artist.attributes.name,
+            name: artistsNameById.get(artist.id) ?? track.attributes.artistName,
         }));
 
         const album: AlbumInfo = {
-            id: track?.relationships?.albums?.attributes?.data?.[0]?.id,
+            id: track?.relationships?.albums?.data?.[0]?.id,
             title: track.attributes.albumName,
             coverUrl: this.formatCoverUrl(track.attributes.artwork.url, albumCoverSize),
         };

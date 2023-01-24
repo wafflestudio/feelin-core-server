@@ -15,7 +15,7 @@ export class ApplemusicArtistScraper {
         const promiseList = artistIdsToRequest.map((artistIds) =>
             axios.get(this.getArtistsByIdsUrl, {
                 params: { ids: artistIds.join(',') },
-                headers: { Authorization: authToken, 'Content-Type': 'application/json' },
+                headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             }),
         );
 

@@ -57,15 +57,10 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
 
     async getPlaylist(id: string, authdata: Authdata): Promise<PlaylistInfo> {
         const authToken = await this.applemusicUserScraper.getAdminToken();
-        const { type, playlistId } = this.getAppleMusicId(id);
-        const headers = { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' };
-        if (type === 'user') {
-            headers['Music-User-Token'] = authdata.accessToken;
-        }
 
-        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(playlistId, authdata);
+        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(id, authdata);
         while (offsets.length > 0) {
-            const { tracks, offset } = await this.getPlaylistPage(playlistId, offsets[offsets.length - 1], authdata);
+            const { tracks, offset } = await this.getPlaylistPage(id, offsets[offsets.length - 1], authdata);
             playlistInfo.tracks.push(...tracks);
             if (offset) {
                 offsets.push(offset);
@@ -91,7 +86,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             this.playlistUrls.getPlaylist[type].replace('{playlistId}', playlistId).replace('{countryCode}', 'us'),
             { headers },
         );
-        const tracks = response.data.data[0].map((track) =>
+        const tracks = response.data.data[0].relationships.tracks.data.map((track) =>
             this.applemusicTrackScraper.convertToTrackInfo(track, this.albumCoverSize),
         );
 
@@ -145,7 +140,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         } else if (type === 'catalog') {
             return { type: 'catalog', playlistId: `pl.${playlistId}` };
         }
-        throw new InternalServerErrorException('Invalid playlist id');
+        throw new InternalServerErrorException('Error parsing playlist id');
     }
 
     private formatCoverUrl(coverUrlFormat: string, size: number): string {
