@@ -74,7 +74,7 @@ export class VendorAccountService {
     }
 
     async getVendorAccounts(user: User): Promise<VendorAccountDto[]> {
-        const vendorAccounts = await this.vendorAccountRepository.findByUserId(user.id);
+        const vendorAccounts = await this.vendorAccountRepository.findLinkedByUserId(user.id);
         return vendorAccounts.map(({ id, vendor }) => new VendorAccountDto(id, vendor as Vendors));
     }
 
