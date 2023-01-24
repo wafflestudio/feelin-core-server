@@ -34,6 +34,9 @@ export class AuthService {
         if (vendorAccount.userId !== user.id) {
             throw new ForbiddenException('Vendor account does not belong to user');
         }
+        if (vendorAccount.accessToken === null) {
+            throw new ForbiddenException('Vendor account is not linked');
+        }
         return vendorAccount;
     }
 }
