@@ -18,7 +18,7 @@ import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js'
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Album, Artist, Playlist, Prisma, Track, User, VendorTrack } from '@prisma/client';
+import { Album, Artist, Playlist, Prisma, Track, User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
 import { CreatePlaylistRequestDto } from './dto/create-playlist-request.dto.js';
@@ -108,7 +108,7 @@ export class PlaylistService {
         return playlistUrl;
     }
 
-    async convertPlaylist(playlistId: string, vendor: Vendors): Promise<VendorTrack[]> {
+    async convertPlaylist(playlistId: string, vendor: Vendors): Promise<void> {
         const tracks = await this.trackRepository.findAllWithArtistAndAlbumAndVendorTrackByPlaylistId(playlistId, vendor);
         const promiseList = tracks
             .filter((track) => track.vendorTracks.length === 0)
@@ -146,15 +146,15 @@ export class PlaylistService {
             matchResults.map(({ matchedVendorTrack }) => matchedVendorTrack.id),
         );
         const existingVendorTracksById = new Map(existingVendorTracks.map((vendorTrack) => [vendorTrack.vendorId, vendorTrack]));
-        const vendorTrackPromiseList = matchResults.map(({ track, matchedVendorTrack }) =>
+        const vendorTrackPromiseList = matchResults.flatMap(({ track, matchedVendorTrack }) =>
             this.trackService.mergeOrCreateTrack(
                 track,
+                existingVendorTracksById.get(matchedVendorTrack.id),
                 matchedVendorTrack,
                 vendor,
-                existingVendorTracksById.get(matchedVendorTrack.id),
             ),
         );
-        return await this.prismaService.$transaction(vendorTrackPromiseList);
+        await this.prismaService.$transaction(vendorTrackPromiseList);
     }
 
     private async saveAndGetPlaylistDto(playlistData: PlaylistInfo, vendor: Vendors): Promise<Playlist> {

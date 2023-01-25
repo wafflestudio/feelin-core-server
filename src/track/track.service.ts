@@ -2,35 +2,46 @@ import { AlbumDto } from '@/album/dto/album.dto.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
 import { TrackInfo, Vendors } from '@/types/types.js';
 import { Injectable } from '@nestjs/common';
-import { PrismaPromise, VendorTrack } from '@prisma/client';
+import { Prisma, PrismaPromise, VendorTrack } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { TrackDto } from './dto/track.dto.js';
+import { TrackOnPlaylistRepository } from './track-on-playlist.repository.js';
 import { TrackWithArtistAndAlbum, TrackWithArtistAndAlbumAndVendorTrack } from './track.repository.js';
 import { VendorTrackRepository, VendorTrackWithTrack } from './vendor-track.repository.js';
 
 @Injectable()
 export class TrackService {
-    constructor(private readonly vendorTrackRepository: VendorTrackRepository) {}
+    constructor(
+        private readonly vendorTrackRepository: VendorTrackRepository,
+        private readonly trackOnPlaylistRepository: TrackOnPlaylistRepository,
+    ) {}
 
     mergeOrCreateTrack(
         track: TrackWithArtistAndAlbumAndVendorTrack,
+        existingVendorTrack: VendorTrackWithTrack,
         matchedVendorTrack: TrackInfo,
         vendor: Vendors,
-        existingVendorTrack: VendorTrackWithTrack,
-    ): PrismaPromise<VendorTrack> {
-        // TODO: Need to merge artists and album too
+    ): PrismaPromise<VendorTrack | Prisma.BatchPayload>[] {
         if (existingVendorTrack) {
-            return this.vendorTrackRepository.update({ track: { connect: { id: track.id } } }, { id: existingVendorTrack.id });
+            return [
+                this.vendorTrackRepository.update({ track: { connect: { id: track.id } } }, { id: existingVendorTrack.id }),
+                this.trackOnPlaylistRepository.updateMany(
+                    { track: { connect: { id: track.id } } },
+                    { trackId: existingVendorTrack.trackId },
+                ),
+            ];
         }
 
-        return this.vendorTrackRepository.create({
-            id: uuidv4(),
-            vendor: vendor,
-            vendorId: matchedVendorTrack.id,
-            track: {
-                connect: { id: track.id },
-            },
-        });
+        return [
+            this.vendorTrackRepository.create({
+                id: uuidv4(),
+                vendor: vendor,
+                vendorId: matchedVendorTrack.id,
+                track: {
+                    connect: { id: track.id },
+                },
+            }),
+        ];
     }
 
     toTrackDto(track: TrackWithArtistAndAlbum): TrackDto {
