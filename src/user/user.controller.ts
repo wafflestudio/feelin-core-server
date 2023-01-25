@@ -1,5 +1,5 @@
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard.js';
-import { Body, Controller, Delete, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Param, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { SignUpDto } from './dto/signup.dto.js';
@@ -24,9 +24,12 @@ export class UserController {
     @ApiOperation({ summary: 'User delete API', description: 'Deletes a user' })
     @ApiNoContentResponse()
     @UseGuards(JwtAuthGuard)
-    @Delete()
+    @Delete('/:userId')
     @HttpCode(204)
-    async delete(@UserAuthentication() user: User) {
+    async delete(@UserAuthentication() user: User, @Param('userId') userId: string) {
+        if (user.id !== userId) {
+            throw new UnauthorizedException('user can only delete its own account');
+        }
         await this.userService.delete(user.id);
     }
 }
