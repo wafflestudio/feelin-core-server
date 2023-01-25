@@ -1,6 +1,6 @@
 import { Vendors } from '@/types/types.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
-import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User, VendorAccount } from '@prisma/client';
 import axios from 'axios';
@@ -42,6 +42,11 @@ export class VendorAccountService {
     private readonly expiresIn: Record<Vendors, number>;
 
     async getLoginUrl(user: User, vendor: Vendors) {
+        const vendorAccounts = await this.getVendorAccounts(user);
+        if (vendorAccounts.length > 0) {
+            throw new BadRequestException('user can only have up to one account');
+        }
+
         const loginUrl = this.loginUrls[vendor];
         const vendorAccount = await this.vendorAccountRepository.create({
             id: uuidv4(),
