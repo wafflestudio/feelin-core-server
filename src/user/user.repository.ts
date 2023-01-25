@@ -13,6 +13,11 @@ export class UserRepository {
         return user;
     }
 
+    async delete(userWhereUniqueInput: Prisma.UserWhereUniqueInput): Promise<User> {
+        const user = await this.prismaService.user.delete({ where: userWhereUniqueInput });
+        return user;
+    }
+
     async findUniqueOrThrow(userWhereUniqueInput: Prisma.UserWhereUniqueInput): Promise<User> {
         const user = await this.prismaService.user.findUniqueOrThrow({
             where: userWhereUniqueInput,

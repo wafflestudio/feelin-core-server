@@ -1,14 +1,10 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { VendorAccountRepository } from '../vendor-account/vendor-account.repository.js';
 import { SignUpDto } from './dto/signup.dto.js';
 import { UserRepository } from './user.repository.js';
 @Injectable()
 export class UserService {
-    constructor(
-        private readonly userRepository: UserRepository,
-        private readonly vendorAccountRepository: VendorAccountRepository,
-    ) {}
+    constructor(private readonly userRepository: UserRepository) {}
 
     async signup(signUpDto: SignUpDto): Promise<User> {
         const { id, username } = signUpDto;
@@ -18,5 +14,9 @@ export class UserService {
             throw new ConflictException('conflict', 'user already exists');
         }
         return this.userRepository.create({ id, username });
+    }
+
+    async delete(id: string): Promise<void> {
+        await this.userRepository.delete({ id });
     }
 }
