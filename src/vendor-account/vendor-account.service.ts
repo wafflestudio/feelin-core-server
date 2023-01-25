@@ -1,6 +1,6 @@
 import { Vendors } from '@/types/types.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User, VendorAccount } from '@prisma/client';
 import axios from 'axios';
@@ -76,6 +76,26 @@ export class VendorAccountService {
     async getVendorAccounts(user: User): Promise<VendorAccountDto[]> {
         const vendorAccounts = await this.vendorAccountRepository.findLinkedByUserId(user.id);
         return vendorAccounts.map(({ id, vendor }) => new VendorAccountDto(id, vendor as Vendors));
+    }
+
+    async unlinkVendorAccount(user: User, accountId: string): Promise<void> {
+        const vendorAccount = await this.vendorAccountRepository.findById(accountId).catch(() => {
+            throw new NotFoundException('Not Found', 'vendor account not found');
+        });
+        if (vendorAccount.userId !== user.id) {
+            throw new UnauthorizedException('Unauthorized', 'vendor account does not belong to user');
+        }
+
+        await this.vendorAccountRepository.update({
+            where: { id: vendorAccount.id },
+            data: {
+                accessToken: null,
+                refreshToken: null,
+                deactivatedAt: dayjs().toDate(),
+            },
+        });
+
+        return;
     }
 
     decryptVendorAccount(vendorAccount: VendorAccount): Authdata {

@@ -1,8 +1,8 @@
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard.js';
 import { Vendors } from '@/types/types.js';
 import { UserAuthentication } from '@/user/user-authentication.decorator.js';
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiFoundResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiFoundResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { GetVendorAccountsResponse } from './dto/get-vendor-accounts.dto.js';
 import { VendorAccountLoginDto } from './dto/vendor-account-login.dto.js';
@@ -20,6 +20,16 @@ export class VendorAccountController {
     async getVendorAccount(@UserAuthentication() user: User) {
         const vendorAccounts = await this.vendorAccountService.getVendorAccounts(user);
         return new GetVendorAccountsResponse(vendorAccounts);
+    }
+
+    @ApiBearerAuth('Authorization')
+    @ApiOperation({ summary: 'Unlink stream account API', description: 'Unlinks a stream account from the user' })
+    @ApiNoContentResponse()
+    @UseGuards(JwtAuthGuard)
+    @Delete('/vendor-accounts/:vendorAccountId')
+    @HttpCode(204)
+    async unlinkStreamAccount(@UserAuthentication() user: User, @Param('accountId') accountId: string) {
+        await this.vendorAccountService.unlinkVendorAccount(user, accountId);
     }
 
     @ApiBearerAuth('Authorization')
