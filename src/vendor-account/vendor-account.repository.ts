@@ -15,9 +15,8 @@ export class VendorAccountRepository {
         const vendorAccounts = await this.prismaService.vendorAccount.findMany({
             where: {
                 userId,
-                accessToken: {
-                    not: null,
-                },
+                accessToken: { not: null },
+                deactivatedAt: null,
             },
         });
         return vendorAccounts;

@@ -126,7 +126,7 @@ model VendorAccount {
     refreshToken  String?   @map("refresh_token") @db.VarChar(2047)
     expiresAt     DateTime? @map("expires_at") @db.DateTime(6)
 
-    user   User   @relation(fields: [userId], references: [id])
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String @map("user_id") @db.VarChar(36)
 
     @@map("vendor_accounts")
