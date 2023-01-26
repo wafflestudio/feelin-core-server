@@ -95,7 +95,7 @@ export class PlaylistService {
         playlistId: string,
         request: SavePlaylistRequestDto,
     ): Promise<string> {
-        const playlist = this.playlistRepository.findById(playlistId);
+        const playlist = await this.playlistRepository.findById(playlistId);
         if (!playlist) {
             throw new NotFoundException('not found', `playlist with id ${playlistId} not found`);
         }

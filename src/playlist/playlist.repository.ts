@@ -39,9 +39,7 @@ export class PlaylistRepository {
     }
 
     async findById(id: string): Promise<Playlist> {
-        const playlist = await this.prismaService.playlist.findUnique({
-            where: { id },
-        });
+        const playlist = await this.prismaService.playlist.findUnique({ where: { id } });
         return playlist;
     }
 }
