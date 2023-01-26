@@ -53,9 +53,8 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         return createResponse.data.external_urls.spotify;
     }
 
-    async getPlaylist(playlistId: string, authdata: Authdata): Promise<PlaylistInfo> {
-        const adminToken = await this.spotifyUserScraper.getAdminToken();
-        const isPrivate = await this.isPlaylistPrivate(playlistId, authdata, adminToken);
+    async getPlaylist(playlistId: string, adminToken: string, authdata: Authdata): Promise<PlaylistInfo> {
+        const isPrivate = await this.isPlaylistPrivate(playlistId, adminToken, authdata);
         const accessToken = isPrivate ? authdata.accessToken : adminToken;
         if (!accessToken) {
             throw new UnauthorizedException('not authorized to get playlist info');
@@ -69,7 +68,7 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         return playlistInfo;
     }
 
-    async isPlaylistPrivate(playlistId: string, authdata: Authdata, adminToken: string): Promise<boolean> {
+    async isPlaylistPrivate(playlistId: string, adminToken: string, authdata: Authdata): Promise<boolean> {
         try {
             await axios.get(this.playlistUrls.getPlaylist['user'].replace('{playlistId}', playlistId), {
                 headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },

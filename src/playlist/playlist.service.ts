@@ -4,7 +4,6 @@ import { VendorAlbumRepository } from '@/album/vendor-album.repository.js';
 import { ArtistRepository } from '@/artist/artist.repository.js';
 import { ArtistDto } from '@/artist/dto/artist.dto.js';
 import { VendorArtistRepository } from '@/artist/vendor-artist.repository.js';
-import { AuthService } from '@/auth/auth.service.js';
 import { PlaylistScraperService } from '@/playlist-scraper/playlist-scraper.service.js';
 import { PrismaService } from '@/prisma.service.js';
 import { TrackScraperService } from '@/track-scraper/track-scraper.service.js';
@@ -31,7 +30,6 @@ import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
 @Injectable()
 export class PlaylistService {
     constructor(
-        private readonly authService: AuthService,
         private readonly playlistScraperService: PlaylistScraperService,
         private readonly userScraperService: UserScraperService,
         private readonly trackService: TrackService,
@@ -83,9 +81,10 @@ export class PlaylistService {
         }
 
         const vendorAccount = await this.vendorAccountRepository.findByUserIdAndVendor(user.id, vendor);
+        const adminToken = await this.userScraperService.get(vendor).getAdminToken();
         const authdata =
             vendorAccount === null ? null : await this.userScraperService.get(vendor).decryptAndRefreshToken(vendorAccount);
-        const playlistData = await this.playlistScraperService.get(vendor).getPlaylist(playlistId, authdata);
+        const playlistData = await this.playlistScraperService.get(vendor).getPlaylist(playlistId, adminToken, authdata);
         const playlist = await this.saveAndGetPlaylistDto(playlistData, vendor);
         return this.getPlaylist(playlist.id);
     }
@@ -110,10 +109,13 @@ export class PlaylistService {
 
     async convertPlaylist(playlistId: string, vendor: Vendors): Promise<void> {
         const tracks = await this.trackRepository.findAllWithArtistAndAlbumAndVendorTrackByPlaylistId(playlistId, vendor);
+        const adminToken = await this.userScraperService.get(vendor).getAdminToken();
         const promiseList = tracks
             .filter((track) => track.vendorTracks.length === 0)
             .map(async (track) => {
-                const searchResult = await this.trackScraperService.get(vendor).searchTrack(this.trackService.toTrackInfo(track));
+                const searchResult = await this.trackScraperService
+                    .get(vendor)
+                    .searchTrack(this.trackService.toTrackInfo(track), adminToken);
                 return { track, searchResult };
             });
         const searchResults = await Promise.all(promiseList);

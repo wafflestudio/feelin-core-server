@@ -55,8 +55,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         return `https://music.apple.com/playlist/${playlistId}`;
     }
 
-    async getPlaylist(id: string, authdata: Authdata): Promise<PlaylistInfo> {
-        const adminToken = await this.applemusicUserScraper.getAdminToken();
+    async getPlaylist(id: string, adminToken: string, authdata: Authdata): Promise<PlaylistInfo> {
         const accessToken = this.getAppleMusicId(id).type === 'catalog' ? adminToken : authdata.accessToken;
 
         const { playlistInfo, offsets } = await this.getPlaylistFirstPage(id, accessToken);
@@ -70,7 +69,10 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             }
         }
 
-        const tracks = await this.applemusicTrackScraper.getTracksByIds(playlistInfo.tracks.map(({ id }) => id));
+        const tracks = await this.applemusicTrackScraper.getTracksByIds(
+            playlistInfo.tracks.map(({ id }) => id),
+            adminToken,
+        );
         playlistInfo.tracks = tracks;
         return playlistInfo;
     }

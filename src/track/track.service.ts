@@ -25,10 +25,7 @@ export class TrackService {
         if (existingVendorTrack) {
             return [
                 this.vendorTrackRepository.update({ track: { connect: { id: track.id } } }, { id: existingVendorTrack.id }),
-                this.trackOnPlaylistRepository.updateMany(
-                    { track: { connect: { id: track.id } } },
-                    { trackId: existingVendorTrack.trackId },
-                ),
+                this.trackOnPlaylistRepository.updateMany({ trackId: track.id }, { trackId: existingVendorTrack.trackId }),
             ];
         }
 

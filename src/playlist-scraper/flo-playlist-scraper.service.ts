@@ -15,7 +15,7 @@ export class FloPlaylistScraper implements PlaylistScraper {
 
     private readonly playlistUrls = playlistUrlsByVendor['flo'];
 
-    async getPlaylist(playlistId: string, authdata: Authdata): Promise<PlaylistInfo> {
+    async getPlaylist(playlistId: string): Promise<PlaylistInfo> {
         const [type, id] = playlistId.split(':');
         if (type != 'user' && type != 'catalog') {
             throw new InternalServerErrorException('Invalid playlist id');

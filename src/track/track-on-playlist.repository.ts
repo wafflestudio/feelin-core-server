@@ -7,9 +7,9 @@ export class TrackOnPlaylistRepository {
     constructor(private readonly prismaService: PrismaService) {}
 
     updateMany(
-        data: Prisma.TrackOnPlaylistUpdateInput,
+        data: Prisma.TrackOnPlaylistUncheckedUpdateManyInput,
         where: Prisma.TrackOnPlaylistWhereInput,
     ): PrismaPromise<Prisma.BatchPayload> {
-        return this.prismaService.vendorAlbum.updateMany({ data, where });
+        return this.prismaService.trackOnPlaylist.updateMany({ data, where });
     }
 }
