@@ -5,5 +5,5 @@ import { VendorTrack } from '@prisma/client';
 
 export interface PlaylistScraper {
     savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata): Promise<string>;
-    getPlaylist(playlistId: string, authdata: Authdata): Promise<PlaylistInfo>;
+    getPlaylist(playlistId: string, adminToken: string, authdata: Authdata): Promise<PlaylistInfo>;
 }

@@ -6,4 +6,4 @@ export interface UserScraper {
     getAdminToken(): Promise<string>;
 }
 
-export const TOKEN_ADMIN_USER_ID = 'TOKEN_ADMIN';
+export const TOKEN_ADMIN_USER_ID = '00000000-0000-0000-0000-000000000000';

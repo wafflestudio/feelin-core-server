@@ -19,7 +19,9 @@ export class AuthService {
     }
 
     async validateUserToken(userToken: string): Promise<User> {
-        const payload = await this.jwtService.verifyAsync(userToken, { secret: this.jwtSecret });
+        const payload = await this.jwtService.verifyAsync(userToken, { secret: this.jwtSecret }).catch((error) => {
+            throw new UnauthorizedException('token expired');
+        });
         const user = await this.userRepository.findUniqueOrThrow({ id: payload.id }).catch(() => {
             throw new UnauthorizedException('unauthorized user');
         });
