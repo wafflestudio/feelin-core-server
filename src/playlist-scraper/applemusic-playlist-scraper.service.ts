@@ -56,11 +56,12 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
     }
 
     async getPlaylist(id: string, authdata: Authdata): Promise<PlaylistInfo> {
-        const authToken = await this.applemusicUserScraper.getAdminToken();
+        const adminToken = await this.applemusicUserScraper.getAdminToken();
+        const accessToken = this.getAppleMusicId(id).type === 'catalog' ? adminToken : authdata.accessToken;
 
-        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(id, authdata);
+        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(id, accessToken);
         while (offsets.length > 0) {
-            const { tracks, offset } = await this.getPlaylistPage(id, offsets[offsets.length - 1], authdata);
+            const { tracks, offset } = await this.getPlaylistPage(id, offsets[offsets.length - 1], accessToken);
             playlistInfo.tracks.push(...tracks);
             if (offset) {
                 offsets.push(offset);
@@ -74,12 +75,12 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         return playlistInfo;
     }
 
-    private async getPlaylistFirstPage(id: string, authdata: Authdata): Promise<PlaylistInfoFirstPage> {
+    private async getPlaylistFirstPage(id: string, accessToken: string): Promise<PlaylistInfoFirstPage> {
         const authToken = await this.applemusicUserScraper.getAdminToken();
         const { type, playlistId } = this.getAppleMusicId(id);
         const headers = { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' };
         if (type === 'user') {
-            headers['Music-User-Token'] = authdata.accessToken;
+            headers['Music-User-Token'] = accessToken;
         }
 
         const response = await axios.get(
@@ -109,13 +110,13 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
     private async getPlaylistPage(
         id: string,
         offset: number,
-        authdata: Authdata,
+        accessToken: string,
     ): Promise<{ tracks: TrackInfo[]; offset: number | null }> {
         const { type, playlistId } = this.getAppleMusicId(id);
         const authToken = await this.applemusicUserScraper.getAdminToken();
         const headers = { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' };
         if (type === 'user') {
-            headers['Music-User-Token'] = authdata.accessToken;
+            headers['Music-User-Token'] = accessToken;
         }
 
         const response = await axios.get(
