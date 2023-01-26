@@ -1,7 +1,6 @@
 # Build stage
 FROM node:18.12-alpine3.16 AS build
 ARG APP_ENV
-ENV NODE_ENV $APP_ENV
 
 RUN echo "Building for $APP_ENV"
 
