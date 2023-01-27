@@ -28,8 +28,8 @@ export class VendorAccountController {
     @UseGuards(JwtAuthGuard)
     @Delete('/vendor-accounts/:vendorAccountId')
     @HttpCode(204)
-    async unlinkStreamAccount(@UserAuthentication() user: User, @Param('accountId') accountId: string) {
-        await this.vendorAccountService.unlinkVendorAccount(user, accountId);
+    async unlinkStreamAccount(@UserAuthentication() user: User, @Param('vendorAccountId') vendorAccountId: string) {
+        await this.vendorAccountService.unlinkVendorAccount(user, vendorAccountId);
     }
 
     @ApiBearerAuth('Authorization')
