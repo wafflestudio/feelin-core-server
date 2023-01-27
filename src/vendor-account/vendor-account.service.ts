@@ -83,8 +83,8 @@ export class VendorAccountService {
         return vendorAccounts.map(({ id, vendor }) => new VendorAccountDto(id, vendor as Vendors));
     }
 
-    async unlinkVendorAccount(user: User, accountId: string): Promise<void> {
-        const vendorAccount = await this.vendorAccountRepository.findById(accountId).catch(() => {
+    async unlinkVendorAccount(user: User, vendorAccountId: string): Promise<void> {
+        const vendorAccount = await this.vendorAccountRepository.findById(vendorAccountId).catch(() => {
             throw new NotFoundException('Not Found', 'vendor account not found');
         });
         if (vendorAccount.userId !== user.id) {
