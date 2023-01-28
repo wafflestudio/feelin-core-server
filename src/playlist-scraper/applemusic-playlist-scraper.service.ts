@@ -19,6 +19,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
 
     private readonly playlistUrls = playlistUrlsByVendor['applemusic'];
     private readonly albumCoverSize = 300;
+    private readonly playlistCoverSize = 640;
 
     public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata): Promise<string> {
         const authToken = await this.applemusicUserScraper.getAdminToken();
@@ -102,7 +103,7 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
             playlistInfo: {
                 title: response.data.data[0].attributes.name,
                 id: playlistId,
-                coverUrl: this.formatCoverUrl(response.data.data[0].attributes.artwork.url, this.albumCoverSize),
+                coverUrl: this.formatCoverUrl(response.data.data[0].attributes.artwork.url, this.playlistCoverSize),
                 tracks,
             },
             offsets,

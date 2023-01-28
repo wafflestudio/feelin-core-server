@@ -65,7 +65,7 @@ export class SpotifyUserScraper implements UserScraper {
     }
 
     async getAdminToken(): Promise<string> {
-        const vendorAccount = await this.vendorAccountRepository.findByUserIdAndVendor(TOKEN_ADMIN_USER_ID, 'spotify');
+        const vendorAccount = await this.vendorAccountRepository.findLinkedByUserIdAndVendor(TOKEN_ADMIN_USER_ID, 'spotify');
         if (vendorAccount && dayjs().isBefore(dayjs(vendorAccount.expiresAt))) {
             return this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
         }

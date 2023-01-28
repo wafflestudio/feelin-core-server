@@ -80,7 +80,7 @@ export class PlaylistService {
             return this.getPlaylist(vendorPlaylist.playlist.id);
         }
 
-        const vendorAccount = await this.vendorAccountRepository.findByUserIdAndVendor(user.id, vendor);
+        const vendorAccount = await this.vendorAccountRepository.findLinkedByUserIdAndVendor(user.id, vendor);
         const adminToken = await this.userScraperService.get(vendor).getAdminToken();
         const authdata =
             vendorAccount === null ? null : await this.userScraperService.get(vendor).decryptAndRefreshToken(vendorAccount);

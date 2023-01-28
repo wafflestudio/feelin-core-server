@@ -22,8 +22,15 @@ export class VendorAccountRepository {
         return vendorAccounts;
     }
 
-    async findByUserIdAndVendor(userId: string, vendor: string): Promise<VendorAccount> {
-        const vendorAccount = await this.prismaService.vendorAccount.findFirst({ where: { userId, vendor } });
+    async findLinkedByUserIdAndVendor(userId: string, vendor: string): Promise<VendorAccount> {
+        const vendorAccount = await this.prismaService.vendorAccount.findFirst({
+            where: {
+                userId,
+                vendor,
+                accessToken: { not: null },
+                deactivatedAt: null,
+            },
+        });
         return vendorAccount;
     }
 

@@ -36,7 +36,7 @@ export class ApplemusicUserScraper implements UserScraper {
     }
 
     async getAdminToken(): Promise<string> {
-        const vendorAccount = await this.vendorAccountRepository.findByUserIdAndVendor(TOKEN_ADMIN_USER_ID, 'applemusic');
+        const vendorAccount = await this.vendorAccountRepository.findLinkedByUserIdAndVendor(TOKEN_ADMIN_USER_ID, 'applemusic');
         if (vendorAccount && dayjs().isBefore(dayjs(vendorAccount.expiresAt))) {
             return this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
         }
