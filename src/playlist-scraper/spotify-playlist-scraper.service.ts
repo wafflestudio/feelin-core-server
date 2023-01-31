@@ -103,7 +103,7 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         );
 
         const offsets = [];
-        for (let i = 0; i < Math.ceil((data.tracks.total - data.tracks.limit) / this.pageLimit) - 1; i++) {
+        for (let i = 0; i < Math.ceil((data.tracks.total - data.tracks.limit) / this.pageLimit); i++) {
             offsets.push(i * this.pageLimit + data.tracks.limit);
         }
 
@@ -128,6 +128,6 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
             headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
         });
         const data = response.data;
-        return data.tracks.items.map(({ track }) => this.spotifyTrackScraper.covertToTrackInfo(track, this.albumCoverSize));
+        return data.items.map(({ track }) => this.spotifyTrackScraper.covertToTrackInfo(track, this.albumCoverSize));
     }
 }
