@@ -111,4 +111,15 @@ export class SpotifyUserScraper implements UserScraper {
         );
         return { accessToken: response.data.access_token, expiresAt: dayjs().add(response.data.expires_in, 'second') };
     }
+
+    async getUserId(accessToken: string): Promise<string> {
+        const userInfo = await axios.get('https://api.spotify.com/v1/me', {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        return userInfo.data.id;
+    }
 }

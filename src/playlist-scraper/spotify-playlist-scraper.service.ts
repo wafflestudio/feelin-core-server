@@ -19,7 +19,6 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         private readonly spotifyTrackScraper: SpotifyTrackScraper,
     ) {}
 
-    private readonly userUrl: 'https://api.spotify.com/v1/me';
     private readonly playlistUrls = playlistUrlsByVendor['spotify'];
     private readonly pageLimit = 50;
     private readonly savePageLimit = 100;
@@ -27,14 +26,9 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
     private readonly albumCoverSize = 300;
 
     public async savePlaylist(request: SavePlaylistRequestDto, tracks: VendorTrack[], authdata: Authdata): Promise<string> {
-        const userData = await axios.get('https://api.spotify.com/v1/me', {
-            headers: {
-                Authorization: `Bearer ${authdata.accessToken}`,
-                'Content-Type': 'application/json',
-            },
-        });
+        const userId = await this.spotifyUserScraper.getUserId(authdata.accessToken);
         const createResponse = await axios.post(
-            this.playlistUrls.createPlaylist.replace('{userId}', userData.data.id),
+            this.playlistUrls.createPlaylist.replace('{userId}', userId),
             { name: request.title, description: request.description },
             { headers: { Authorization: `Bearer ${authdata.accessToken}`, 'Content-Type': 'application/json' } },
         );
