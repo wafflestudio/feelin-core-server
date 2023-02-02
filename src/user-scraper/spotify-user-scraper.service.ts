@@ -1,7 +1,7 @@
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
+import { VendorAccountCipherUtilService } from '@/vendor-account/vendor-account-cipher-util.service.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
-import { VendorAccountService } from '@/vendor-account/vendor-account.service.js';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { VendorAccount } from '@prisma/client';
@@ -13,7 +13,7 @@ import { TOKEN_ADMIN_USER_ID, UserScraper } from './user-scraper.js';
 @Injectable()
 export class SpotifyUserScraper implements UserScraper {
     constructor(
-        private readonly vendorAccountService: VendorAccountService,
+        private readonly vendorAccountCipherUtilService: VendorAccountCipherUtilService,
         private readonly vendorAccountRepository: VendorAccountRepository,
         private readonly cipherUtilService: CipherUtilService,
         private readonly configService: ConfigService,
@@ -24,7 +24,7 @@ export class SpotifyUserScraper implements UserScraper {
     private readonly encryptKey: Buffer;
 
     async decryptAndRefreshToken(vendorAccount: VendorAccount): Promise<Authdata> {
-        const authdata = await this.vendorAccountService.decryptVendorAccount(vendorAccount);
+        const authdata = await this.vendorAccountCipherUtilService.decryptVendorAccount(vendorAccount);
         if (dayjs().add(5, 'minutes').isBefore(dayjs(vendorAccount.expiresAt))) {
             return authdata;
         }
@@ -36,7 +36,7 @@ export class SpotifyUserScraper implements UserScraper {
                 expiresAt: expiresAt.toDate(),
             },
         });
-        return { accessToken, refreshToken: authdata.refreshToken };
+        return { accessToken, refreshToken: authdata.refreshToken, adminToken: null };
     }
 
     async refresh(refreshToken: string): Promise<{ accessToken: string; expiresAt: dayjs.Dayjs }> {

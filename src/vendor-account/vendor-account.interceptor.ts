@@ -23,7 +23,12 @@ export class VendorAccountAuthTokenInterceptor implements NestInterceptor {
         }
         const vendor = vendorAccount.vendor as Vendors;
         const authdata = await this.userScraperService.get(vendor).decryptAndRefreshToken(vendorAccount);
-        request.vendorAccount = new DecryptedVendorAccountDto(authdata.accessToken, authdata.refreshToken, vendor);
+        request.vendorAccount = new DecryptedVendorAccountDto(
+            authdata.accessToken,
+            authdata.refreshToken,
+            authdata.adminToken,
+            vendor,
+        );
 
         return next.handle();
     }

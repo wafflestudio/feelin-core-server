@@ -1,13 +1,13 @@
 import { Vendors } from '@/types/types.js';
+import { UserScraperService } from '@/user-scraper/user-scraper.service.js';
 import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User, VendorAccount } from '@prisma/client';
+import { User } from '@prisma/client';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
 import { v4 as uuidv4 } from 'uuid';
-import { Authdata } from './dto/decrypted-vendor-account.dto.js';
 import { VendorAccountLoginDto } from './dto/vendor-account-login.dto.js';
 import { VendorAccountDto } from './dto/vendor-account.dto.js';
 import { SpotifyTokenResponse } from './types.js';
@@ -16,6 +16,7 @@ import { VendorAccountRepository } from './vendor-account.repository.js';
 @Injectable()
 export class VendorAccountService {
     constructor(
+        private readonly userScraperService: UserScraperService,
         private readonly vendorAccountRepository: VendorAccountRepository,
         private readonly cipherUtilService: CipherUtilService,
         private readonly configService: ConfigService,
@@ -48,10 +49,12 @@ export class VendorAccountService {
         }
 
         const loginUrl = this.loginUrls[vendor];
+        const adminToken = vendor === 'applemusic' ? await this.userScraperService.get(vendor).getAdminToken() : null;
         const vendorAccount = await this.vendorAccountRepository.create({
             id: uuidv4(),
             vendor,
             user: { connect: { id: user.id } },
+            adminToken: adminToken === null ? null : this.cipherUtilService.encryptWithKey(adminToken, this.encryptKey),
         });
 
         switch (vendor) {
@@ -72,7 +75,7 @@ export class VendorAccountService {
                     }).toString()
                 );
             case 'applemusic':
-                return loginUrl + '?' + new URLSearchParams({ id: vendorAccount.id }).toString();
+                return loginUrl + '?' + new URLSearchParams({ id: vendorAccount.id, token: adminToken }).toString();
             default:
                 break;
         }
@@ -101,18 +104,6 @@ export class VendorAccountService {
         });
 
         return;
-    }
-
-    decryptVendorAccount(vendorAccount: VendorAccount): Authdata {
-        if (vendorAccount === null) {
-            return null;
-        }
-        const accessToken = this.cipherUtilService.decrypt(vendorAccount.accessToken, this.encryptKey);
-        const refreshToken =
-            vendorAccount.refreshToken === null
-                ? null
-                : this.cipherUtilService.decrypt(vendorAccount.refreshToken, this.encryptKey);
-        return { accessToken, refreshToken };
     }
 
     async handleSpotifyLogin(code: string, state: string) {

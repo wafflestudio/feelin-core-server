@@ -7,8 +7,8 @@ export class DecryptedVendorAccountDto {
     @IsString()
     vendor!: Vendors;
 
-    constructor(accessToken: string, refreshToken: string | null, vendor: Vendors) {
-        this.authdata = { accessToken, refreshToken };
+    constructor(accessToken: string, refreshToken: string | null, adminToken: string | null, vendor: Vendors) {
+        this.authdata = { accessToken, refreshToken, adminToken };
         this.vendor = vendor;
     }
 }
@@ -16,4 +16,5 @@ export class DecryptedVendorAccountDto {
 export type Authdata = {
     accessToken: string;
     refreshToken: string | null;
+    adminToken: string | null;
 };
