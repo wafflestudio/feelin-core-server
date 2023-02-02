@@ -1,4 +1,5 @@
 import { UserRepository } from '@/user/user.repository.js';
+import { CipherUtilService } from '@/utils/cipher-util/cipher-util.service.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -10,6 +11,7 @@ export class AuthService {
     private jwtSecret: string;
 
     constructor(
+        private readonly cipherUtilService: CipherUtilService,
         private readonly configService: ConfigService,
         private readonly jwtService: JwtService,
         private readonly vendorAccountRepository: VendorAccountRepository,
