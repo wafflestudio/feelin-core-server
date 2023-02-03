@@ -14,6 +14,7 @@ import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { Vendors } from '@/types/types.js';
 import { UserScraperService } from '@/user-scraper/user-scraper.service.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
+import { PromiseUtil } from '@/utils/promise-util/promise-util.service.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -118,7 +119,7 @@ export class PlaylistService {
                     .searchTrack(this.trackService.toTrackInfo(track), adminToken);
                 return { track, searchResult };
             });
-        const searchResults = await Promise.all(promiseList);
+        const searchResults = await PromiseUtil.promiseAllBatched(promiseList, 30);
         const matchResults = searchResults.map(({ track, searchResult }) => {
             const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(
                 searchResult,
