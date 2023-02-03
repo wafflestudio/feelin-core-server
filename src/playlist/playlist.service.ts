@@ -119,7 +119,7 @@ export class PlaylistService {
                     .searchTrack(this.trackService.toTrackInfo(track), adminToken);
                 return { track, searchResult };
             });
-        const searchResults = await PromiseUtil.promiseAllBatched(promiseList, 30);
+        const searchResults = await PromiseUtil.promiseAllBatched(promiseList, 10);
         const matchResults = searchResults.map(({ track, searchResult }) => {
             const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(
                 searchResult,
