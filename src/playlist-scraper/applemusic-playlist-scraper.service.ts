@@ -52,9 +52,9 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
     }
 
     async getPlaylist(id: string, adminToken: string, authdata: Authdata): Promise<PlaylistInfo> {
-        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(id, authdata);
+        const { playlistInfo, offsets } = await this.getPlaylistFirstPage(id, adminToken, authdata);
         while (offsets.length > 0) {
-            const { tracks, offset } = await this.getPlaylistPage(id, offsets[offsets.length - 1], authdata);
+            const { tracks, offset } = await this.getPlaylistPage(id, offsets[offsets.length - 1], adminToken, authdata);
             playlistInfo.tracks.push(...tracks);
             if (offset) {
                 offsets.push(offset);
@@ -71,9 +71,9 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
         return playlistInfo;
     }
 
-    private async getPlaylistFirstPage(id: string, authdata: Authdata): Promise<PlaylistInfoFirstPage> {
+    private async getPlaylistFirstPage(id: string, adminToken: string, authdata: Authdata): Promise<PlaylistInfoFirstPage> {
         const { type, playlistId } = this.getAppleMusicId(id);
-        const headers = { Authorization: `Bearer ${authdata.adminToken}`, 'Content-Type': 'application/json' };
+        const headers = { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' };
         if (type === 'user') {
             headers['Music-User-Token'] = authdata.accessToken;
         }
@@ -105,10 +105,11 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
     private async getPlaylistPage(
         id: string,
         offset: number,
+        adminToken: string,
         authdata: Authdata,
     ): Promise<{ tracks: TrackInfo[]; offset: number | null }> {
         const { type, playlistId } = this.getAppleMusicId(id);
-        const headers = { Authorization: `Bearer ${authdata.adminToken}`, 'Content-Type': 'application/json' };
+        const headers = { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' };
         if (type === 'user') {
             headers['Music-User-Token'] = authdata.accessToken;
         }
