@@ -8,6 +8,6 @@ export class ImagePickerUtilService {
         if (image) {
             return image.url;
         }
-        return images[0].url;
+        return images?.[0]?.url;
     }
 }
