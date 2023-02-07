@@ -18,7 +18,8 @@ import { PromiseUtil } from '@/utils/promise-util/promise-util.service.js';
 import { SlackUtilService } from '@/utils/slack-util/slack-util.service.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Album, Artist, Playlist, Prisma, Track, User } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { TrackMatcherService } from './../track-matcher/track-matcher.service.js';
@@ -32,6 +33,7 @@ import { VendorPlaylistRepository } from './vendor-playlist.repository.js';
 @Injectable()
 export class PlaylistService {
     constructor(
+        private readonly configService: ConfigService,
         private readonly playlistScraperService: PlaylistScraperService,
         private readonly userScraperService: UserScraperService,
         private readonly trackService: TrackService,
@@ -48,7 +50,11 @@ export class PlaylistService {
         private readonly vendorTrackRepository: VendorTrackRepository,
         private readonly vendorArtistRepository: VendorArtistRepository,
         private readonly vendorAlbumRepository: VendorAlbumRepository,
-    ) {}
+    ) {
+        this.trackSearchBatchSize = this.configService.get<number>('TRACK_SEARCH_BATCH_SIZE');
+    }
+
+    private readonly trackSearchBatchSize: number;
 
     async getPlaylist(playlistId: string): Promise<PlaylistDto> {
         const playlist = await this.playlistRepository.findById(playlistId);
@@ -132,7 +138,9 @@ export class PlaylistService {
                     .searchTrack(this.trackService.toTrackInfo(track), adminToken);
                 return { track, searchResult };
             });
-        const searchResults = await PromiseUtil.promiseAllBatched(promiseList, 10);
+        const searchResults = await PromiseUtil.promiseAllBatched(promiseList, this.trackSearchBatchSize).catch((e) => {
+            throw new InternalServerErrorException('failed to convert playlist', e.message);
+        });
         const matchResults = searchResults.map(({ track, searchResult }) => {
             const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(
                 searchResult,
