@@ -41,10 +41,11 @@ export class PlaylistController {
     @Post(':playlistId/save')
     @HttpCode(201)
     async savePlaylist(
+        @UserAuthentication() user: User,
         @VendorAuthentication() vendorAccount: DecryptedVendorAccountDto,
         @Param('playlistId') playlistId: string,
         @Body() savePlaylistDto: SavePlaylistRequestDto,
     ) {
-        await this.playlistService.savePlaylistToAccount(vendorAccount, playlistId, savePlaylistDto);
+        await this.playlistService.savePlaylistToAccount(user, vendorAccount, playlistId, savePlaylistDto);
     }
 }

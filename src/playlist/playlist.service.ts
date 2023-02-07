@@ -15,6 +15,7 @@ import { Vendors } from '@/types/types.js';
 import { UserScraperService } from '@/user-scraper/user-scraper.service.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { PromiseUtil } from '@/utils/promise-util/promise-util.service.js';
+import { SlackUtilService } from '@/utils/slack-util/slack-util.service.js';
 import { DecryptedVendorAccountDto } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { VendorAccountRepository } from '@/vendor-account/vendor-account.repository.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -36,6 +37,7 @@ export class PlaylistService {
         private readonly trackService: TrackService,
         private readonly trackScraperService: TrackScraperService,
         private readonly trackMatcherService: TrackMatcherService,
+        private readonly slackUtilService: SlackUtilService,
         private readonly prismaService: PrismaService,
         private readonly playlistRepository: PlaylistRepository,
         private readonly trackRepository: TrackRepository,
@@ -91,6 +93,7 @@ export class PlaylistService {
     }
 
     async savePlaylistToAccount(
+        user: User,
         vendorAccount: DecryptedVendorAccountDto,
         playlistId: string,
         request: SavePlaylistRequestDto,
@@ -105,6 +108,16 @@ export class PlaylistService {
         const tracks = await this.trackRepository.findAllWithArtistAndAlbumAndVendorTrackByPlaylistId(playlistId, vendor);
         const vendorTracks = tracks.map((track) => track.vendorTracks?.[0]).filter((track) => track);
         const playlistUrl = await this.playlistScraperService.get(vendor).savePlaylist(request, vendorTracks, authdata);
+        this.slackUtilService
+            .sendSlackMessage(
+                `
+            :musical_note: 새로운 플레이리스트 생성 :musical_note: 
+            > 유저 아이디: ${user.id}
+            > 플레이리스트 제목: ${playlist.title}
+            > 플레이리스트 링크: ${playlistUrl}
+        `,
+            )
+            .catch((e) => {});
         return playlistUrl;
     }
 
