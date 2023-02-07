@@ -12,7 +12,7 @@ model Album {
     createdAt   DateTime  @default(now()) @map("created_at") @db.DateTime(6)
     updatedAt   DateTime  @updatedAt @map("updated_at") @db.DateTime(6)
     title       String    @map("title") @db.VarChar(200)
-    coverUrl    String    @map("cover_url") @db.VarChar(400)
+    coverUrl    String?   @map("cover_url") @db.VarChar(400)
     description String?   @map("description") @db.VarChar(500)
     releaseDate DateTime? @map("release_date") @db.Date
 
