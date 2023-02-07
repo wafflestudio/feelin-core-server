@@ -130,24 +130,28 @@ export class PlaylistService {
     async convertPlaylist(playlistId: string, vendor: Vendors): Promise<void> {
         const tracks = await this.trackRepository.findAllWithArtistAndAlbumAndVendorTrackByPlaylistId(playlistId, vendor);
         const adminToken = await this.userScraperService.get(vendor).getAdminToken();
-        const promiseList = tracks
-            .filter((track) => track.vendorTracks.length === 0)
-            .map(async (track) => {
+        const searchList = tracks.filter((track) => track.vendorTracks.length === 0);
+        const searchResults = await PromiseUtil.promiseAllBatched(
+            searchList,
+            async (track) => {
                 const searchResult = await this.trackScraperService
                     .get(vendor)
                     .searchTrack(this.trackService.toTrackInfo(track), adminToken);
                 return { track, searchResult };
-            });
-        const searchResults = await PromiseUtil.promiseAllBatched(promiseList, this.trackSearchBatchSize).catch((e) => {
+            },
+            this.trackSearchBatchSize,
+        ).catch((e) => {
             throw new InternalServerErrorException('failed to convert playlist', e.message);
         });
-        const matchResults = searchResults.map(({ track, searchResult }) => {
-            const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(
-                searchResult,
-                this.trackService.toTrackInfo(track),
-            );
-            return { track, matchedVendorTrack };
-        });
+        const matchResults = searchResults
+            .map(({ track, searchResult }) => {
+                const matchedVendorTrack = this.trackMatcherService.getMatchedVendorTrack(
+                    searchResult,
+                    this.trackService.toTrackInfo(track),
+                );
+                return { track, matchedVendorTrack };
+            })
+            .filter(({ matchedVendorTrack }) => matchedVendorTrack);
         // TODO: get detailed track info if artist and album need to be merged
         /* 
         if (!searchResults[0].searchResult.isDetailed) {
@@ -202,7 +206,7 @@ export class PlaylistService {
 
         return await this.prismaService.$transaction(
             async (tx) => this.savePlaylist(tx, playlistData, vendor, trackByVendorId, artistByVendorId, albumByVendorId),
-            { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, timeout: 10000 },
+            { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, timeout: 60000 },
         );
     }
 
