@@ -164,11 +164,12 @@ model VendorArtist {
 }
 
 model VendorPlaylist {
-    id        String   @id @map("id") @db.VarChar(36)
-    createdAt DateTime @default(now()) @map("created_at") @db.DateTime(6)
-    updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(6)
-    vendor    String   @map("vendor") @db.VarChar(32)
-    vendorId  String   @map("vendor_id") @db.VarChar(255)
+    id         String   @id @map("id") @db.VarChar(36)
+    createdAt  DateTime @default(now()) @map("created_at") @db.DateTime(6)
+    updatedAt  DateTime @updatedAt @map("updated_at") @db.DateTime(6)
+    vendor     String   @map("vendor") @db.VarChar(32)
+    vendorId   String   @map("vendor_id") @db.VarChar(255)
+    isOriginal Boolean  @default(true) @map("is_original") @db.TinyInt()
 
     playlist   Playlist @relation(fields: [playlistId], references: [id])
     playlistId String   @map("playlist_id") @db.VarChar(36)

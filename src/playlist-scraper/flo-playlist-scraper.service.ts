@@ -1,10 +1,11 @@
+import { VendorPlaylistDto } from '@/playlist/dto/vendor-playlist.dto.js';
 import { PlaylistInfo } from '@/playlist/types/types.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { TrackInfo } from '@feelin-types/types.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { VendorTrack } from '@prisma/client';
+import { VendorPlaylist, VendorTrack } from '@prisma/client';
 import axios from 'axios';
 import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
@@ -102,5 +103,9 @@ export class FloPlaylistScraper implements PlaylistScraper {
 
     private formatCoverUrl(coverUrlFormat: string, size: number): string {
         return coverUrlFormat.replace(/{size}/, `${size}x${size}`);
+    }
+
+    getVendorPlaylistDto(vendorPlaylist: VendorPlaylist): VendorPlaylistDto {
+        throw new Error('Method not implemented.');
     }
 }

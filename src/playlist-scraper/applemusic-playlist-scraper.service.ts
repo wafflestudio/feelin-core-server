@@ -1,10 +1,11 @@
+import { VendorPlaylistDto } from '@/playlist/dto/vendor-playlist.dto.js';
 import { PlaylistInfo, PlaylistInfoFirstPage, PlaylistType } from '@/playlist/types/types.js';
 import { AppleMusicTrackScraper } from '@/track-scraper/applemusic-track-scraper.service.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { TrackInfo } from '@feelin-types/types.js';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { VendorTrack } from '@prisma/client';
+import { VendorPlaylist, VendorTrack } from '@prisma/client';
 import axios from 'axios';
 import { playlistUrlsByVendor } from './constants.js';
 import { PlaylistScraper } from './playlist-scraper.js';
@@ -141,5 +142,9 @@ export class AppleMusicPlaylistScraper implements PlaylistScraper {
 
     private formatCoverUrl(coverUrlFormat: string, size: number): string {
         return coverUrlFormat.replace('{w}x{h}', `${size}x${size}`);
+    }
+
+    getVendorPlaylistDto(vendorPlaylist: VendorPlaylist): VendorPlaylistDto {
+        return new VendorPlaylistDto(`https://music.apple.com/playlist/${vendorPlaylist.vendorId}`, 'applemusic');
     }
 }

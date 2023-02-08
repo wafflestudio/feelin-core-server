@@ -57,12 +57,18 @@ export class PlaylistService {
     private readonly trackSearchBatchSize: number;
 
     async getPlaylist(playlistId: string): Promise<PlaylistDto> {
-        const playlist = await this.playlistRepository.findById(playlistId);
+        const playlist = await this.playlistRepository.findWithOriginalVendorPlaylistById(playlistId);
         if (!playlist) {
             throw new NotFoundException('not found', `playlist with id ${playlistId} not found`);
         }
 
         const tracks = await this.trackRepository.findAllWithArtistAndAlbumByPlaylistId(playlistId);
+        const originalVendorPlaylist =
+            playlist.vendorPlaylist.length > 0
+                ? this.playlistScraperService
+                      .get(playlist.vendorPlaylist[0].vendor as Vendors)
+                      .getVendorPlaylistDto(playlist.vendorPlaylist[0])
+                : null;
         return new PlaylistDto(
             playlistId,
             playlist.title,
@@ -75,6 +81,7 @@ export class PlaylistService {
                         new AlbumDto(track.album.id, track.album.title, track.album.coverUrl),
                     ),
             ),
+            originalVendorPlaylist,
             new PlaylistPreviewDto(playlistId, playlist.coverUrl),
         );
     }
