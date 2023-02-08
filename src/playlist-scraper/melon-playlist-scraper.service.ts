@@ -1,3 +1,4 @@
+import { VendorPlaylistDto } from '@/playlist/dto/vendor-playlist.dto.js';
 import { PlaylistInfo } from '@/playlist/types/types.js';
 import { MelonTrackScraper } from '@/track-scraper/melon-track-scraper.service.js';
 import { VendorTrackRepository } from '@/track/vendor-track.repository.js';
@@ -5,7 +6,7 @@ import { TrackInfo } from '@/types/types.js';
 import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable } from '@nestjs/common';
-import { VendorTrack } from '@prisma/client';
+import { VendorPlaylist, VendorTrack } from '@prisma/client';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { playlistUrlsByVendor } from './constants.js';
@@ -120,5 +121,9 @@ export class MelonPlaylistScraper implements PlaylistScraper {
             count: parseInt(count, 10),
             trackData: trackData,
         };
+    }
+
+    getVendorPlaylistDto(vendorPlaylist: VendorPlaylist): VendorPlaylistDto {
+        throw new Error('Method not implemented.');
     }
 }

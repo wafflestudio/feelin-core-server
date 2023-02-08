@@ -1,3 +1,4 @@
+import { VendorPlaylistDto } from '@/playlist/dto/vendor-playlist.dto.js';
 import { PlaylistInfo, PlaylistInfoFirstPage } from '@/playlist/types/types.js';
 import { SpotifyTrackScraper } from '@/track-scraper/spotify-track-scraper.service.js';
 import { TrackInfo } from '@/types/types.js';
@@ -6,7 +7,7 @@ import { SavePlaylistRequestDto } from '@/user/dto/save-playlist-request.dto.js'
 import { ImagePickerUtilService } from '@/utils/image-picker-util/image-picker-util.service.js';
 import { Authdata } from '@/vendor-account/dto/decrypted-vendor-account.dto.js';
 import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { VendorTrack } from '@prisma/client';
+import { VendorPlaylist, VendorTrack } from '@prisma/client';
 import axios from 'axios';
 import { chunk } from 'lodash-es';
 import { playlistUrlsByVendor } from './constants.js';
@@ -129,5 +130,9 @@ export class SpotifyPlaylistScraper implements PlaylistScraper {
         });
         const data = response.data;
         return data.items.map(({ track }) => this.spotifyTrackScraper.covertToTrackInfo(track, this.albumCoverSize));
+    }
+
+    getVendorPlaylistDto(vendorPlaylist: VendorPlaylist): VendorPlaylistDto {
+        return new VendorPlaylistDto(`https://open.spotify.com/playlist/${vendorPlaylist.vendorId}`, 'spotify');
     }
 }

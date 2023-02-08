@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma.service.js';
 import { Injectable } from '@nestjs/common';
-import { Playlist, Prisma, PrismaPromise } from '@prisma/client';
+import { Playlist, Prisma, PrismaPromise, VendorPlaylist } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -34,6 +34,14 @@ export class PlaylistRepository {
                     },
                 },
             },
+        });
+        return playlist;
+    }
+
+    async findWithOriginalVendorPlaylistById(id: string): Promise<Playlist & { vendorPlaylist: VendorPlaylist[] }> {
+        const playlist = await this.prismaService.playlist.findUnique({
+            where: { id },
+            include: { vendorPlaylist: { where: { isOriginal: true } } },
         });
         return playlist;
     }
